@@ -1,29 +1,40 @@
-# Create T3 App
+# Linee Guida Progetto Sballando Backoffice
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+## Tipi e Modelli
 
-## What's next? How do I make an app with this?
+- **Usa sempre i tipi TypeScript definiti in `/src/types/index.ts`** per tutte le entità (Event, Location, Product, EntryType, Collaborator, ecc).
+- **Non ridefinire mai i tipi nelle pagine o nei componenti**: importa sempre da `~/types`.
+- Se aggiungi un nuovo campo o modello, aggiorna prima `/src/types/index.ts`.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## API e Webservice
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- Le chiamate API devono essere sempre in **POST** se richiedono autenticazione o dati sensibili.
+- Passa sempre `user_token` nel body della richiesta per autenticare l’utente.
+- L’id delle risorse (es. `id` del locale) deve essere passato come parametro dinamico nella route (`/api/locations/[id]`) e non nel body.
+- **Ad ogni web service va inviato il token dell'utente che fa la richiesta** per verificare se è il proprietario dell'evento, del locale o della risorsa richiesta, oppure se è il `SUPERADMIN`.
+- Nei webservice, **verifica sempre** che l’utente sia il proprietario della risorsa o abbia ruolo `SUPERADMIN` prima di restituire dati sensibili.
+- Le API devono restituire sempre oggetti JSON validi, anche in caso di errore.
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Convenzioni di Codice
 
-## Learn More
+- Usa sempre i nomi dei campi come da database e tipi (es: `datetime_start`, `cover`, `title`, ecc).
+- Per la visualizzazione delle date, usa sempre `toLocaleDateString('it-IT', ...)` per coerenza.
+- Per la divisione eventi futuri/passati, confronta sempre con `datetime_start`.
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+## UI/UX
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+- Tema scuro di default.
+- Mostra sempre stato di caricamento, errori e messaggi di empty state.
+- Le statistiche (es. numero eventi) devono essere sempre visibili in alto nella pagina del locale.
+- Gli eventi devono essere divisi in “Eventi Futuri” e “Eventi Passati”.
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+## Struttura del Progetto
 
-## How do I deploy this?
+- Tutti i tipi in `/src/types/index.ts`
+- Tutte le chiamate API in `/src/app/api/`
+- Tutte le pagine in `/src/app/`
+- Componenti riutilizzabili in `/src/components/`
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+---
+
+**Aggiorna questo file ogni volta che aggiungi una nuova regola o convenzione!**

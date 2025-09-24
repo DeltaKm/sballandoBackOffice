@@ -1,0 +1,869 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { useAuthStore } from "~/store/auth";
+import type { Event, EntryType } from "~/types";
+import { EntryTypeForm } from "./EntryTypeForm";
+import { TransferEntryModal } from "./TransferEntryModal";
+import { EditEntryTypeModal } from "./EditEntryTypeModal";
+import { NewEntryModal } from "./NewEntryModal";
+
+interface EntryTypesSectionProps {
+  event: Event;
+  onUpdate?: (updatedEvent: Event) => void;
+}
+
+export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
+  const [showForm, setShowForm] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{ show: boolean; entryId: number | null; entryLabel: string }>({
+    show: false,
+    entryId: null,
+    entryLabel: ''
+  });
+  const [withdrawModal, setWithdrawModal] = useState<{
+    show: boolean;
+    entry: EntryType | null;
+    withdrawableCount: number;
+  }>({
+    show: false,
+    entry: null,
+    withdrawableCount: 0
+  });
+  const [deleting, setDeleting] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [myActiveCategory, setMyActiveCategory] = useState<string>('all');
+  const [collaboratorActiveCategories, setCollaboratorActiveCategories] = useState<Record<number, string>>({});
+  const [transferModal, setTransferModal] = useState<{
+    show: boolean;
+    entry: EntryType | null;
+  }>({
+    show: false,
+    entry: null
+  });
+  const [editModal, setEditModal] = useState<{ show: boolean; entry: EntryType | null }>({
+    show: false,
+    entry: null
+  });
+
+  const [newEntryModal, setNewEntryModal] = useState<{ show: boolean }>({
+    show: false
+  });
+
+  const user = useAuthStore((state) => state.user);
+
+  // Divide gli ingressi e raggruppa per categoria
+  const { myEntriesByCategory, collaboratorsEntriesByCategory, myCategories, collaboratorCategories } = useMemo(() => {
+    if (!event.entry_types || event.entry_types.length === 0 || !user) {
+      return {
+        myEntriesByCategory: {},
+        collaboratorsEntriesByCategory: {},
+        myCategories: [],
+        collaboratorCategories: {}
+      };
+    }
+
+    const collaboratorsUserIds = event.collaborators?.map(collab => collab.user_id).filter(Boolean) || [];
+
+    // I miei ingressi raggruppati per categoria
+    const myEntries = event.entry_types.filter(entry => entry.user_id === user.id);
+    const myEntriesByCategory = myEntries.reduce((acc, entry) => {
+      const category = entry.category || 'Senza Categoria';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(entry);
+      return acc;
+    }, {} as Record<string, EntryType[]>);
+
+    const myCategories = Object.keys(myEntriesByCategory);
+
+    // Ingressi dei collaboratori raggruppati per user_id e poi per categoria
+    const collaboratorsEntries = event.entry_types.filter(entry =>
+      entry.user_id !== user.id && collaboratorsUserIds.includes(entry.user_id)
+    );
+
+    const collaboratorsEntriesByCategory = collaboratorsEntries.reduce((acc, entry) => {
+      if (!acc[entry.user_id]) {
+        const collaborator = event.collaborators?.find(collab => collab.user_id === entry.user_id);
+        acc[entry.user_id] = {
+          user_id: entry.user_id,
+          collaboratorName: collaborator?.user ?
+            `${collaborator.user.name} ${collaborator.user.surname}` :
+            `User ${entry.user_id}`,
+          collaboratorRole: collaborator?.role || 'Collaboratore',
+          categoriesData: {}
+        };
+      }
+
+      const category = entry.category || 'Senza Categoria';
+      if (!acc[entry.user_id].categoriesData[category]) {
+        acc[entry.user_id].categoriesData[category] = [];
+      }
+      acc[entry.user_id].categoriesData[category].push(entry);
+      return acc;
+    }, {} as Record<number, {
+      user_id: number;
+      collaboratorName: string;
+      collaboratorRole: string;
+      categoriesData: Record<string, EntryType[]>;
+    }>);
+
+    // Categorie per ogni collaboratore
+    const collaboratorCategories = Object.keys(collaboratorsEntriesByCategory).reduce((acc, userId) => {
+      acc[parseInt(userId)] = Object.keys(collaboratorsEntriesByCategory[parseInt(userId)].categoriesData);
+      return acc;
+    }, {} as Record<number, string[]>);
+
+    return {
+      myEntriesByCategory,
+      collaboratorsEntriesByCategory: Object.values(collaboratorsEntriesByCategory),
+      myCategories,
+      collaboratorCategories
+    };
+  }, [event.entry_types, event.collaborators, user]);
+
+  // Inizializza le categorie attive per i collaboratori
+  useMemo(() => {
+    const newActiveCategories: Record<number, string> = {};
+    Object.keys(collaboratorCategories).forEach(userId => {
+      const userIdNum = parseInt(userId);
+      if (!collaboratorActiveCategories[userIdNum]) {
+        newActiveCategories[userIdNum] = 'all';
+      }
+    });
+    if (Object.keys(newActiveCategories).length > 0) {
+      setCollaboratorActiveCategories(prev => ({ ...prev, ...newActiveCategories }));
+    }
+  }, [collaboratorCategories]);
+
+  // Ottieni gli ingressi filtrati per categoria
+  const getMyFilteredEntries = () => {
+    if (myActiveCategory === 'all') {
+      return Object.values(myEntriesByCategory).flat();
+    }
+    return myEntriesByCategory[myActiveCategory] || [];
+  };
+
+  const getCollaboratorFilteredEntries = (userId: number) => {
+    const collaborator = collaboratorsEntriesByCategory.find(c => c.user_id === userId);
+    if (!collaborator) return [];
+
+    const activeCategory = collaboratorActiveCategories[userId] || 'all';
+    if (activeCategory === 'all') {
+      return Object.values(collaborator.categoriesData).flat();
+    }
+    return collaborator.categoriesData[activeCategory] || [];
+  };
+
+  const openNewEntryModal = () => {
+    setNewEntryModal({ show: true });
+  };
+
+  const closeNewEntryModal = () => {
+    setNewEntryModal({ show: false });
+  };
+
+  const handleFormSuccess = (updatedEvent: any) => {
+    onUpdate?.(updatedEvent);
+    closeNewEntryModal();
+  };
+
+  const openDeleteModal = (entryId: number, entryLabel: string) => {
+    setDeleteModal({
+      show: true,
+      entryId,
+      entryLabel
+    });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({
+      show: false,
+      entryId: null,
+      entryLabel: ''
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteModal.entryId || !user?.token) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/entry_types/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          entry_type_id: deleteModal.entryId,
+          user_token: user.token
+        }),
+      });
+
+      if (res.ok) {
+        const updatedEvent = await res.json();
+        onUpdate?.(updatedEvent);
+        closeDeleteModal();
+      } else {
+        const errorData = await res.json();
+        alert(`Errore durante l'eliminazione: ${errorData.error || 'Errore sconosciuto'}`);
+      }
+    } catch (err) {
+      console.error('Error deleting entry type:', err);
+      alert('Errore durante la connessione al server');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const openTransferModal = (entry: EntryType) => {
+    setTransferModal({
+      show: true,
+      entry
+    });
+  };
+
+  const closeTransferModal = () => {
+    setTransferModal({
+      show: false,
+      entry: null
+    });
+  };
+
+  const handleTransferSuccess = (updatedEvent: Event) => {
+    onUpdate?.(updatedEvent);
+    closeTransferModal();
+  };
+
+  const handleWithdrawEntry = async (entry: EntryType) => {
+    if (!user?.token) return;
+
+    // Calcola gli ingressi ritirabili
+    const collaboratorEntries = event.entry_types?.filter(et =>
+      et.user_id !== user.id &&
+      et.label.toLowerCase() === entry.label.toLowerCase() &&
+      et.stock && et.stock > 0
+    ) || [];
+
+    if (collaboratorEntries.length === 0) {
+      alert('Nessun ingresso da ritirare dai collaboratori');
+      return;
+    }
+
+    const totalToWithdraw = collaboratorEntries.reduce((sum, et) => sum + (et.stock || 0), 0);
+
+    // Apri la modale di conferma
+    setWithdrawModal({
+      show: true,
+      entry,
+      withdrawableCount: totalToWithdraw
+    });
+  };
+
+  const closeWithdrawModal = () => {
+    setWithdrawModal({
+      show: false,
+      entry: null,
+      withdrawableCount: 0
+    });
+  };
+
+  const handleConfirmWithdraw = async () => {
+    if (!withdrawModal.entry || !user?.token) return;
+
+    setWithdrawing(true);
+
+    try {
+      const res = await fetch('/api/entry_types/withdraw', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          entry_type_id: withdrawModal.entry.id,
+          user_token: user.token
+        }),
+      });
+
+      if (res.ok) {
+        const updatedEvent = await res.json();
+        onUpdate?.(updatedEvent);
+        closeWithdrawModal();
+      } else {
+        const errorData = await res.json();
+        alert(`Errore durante il ritiro: ${errorData.error || 'Errore sconosciuto'}`);
+      }
+    } catch (err) {
+      console.error('Error withdrawing entries:', err);
+      alert('Errore durante la connessione al server');
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
+  const getWithdrawableCount = (entry: EntryType) => {
+    if (!user) return 0;
+
+    const collaboratorEntries = event.entry_types?.filter(et =>
+      et.user_id !== user.id &&
+      et.label.toLowerCase() === entry.label.toLowerCase() &&
+      et.stock && et.stock > 0
+    ) || [];
+
+    return collaboratorEntries.reduce((sum, et) => sum + (et.stock || 0), 0);
+  };
+
+  const openEditModal = (entry: EntryType) => {
+    setEditModal({ show: true, entry });
+  };
+
+  const closeEditModal = () => {
+    setEditModal({ show: false, entry: null });
+  };
+
+  const handleEditSuccess = (updatedEvent: Event) => {
+    onUpdate?.(updatedEvent);
+    closeEditModal();
+  };
+
+  // Funzione per formattare il prezzo
+  const formatPrice = (price: number | null | undefined): string => {
+    if (price === null || price === undefined) return '0.00';
+    return Number(price).toFixed(2);
+  };
+
+  const myFilteredEntries = getMyFilteredEntries();
+  const totalMyEntries = Object.values(myEntriesByCategory).flat().length;
+
+  return (
+  <div className="pt-8 border-t border-white/10">
+    {/* Header principale */}
+    <div className="flex justify-between items-center mb-8">
+      <h3 className="text-3xl font-bold text-white">Gestione Ingressi</h3>
+      <button
+        onClick={openNewEntryModal}
+        className="px-6 py-3 bg-[#FC0045] text-white rounded-xl hover:bg-[#FC0045]/80 transition-colors flex items-center gap-3 text-lg font-semibold"
+      >
+        <span className="text-xl">➕</span>
+        Nuovo Ingresso
+      </button>
+    </div>
+
+    {/* Container principale con layout a due colonne con scroll */}
+    <div className="grid grid-cols-2 gap-6 h-[75vh]">
+      
+      {/* COLONNA SINISTRA: I MIEI INGRESSI */}
+      <div className="bg-blue-500/10 border-2 border-blue-500/30 rounded-2xl overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-blue-500/50 scrollbar-track-transparent">
+          {/* Header sezione */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-14 h-14 bg-blue-500/30 rounded-xl flex items-center justify-center">
+              <span className="text-blue-400 text-2xl">👤</span>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-blue-300 font-bold text-xl">I Miei Ingressi</h4>
+              <p className="text-blue-400/80 text-base mt-1">Controllo completo e gestione autonoma</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="px-4 py-2 bg-blue-500/30 text-blue-300 rounded-xl text-base font-semibold">
+                {totalMyEntries} ingressi
+              </span>
+            </div>
+          </div>
+
+          {/* Tabs Categorie */}
+          {myCategories.length > 0 && (
+            <div className="mb-6 flex flex-wrap gap-3">
+              <button
+                onClick={() => setMyActiveCategory('all')}
+                className={`px-4 py-2 rounded-xl text-base font-semibold transition-colors ${
+                  myActiveCategory === 'all'
+                    ? 'bg-blue-500 text-white shadow-lg'
+                    : 'bg-white/20 text-white/90 hover:bg-white/30'
+                }`}
+              >
+                Tutte ({totalMyEntries})
+              </button>
+              {myCategories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setMyActiveCategory(category)}
+                  className={`px-4 py-2 rounded-xl text-base font-semibold transition-colors ${
+                    myActiveCategory === category
+                      ? 'bg-blue-500 text-white shadow-lg'
+                      : 'bg-white/20 text-white/90 hover:bg-white/30'
+                  }`}
+                >
+                  {category} ({myEntriesByCategory[category]?.length || 0})
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Lista ingressi */}
+          <div className="space-y-4">
+            {myFilteredEntries.length > 0 ? (
+              myFilteredEntries.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="p-5 bg-white/15 border border-blue-400/40 rounded-xl hover:border-blue-400/70 hover:bg-blue-500/10 transition-all group cursor-pointer shadow-lg hover:shadow-xl"
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).tagName !== "BUTTON") {
+                      openEditModal(entry);
+                    }
+                  }}
+                  title="Clicca per modificare"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h5 className="text-white font-bold text-lg">{entry.label}</h5>
+                        {entry.category && (
+                          <span className="px-3 py-1 bg-blue-500/40 text-blue-300 rounded-lg text-sm font-semibold">
+                            {entry.category}
+                          </span>
+                        )}
+                      </div>
+                      {entry.description && (
+                        <p className="text-white/80 text-sm leading-relaxed">{entry.description}</p>
+                      )}
+                    </div>
+                    <div className="text-right ml-4">
+                      <span className="text-[#FC0045] font-bold text-2xl">€{formatPrice(entry.price)}</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-500/20 rounded-xl p-4 mb-4">
+                    <div className="grid grid-cols-2 gap-4 text-base">
+                      <div className="text-center">
+                        <div className="text-blue-300 font-bold text-xl">{entry.created_qnt}</div>
+                        <div className="text-blue-400/90 text-sm">Creati</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-blue-300 font-bold text-xl">{entry.stock || '0'}</div>
+                        <div className="text-blue-400/90 text-sm">Rimasti</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); entry.stock && entry.stock > 0 ? openTransferModal(entry) : null; }}
+                      disabled={!entry.stock || entry.stock <= 0}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        entry.stock && entry.stock > 0
+                          ? 'bg-blue-500/30 text-blue-300 hover:bg-blue-500/50 border border-blue-400/40'
+                          : 'bg-gray-500/30 text-gray-400 cursor-not-allowed border border-gray-500/40'
+                      }`}
+                      title={
+                        !entry.stock || entry.stock <= 0
+                          ? 'Nessuno stock disponibile per il trasferimento'
+                          : 'Trasferisci ingressi ai collaboratori'
+                      }
+                    >
+                      🔄 Trasferisci
+                    </button>
+
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleWithdrawEntry(entry); }}
+                      disabled={getWithdrawableCount(entry) === 0}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                        getWithdrawableCount(entry) > 0
+                          ? 'bg-orange-500/30 text-orange-300 hover:bg-orange-500/50 border border-orange-400/40'
+                          : 'bg-gray-500/30 text-gray-400 cursor-not-allowed border border-gray-500/40'
+                      }`}
+                      title={
+                        getWithdrawableCount(entry) === 0
+                          ? 'Nessun ingresso da ritirare dai collaboratori'
+                          : `Ritira ${getWithdrawableCount(entry)} ingressi dai collaboratori`
+                      }
+                    >
+                      ↩️ Ritira
+                      {getWithdrawableCount(entry) > 0 && (
+                        <span className="bg-orange-500/50 px-2 py-1 rounded-lg text-xs font-bold">
+                          {getWithdrawableCount(entry)}
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openDeleteModal(entry.id, entry.label); }}
+                      className="px-4 py-2 bg-red-500/30 text-red-300 rounded-lg text-sm font-medium hover:bg-red-500/50 transition-colors border border-red-400/40"
+                      title="Elimina ingresso"
+                    >
+                      🗑️ Elimina
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-12 border-2 border-dashed border-blue-400/40 rounded-xl bg-blue-500/10">
+                <div className="text-blue-400/70 mb-4">
+                  <span className="text-5xl">🎟️</span>
+                </div>
+                <p className="text-blue-300 text-lg mb-3 font-semibold">
+                  {myActiveCategory === 'all'
+                    ? 'Non hai ancora creato ingressi'
+                    : `Nessun ingresso nella categoria "${myActiveCategory}"`
+                  }
+                </p>
+                <p className="text-blue-400/80 text-base mb-6">
+                  {myActiveCategory === 'all'
+                    ? 'Inizia creando il tuo primo tipo di ingresso'
+                    : 'Prova a cambiare categoria o crea un nuovo ingresso'
+                  }
+                </p>
+                {myActiveCategory === 'all' && (
+                  <button
+                    onClick={() => openNewEntryModal()}
+                    className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-base font-semibold"
+                  >
+                    ➕ Crea il primo ingresso
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+        {/* COLONNA DESTRA: INGRESSI COLLABORATORI */}
+        <div className="bg-green-500/10 border-2 border-green-500/30 rounded-2xl overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-green-500/50 scrollbar-track-transparent">
+            {/* Header sezione */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-14 h-14 bg-green-500/30 rounded-xl flex items-center justify-center">
+                <span className="text-green-400 text-2xl">👥</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-green-300 font-bold text-xl">Ingressi Collaboratori</h4>
+                <p className="text-green-400/80 text-base mt-1">Ingressi gestiti dai tuoi collaboratori</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="px-4 py-2 bg-green-500/30 text-green-300 rounded-xl text-base font-semibold">
+                  {collaboratorsEntriesByCategory.length} collaboratori
+                </span>
+              </div>
+            </div>
+
+            {/* Lista collaboratori */}
+            <div className="space-y-6">
+            {collaboratorsEntriesByCategory.length > 0 ? (
+              collaboratorsEntriesByCategory.map((collaboratorGroup) => {
+                const collaboratorEntries = getCollaboratorFilteredEntries(collaboratorGroup.user_id);
+                const totalCollaboratorEntries = Object.values(collaboratorGroup.categoriesData).flat().length;
+                const collaboratorCategoryList = collaboratorCategories[collaboratorGroup.user_id] || [];
+
+                return (
+                  <div key={collaboratorGroup.user_id} className="bg-white/15 border border-green-400/40 rounded-xl p-6 shadow-lg">
+                    {/* Header Collaboratore */}
+                    <div className="flex items-center justify-between mb-6 pb-4 border-b border-green-400/30">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-green-500/30 rounded-lg flex items-center justify-center">
+                          <span className="text-green-400 text-xl">👤</span>
+                        </div>
+                        <div>
+                          <h5 className="text-green-300 font-bold text-lg">{collaboratorGroup.collaboratorName}</h5>
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="px-3 py-1 bg-purple-500/30 text-purple-300 rounded-lg text-sm font-semibold">
+                              {collaboratorGroup.collaboratorRole}
+                            </span>
+                            <span className="px-3 py-1 bg-green-500/30 text-green-300 rounded-lg text-sm font-semibold">
+                              {totalCollaboratorEntries} ingressi
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tabs Categorie per questo collaboratore */}
+                    {collaboratorCategoryList.length > 0 && (
+                      <div className="mb-6">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => setCollaboratorActiveCategories(prev => ({
+                              ...prev,
+                              [collaboratorGroup.user_id]: 'all'
+                            }))}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${(collaboratorActiveCategories[collaboratorGroup.user_id] || 'all') === 'all'
+                              ? 'bg-green-500 text-white shadow-lg'
+                              : 'bg-white/20 text-white/90 hover:bg-white/30'
+                              }`}
+                          >
+                            Tutte ({totalCollaboratorEntries})
+                          </button>
+                          {collaboratorCategoryList.map((category) => (
+                            <button
+                              key={category}
+                              onClick={() => setCollaboratorActiveCategories(prev => ({
+                                ...prev,
+                                [collaboratorGroup.user_id]: category
+                              }))}
+                              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${collaboratorActiveCategories[collaboratorGroup.user_id] === category
+                                ? 'bg-green-500 text-white shadow-lg'
+                                : 'bg-white/20 text-white/90 hover:bg-white/30'
+                                }`}
+                            >
+                              {category} ({collaboratorGroup.categoriesData[category]?.length || 0})
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Ingressi del collaboratore */}
+                    {collaboratorEntries.length > 0 ? (
+                      <div className="space-y-4">
+                        {collaboratorEntries.map((entry) => (
+                          <div key={entry.id} className="p-4 bg-green-500/10 border border-green-400/30 rounded-lg shadow-md">
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h6 className="text-white font-bold text-base">{entry.label}</h6>
+                                  {entry.category && (
+                                    <span className="px-2 py-1 bg-green-500/40 text-green-300 rounded text-xs font-semibold">
+                                      {entry.category}
+                                    </span>
+                                  )}
+                                </div>
+                                {entry.description && (
+                                  <p className="text-white/80 text-sm">{entry.description}</p>
+                                )}
+                              </div>
+                              <span className="text-[#FC0045] font-bold text-xl">€{formatPrice(entry.price)}</span>
+                            </div>
+
+                            <div className="bg-green-500/20 rounded-lg p-3">
+                              <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div className="text-center">
+                                  <div className="text-green-300 font-semibold text-lg">{entry.transfer_qnt || 0}</div>
+                                  <div className="text-green-400/80 text-xs">Assegnati</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-green-300 font-semibold text-lg">{entry.stock || '0'}</div>
+                                  <div className="text-green-400/80 text-xs">Restanti</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 border border-dashed border-green-400/40 rounded-lg bg-green-500/10">
+                        <div className="text-green-400/70 mb-3">
+                          <span className="text-3xl">📝</span>
+                        </div>
+                        <p className="text-green-300 text-base font-semibold">
+                          {(collaboratorActiveCategories[collaboratorGroup.user_id] || 'all') === 'all'
+                            ? 'Nessun ingresso per questo collaboratore'
+                            : `Nessun ingresso nella categoria "${collaboratorActiveCategories[collaboratorGroup.user_id]}"`
+                          }
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-12 border-2 border-dashed border-green-400/40 rounded-xl bg-green-500/10">
+                <div className="text-green-400/70 mb-4">
+                  <span className="text-5xl">👥</span>
+                </div>
+                <p className="text-green-300 text-lg mb-3 font-semibold">Nessun collaboratore attivo</p>
+                <p className="text-green-400/80 text-base">
+                  I collaboratori potranno aggiungere i loro ingressi una volta invitati
+                </p>
+              </div>
+            )}
+            </div>
+          </div>
+        </div>
+      
+      
+      {/* Stato vuoto generale */}
+      {totalMyEntries === 0 && collaboratorsEntriesByCategory.length === 0 && (
+        <div className="text-center py-16 bg-white/10 rounded-2xl border-2 border-dashed border-white/30 mt-8">
+          <div className="text-white/70 mb-6">
+            <span className="text-6xl">🎟️</span>
+          </div>
+          <h4 className="text-white text-2xl font-bold mb-4">Nessun ingresso configurato</h4>
+          <p className="text-white/80 text-lg mb-8">Inizia creando il tuo primo tipo di ingresso per l'evento</p>
+          <button
+            onClick={() => openNewEntryModal()}
+            className="px-8 py-4 bg-[#FC0045] text-white rounded-xl hover:bg-[#FC0045]/80 transition-colors text-lg font-semibold"
+          >
+            ➕ Crea il primo ingresso
+          </button>
+        </div>
+      )}
+
+      {/* MODALE DI CONFERMA ELIMINAZIONE */}
+      {deleteModal.show && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-900 border border-white/20 rounded-lg p-6 max-w-md w-full mx-4">
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-shrink-0 w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
+                <span className="text-red-400 text-lg">⚠️</span>
+              </div>
+              <div>
+                <h3 className="text-white font-semibold">Conferma Eliminazione</h3>
+                <p className="text-white/60 text-sm">Questa azione non può essere annullata</p>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="mb-6">
+              <p className="text-white/80 mb-2">
+                Sei sicuro di voler eliminare l'ingresso:
+              </p>
+              <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
+                <span className="text-white font-medium">"{deleteModal.entryLabel}"</span>
+              </div>
+              <p className="text-red-400 text-sm mt-2">
+                ⚠️ Tutti i dati associati verranno eliminati permanentemente
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={closeDeleteModal}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    🗑️ Elimina
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODALE CONFERMA RITIRO */}
+      {withdrawModal.show && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-900 border border-white/20 rounded-lg p-6 max-w-md w-full mx-4">
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-shrink-0 w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center">
+                <span className="text-orange-400 text-lg">🔄</span>
+              </div>
+              <div>
+                <h3 className="text-white font-semibold">Conferma Ritiro</h3>
+                <p className="text-white/60 text-sm">Ritira ingressi dai collaboratori</p>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="mb-6">
+              <p className="text-white/80 mb-2">
+                Stai per ritirare ingressi dai collaboratori:
+              </p>
+              <div className="p-3 bg-white/5 border border-white/10 rounded-lg mb-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-white font-medium">"{withdrawModal.entry?.label}"</span>
+                  <span className="text-[#FC0045] font-bold">€{withdrawModal.entry?.price || '0.00'}</span>
+                </div>
+                {withdrawModal.entry?.description && (
+                  <p className="text-white/60 text-sm mb-2">{withdrawModal.entry.description}</p>
+                )}
+                {withdrawModal.entry?.category && (
+                  <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">
+                    {withdrawModal.entry.category}
+                  </span>
+                )}
+              </div>
+
+              <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-orange-400 font-medium">Quantità da ritirare:</span>
+                  <span className="text-orange-400 font-bold text-lg">{withdrawModal.withdrawableCount}</span>
+                </div>
+                <div className="flex items-center justify-between mt-1 text-sm">
+                  <span className="text-white/60">Saranno aggiunti al tuo stock:</span>
+                  <span className="text-white/60">
+                    {(withdrawModal.entry?.stock || 0)} + {withdrawModal.withdrawableCount} = {(withdrawModal.entry?.stock || 0) + withdrawModal.withdrawableCount}
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-orange-400 text-sm mt-3 flex items-center gap-2">
+                <span>⚠️</span>
+                <span>Questa azione rimuoverà tutti gli ingressi compatibili dai collaboratori</span>
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={closeWithdrawModal}
+                disabled={withdrawing}
+                className="flex-1 px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={handleConfirmWithdraw}
+                disabled={withdrawing}
+                className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {withdrawing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Ritirando...
+                  </>
+                ) : (
+                  <>
+                    🔄 Ritira ({withdrawModal.withdrawableCount})
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODALE TRASFERIMENTO */}
+      <TransferEntryModal
+        show={transferModal.show}
+        entry={transferModal.entry}
+        event={event}
+        onClose={closeTransferModal}
+        onSuccess={handleTransferSuccess}
+      />
+
+      {/* MODALE MODIFICA */}
+      <EditEntryTypeModal
+        show={editModal.show}
+        entry={editModal.entry}
+        onClose={closeEditModal}
+        onSuccess={handleEditSuccess}
+      />
+
+      {/* MODALE NUOVO INGRESSO */}
+      <NewEntryModal
+        show={newEntryModal.show}
+        eventId={event.id}
+        onClose={closeNewEntryModal}
+        onSuccess={handleFormSuccess}
+      />
+    </div>
+  </div>
+  );
+}

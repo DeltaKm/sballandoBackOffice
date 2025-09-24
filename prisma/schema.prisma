@@ -1,20 +1,537 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id        String   @id
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
-    @@index([name])
+model blocked_users {
+  id              Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at      DateTime  @default(now()) @db.Timestamp(0)
+  user_id         Int?
+  blocked_user_id Int?
+  updated_at      DateTime? @db.Timestamp(0)
+}
+
+model collaborators {
+  id                       Int                 @id @default(autoincrement()) @db.UnsignedInt
+  user_id                  Int                 @db.UnsignedInt
+  event_id                 Int                 // Rimosso @db.UnsignedInt per matchare con events.id
+  label                    String?             @db.VarChar(50)
+  role                     collaborators_role?
+  vidimate_enabled_entry   Boolean?            @default(false)
+  vidimate_enabled_product Boolean?            @default(false)
+  guest_enabled            Boolean?            @default(false)
+  created_at               DateTime?           @db.Timestamp(0)
+  updated_at               DateTime?           @db.Timestamp(0)
+
+  event events @relation(fields: [event_id], references: [id])
+  user users @relation(fields: [user_id], references: [id])
+
+  @@index([event_id])
+  @@index([user_id])
+}
+
+model comunis {
+  istat           Int     @id
+  comune          String? @db.VarChar(255)
+  regione         String? @db.VarChar(50)
+  provincia_sigla String? @db.VarChar(2)
+  provincia       String? @db.VarChar(50)
+  cap             String? @db.VarChar(50)
+
+  @@index([cap], map: "cap")
+  @@index([comune], map: "comune")
+  @@index([provincia], map: "provincia")
+  @@index([provincia_sigla], map: "provincia_sigla")
+  @@index([regione], map: "regione")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model configurations {
+  key   String? @db.VarChar(50)
+  value String? @db.Text
+
+  @@index([key], map: "key")
+  @@ignore
+}
+
+model entry_types {
+  id                       Int                       @id @default(autoincrement())
+  event_id                 Int?
+  user_id                  Int?
+  old_user_id              Int?
+  category                 String?                   @db.VarChar(50)
+  label                    String?                   @db.VarChar(50)
+  description              String?                   @db.Text
+  type                     entry_types_type?
+  stock                    Int?
+  created_qnt              Int?
+  transfer_qnt             Int?
+  created_at               DateTime?                 @default(now()) @db.DateTime(0)
+  requested_date           DateTime?                 @db.DateTime(0)
+  updated_at               DateTime?                 @db.DateTime(0)
+  burned                   Boolean?                  @default(false)
+  check_unused             Boolean?                  @default(false)
+  price                    Decimal?                  @db.Decimal(10, 2)
+  seats                    Int?                      @default(1)
+  genres_min               String?                   @db.VarChar(50)
+  fairplay_min             Int?                      @default(1)
+  gender_owner             entry_types_gender_owner?
+  table_owner_id           Int?
+  paid                     entry_types_paid          @default(not_paid)
+  stripe_payment_intent_id String?                   @db.VarChar(50)
+  pending_time             Int?
+
+  event events? @relation(fields: [event_id], references: [id])
+  @@index([burned], map: "burned")
+  @@index([event_id], map: "event_id")
+  @@index([old_user_id], map: "old_user_id")
+  @@index([user_id], map: "user_id")
+}
+
+model event_user_favorites {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  user_id    BigInt?
+  event_id   Int?
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model events {
+  id                       Int           @id @default(autoincrement())
+  user_id                  Int?
+  location_id              Int           @db.UnsignedInt
+  token                    String?       @db.Char(50)
+  cover                    String?       @db.VarChar(255)
+  is_public                Int?          @db.TinyInt
+  created_at               DateTime      @default(now()) @db.DateTime(0)
+  title                    String?       @db.Text
+  subtitle                 String?       @db.Text
+  music_genres             String?       @db.LongText
+  collaborators_id         String?       @db.LongText
+  token_payment            Int?          @default(0)
+  description_extended     String?       @db.Text
+  datetime_start           DateTime?     @db.DateTime(0)
+  datetime_end             DateTime?     @db.DateTime(0)
+  subscribers              Int?          @default(0)
+  state                    events_state? @default(draft)
+  enabled                  Int?          @default(0)
+  updated_at               DateTime?     @db.Timestamp(0)
+  spotify_access_token     String?       @db.VarChar(5345)
+  spotify_refresh_token    String?       @db.VarChar(5435)
+  spotify_token_expires_at String?       @db.VarChar(5345)
+  spotify_playlist_id      String?       @db.VarChar(255)
+
+  location                 locations?    @relation(fields: [location_id], references: [id])
+  collaborators            collaborators[]
+  entry_types              entry_types[]
+  event_music_genres       event_music_genres[]
+  products                 products[]
+  @@index([location_id], map: "location_id")
+  @@index([user_id], map: "user_id")
+}
+
+model failed_jobs {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String   @unique(map: "failed_jobs_uuid_unique") @db.VarChar(255)
+  connection String   @db.Text
+  queue      String   @db.Text
+  payload    String   @db.LongText
+  exception  String   @db.LongText
+  failed_at  DateTime @default(now()) @db.Timestamp(0)
+}
+
+model fairplays {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  event_id   Int?
+  user_id    BigInt?
+  points     Int?
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model fairplays_collaborator {
+  id              Int       @id @default(autoincrement()) @db.UnsignedInt
+  user_id         BigInt    @db.UnsignedBigInt
+  event_id        Int       @db.UnsignedInt
+  collaborator_id Int       @db.UnsignedInt
+  points          Int?
+  created_at      DateTime? @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+
+  @@index([collaborator_id], map: "collaborator_id")
+  @@index([event_id], map: "event_id")
+  @@index([user_id], map: "user_id")
+}
+
+model followers {
+  id                                 Int      @id @default(autoincrement()) @db.UnsignedInt
+  follower_id                        Int      @db.UnsignedInt
+  followed_id                        Int      @db.UnsignedInt
+  created_at                         DateTime @default(now()) @db.Timestamp(0)
+  updated_at                         DateTime @default(now()) @db.Timestamp(0)
+  users_followers_follower_idTousers users    @relation("followers_follower_idTousers", fields: [follower_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_followers_users")
+  users_followers_followed_idTousers users    @relation("followers_followed_idTousers", fields: [followed_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_followers_users_2")
+
+  @@unique([follower_id, followed_id], map: "unique_followers")
+  @@index([followed_id], map: "followed_id")
+  @@index([follower_id], map: "follower_id")
+}
+
+model games {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  token_game String?   @db.VarChar(255)
+  active     Boolean?  @default(false)
+  event_id   Int?      @db.UnsignedInt
+  created_at DateTime? @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+}
+
+model jobs {
+  id           BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  queue        String @db.VarChar(255)
+  payload      String @db.LongText
+  attempts     Int    @db.UnsignedTinyInt
+  reserved_at  Int?   @db.UnsignedInt
+  available_at Int    @db.UnsignedInt
+  created_at   Int    @db.UnsignedInt
+
+  @@index([queue], map: "jobs_queue_index")
+}
+
+model locations {
+  id             Int       @id @default(autoincrement()) @db.UnsignedInt
+  user_id        Int?      @db.UnsignedInt
+  token          String?   @unique(map: "token") @db.VarChar(255)
+  email          String?   @unique(map: "email") @db.VarChar(50)
+  logo           String?   @db.VarChar(255)
+  vat_number     String?   @db.VarChar(50)
+  fiscal_code    String?   @db.VarChar(50)
+  name           String?   @db.VarChar(255)
+  description    String?   @db.Text
+  address        String?   @db.VarChar(255)
+  phone          String?   @db.VarChar(255)
+  cap            String?   @db.VarChar(255)
+  comune         String?   @db.VarChar(255)
+  provincia      String?   @db.VarChar(255)
+  regione        String?   @db.VarChar(255)
+  coordinates    String?   @db.VarChar(255)
+  token_payment  Int?      @default(0)
+  enable         Boolean   @default(false)
+  created_at     DateTime? @db.Timestamp(0)
+  updated_at     DateTime? @db.Timestamp(0)
+  stripe_account Json?
+  link_instagram String?   @db.VarChar(500)
+  link_whatsapp  String?   @db.VarChar(500)
+  link_facebook  String?   @db.VarChar(500)
+  link_tiktok    String?   @db.VarChar(500)
+
+  events      events[]
+  users       users? @relation(fields: [user_id], references: [id])
+  @@index([user_id], map: "user_id")
+}
+
+model messages {
+  id                  Int       @id @default(autoincrement())
+  sender_id           Int?
+  receiver_id         Int?
+  event_id            Int?
+  message             String?   @db.Text
+  product_id          Int?
+  created_at          DateTime? @db.Timestamp(0)
+  updated_at          DateTime? @db.Timestamp(0)
+  picture             String?   @db.Text
+  read                Int?      @default(0) @db.TinyInt
+  spotify_playlist_id Int?
+
+  @@index([event_id], map: "event_id")
+  @@index([product_id], map: "product_id")
+  @@index([receiver_id], map: "receiver_id")
+  @@index([sender_id], map: "sender_id")
+}
+
+model migrations {
+  id        Int    @id @default(autoincrement()) @db.UnsignedInt
+  migration String @db.VarChar(255)
+  batch     Int
+}
+
+model music_genres {
+  id      Int      @id @default(autoincrement()) @db.UnsignedInt
+  label   String?  @db.VarChar(100)
+  default Boolean?
+
+  event_music_genres       event_music_genres[]
+  user_music_genres        user_music_genres[]
+}
+
+model notifications {
+  id                                     Int                     @id @default(autoincrement()) @db.UnsignedInt
+  sender_id                              Int?                    @db.UnsignedInt
+  receiver_id                            Int?                    @db.UnsignedInt
+  entry_type_id                          Int?
+  product_id                             Int?
+  location_id                            Int?                    @db.UnsignedInt
+  event_id                               Int?
+  category                               notifications_category? @default(acceptances)
+  type                                   String?                 @db.VarChar(50)
+  title                                  String?                 @db.VarChar(255)
+  body                                   Json?
+  message                                String?                 @db.VarChar(100)
+  response                               Boolean?
+  created_at                             DateTime?               @db.Timestamp(0)
+  updated_at                             DateTime?               @db.Timestamp(0)
+  entry_type_label                       String?                 @db.VarChar(50)
+  entry_type_stock                       Int?
+  status                                 notifications_status?   @default(unread)
+  long_message                           String?                 @db.Text
+  genres_min                             String?                 @db.VarChar(50)
+  fairplay_min                           Int?
+  redirect                               notifications_redirect?
+  stock                                  Int?
+  users_notifications_receiver_idTousers users?                  @relation("notifications_receiver_idTousers", fields: [receiver_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK2_evt_receiver_id")
+  users_notifications_sender_idTousers   users?                  @relation("notifications_sender_idTousers", fields: [sender_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ext_sender_id")
+
+  @@index([receiver_id], map: "FK2_evt_receiver_id")
+  @@index([sender_id], map: "FK_ext_sender_id")
+  @@index([entry_type_id], map: "entry_type_id")
+  @@index([location_id], map: "key_location")
+  @@index([product_id], map: "key_product")
+}
+
+model password_reset_tokens {
+  email      String    @id @db.VarChar(255)
+  token      String    @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+}
+
+model personal_access_tokens {
+  id             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  tokenable_type String    @db.VarChar(255)
+  tokenable_id   BigInt    @db.UnsignedBigInt
+  name           String    @db.VarChar(255)
+  token          String    @unique(map: "personal_access_tokens_token_unique") @db.VarChar(64)
+  abilities      String?   @db.Text
+  last_used_at   DateTime? @db.Timestamp(0)
+  expires_at     DateTime? @db.Timestamp(0)
+  created_at     DateTime? @db.Timestamp(0)
+  updated_at     DateTime? @db.Timestamp(0)
+
+  @@index([tokenable_type, tokenable_id], map: "personal_access_tokens_tokenable_type_tokenable_id_index")
+}
+
+model products {
+  id                       Int            @id @default(autoincrement())
+  event_id                 Int?
+  user_id                  Int?
+  old_user_id              Int?
+  category                 String?        @db.VarChar(50)
+  label                    String?        @db.VarChar(50)
+  description              String?        @db.Text
+  stock                    Int?
+  transfer_qnt             Int?
+  created_qnt              Int?
+  created_at               DateTime?      @db.DateTime(0)
+  requested_date           DateTime?      @db.DateTime(0)
+  updated_at               DateTime?      @db.DateTime(0)
+  burned                   Boolean?       @default(false)
+  check_unused             Boolean?       @default(false)
+  price                    Decimal?       @db.Decimal(10, 2)
+  stripe_payment_intent_id String?        @db.VarChar(50)
+  paid                     products_paid? @default(not_paid)
+  entry_type_id            Int?
+  game                     products_game?
+
+  event events? @relation(fields: [event_id], references: [id])
+  @@index([entry_type_id], map: "entry_type_id")
+  @@index([event_id], map: "event_id")
+  @@index([old_user_id], map: "old_user_id")
+  @@index([paid], map: "paid")
+  @@index([user_id], map: "user_id")
+}
+
+model reports {
+  id            Int       @id @default(autoincrement()) @db.UnsignedInt
+  user_id       Int
+  user_reported Int?
+  message       String?   @db.Text
+  created_at    DateTime? @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+}
+
+model spotify_playlist {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  title      String?   @db.VarChar(255)
+  event_id   Int?
+  cover      String?   @db.VarChar(255)
+  subtitle   String?   @db.VarChar(255)
+  updated_at DateTime? @db.Timestamp(0)
+  user_id    Int?
+}
+
+model user_blocks {
+  id           Int      @id @default(autoincrement()) @db.UnsignedInt
+  created_at   DateTime @default(now()) @db.Timestamp(0)
+  sender_id    Int?
+  receviver_id Int?
+  event_id     Int?
+}
+
+model users {
+  id                                             Int             @id @default(autoincrement()) @db.UnsignedInt
+  token                                          String?         @unique(map: "users_token_unique") @db.VarChar(255)
+  email                                          String          @unique(map: "users_email_unique") @db.VarChar(255)
+  nickname                                       String?         @unique(map: "users_nickname_unique") @db.VarChar(255)
+  name                                           String          @db.VarChar(255)
+  surname                                        String?         @db.VarChar(255)
+  email_verified_at                              DateTime?       @db.Timestamp(0)
+  password                                       String?         @db.VarChar(255)
+  remember_token                                 String?         @db.VarChar(100)
+  bio                                            String?         @db.Text
+  music_genres                                   String?         @db.LongText
+  prefix_phone                                   String?         @db.VarChar(255)
+  phone                                          String?         @db.VarChar(255)
+  birthday                                       DateTime?       @db.Date
+  gender                                         users_gender?
+  role                                           users_role      @default(USER)
+  last_access                                    DateTime?       @db.Timestamp(0)
+  visibility                                     Boolean         @default(true)
+  enabled                                        Boolean         @default(true)
+  country                                        String?         @db.VarChar(255)
+  region                                         String?         @db.VarChar(255)
+  city                                           String?         @db.VarChar(255)
+  address                                        String?         @db.VarChar(255)
+  created_at                                     DateTime?       @db.Timestamp(0)
+  updated_at                                     DateTime?       @db.Timestamp(0)
+  reset_token                                    String?         @db.VarChar(255)
+  tags                                           String?         @db.VarChar(255)
+  storage_token                                  String?         @db.VarChar(50)
+  current_token_jwt                              String?         @db.Text
+  picture                                        String?         @db.VarChar(255)
+  highlight                                      String?         @default("red") @db.VarChar(10)
+  fairplay                                       Int?            @default(0) @db.SmallInt
+  fairplay_collaborator                          Int?            @default(0) @db.MediumInt
+  fcm_token                                      String?         @db.VarChar(255)
+  link_instagram                                 String?         @db.VarChar(500)
+  link_tiktok                                    String?         @db.VarChar(500)
+  followers_followers_follower_idTousers         followers[]     @relation("followers_follower_idTousers")
+  followers_followers_followed_idTousers         followers[]     @relation("followers_followed_idTousers")
+  notifications_notifications_receiver_idTousers notifications[] @relation("notifications_receiver_idTousers")
+  notifications_notifications_sender_idTousers   notifications[] @relation("notifications_sender_idTousers")
+
+  collaborators            collaborators[]
+  locations                locations[]
+  user_music_genres        user_music_genres[]
+}
+
+
+model user_music_genres {
+  id            Int          @id @default(autoincrement()) @db.UnsignedInt
+  user_id       Int          @db.UnsignedInt
+  music_genre_id Int         @db.UnsignedInt
+  created_at    DateTime     @default(now()) @db.Timestamp(0)
+  updated_at    DateTime     @updatedAt @db.Timestamp(0)
+  
+  user         users        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  music_genre  music_genres @relation(fields: [music_genre_id], references: [id], onDelete: Cascade)
+  
+
+  @@unique([user_id, music_genre_id])
+  @@index([user_id])
+  @@index([music_genre_id])
+}
+
+model event_music_genres {
+  id            Int          @id @default(autoincrement()) @db.UnsignedInt
+  event_id      Int
+  music_genre_id Int         @db.UnsignedInt
+  created_at    DateTime     @default(now()) @db.Timestamp(0)
+  updated_at    DateTime     @updatedAt @db.Timestamp(0)
+
+  event         events       @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  music_genre   music_genres @relation(fields: [music_genre_id], references: [id], onDelete: Cascade)
+
+  @@unique([event_id, music_genre_id])
+  @@index([event_id])
+  @@index([music_genre_id])
+}
+
+
+enum collaborators_role {
+  admin
+  dj
+  vocalist
+  jukebox
+}
+
+enum entry_types_type {
+  free
+  invite
+}
+
+enum notifications_category {
+  acceptances
+  requests
+}
+
+enum users_gender {
+  M
+  F
+  O
+}
+
+enum events_state {
+  draft
+  published
+}
+
+enum products_paid {
+  not_paid
+  paid
+  pending
+}
+
+enum notifications_status {
+  unread
+  read
+}
+
+enum products_game {
+  snapgame
+}
+
+enum entry_types_gender_owner {
+  F
+  M
+}
+
+enum entry_types_paid {
+  not_paid
+  paid
+  pending
+}
+
+enum notifications_redirect {
+  user
+  event
+  location
+  checkout
+  product
+}
+
+enum users_role {
+  SUPERADMIN
+  ADMIN
+  USER
 }
