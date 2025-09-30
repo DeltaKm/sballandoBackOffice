@@ -137,30 +137,7 @@ export default function CreateEventPage() {
                 cover_preview: objectUrl,
             });
 
-            // Salva il file localmente
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('fileName', fileName);
-
-                const res = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!res.ok) {
-                    throw new Error('Errore nel caricamento del file');
-                }
-
-                // Aggiorna il formData con il percorso del file
-                setFormData(prev => ({
-                    ...prev,
-                    cover_path: filePath
-                }));
-            } catch (error) {
-                console.error('Errore nel caricamento:', error);
-                // Gestisci l'errore come preferisci
-            }
+            
         }
     };
 
@@ -234,7 +211,7 @@ export default function CreateEventPage() {
             }
 
             const data = await res.json();
-            router.push(`/event/${data.id}`);
+            router.push(`/event/${data.event.id}`);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Errore durante la creazione dell'evento");
             console.error(err);

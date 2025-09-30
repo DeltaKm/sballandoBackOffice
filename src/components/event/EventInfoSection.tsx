@@ -14,7 +14,7 @@ export function EventInfoSection({ event }: EventInfoSectionProps) {
       {event.cover && (
         <div className="relative w-full h-[500px] rounded-xl overflow-hidden">
           <img
-            src={`/uploads/events/${event.token}/${event.cover}`}
+            src={`https://webservice.sballando.it/storage/${event.cover}`}
             alt={event.title || 'Event cover'}
             className="w-full h-full object-cover"
           />

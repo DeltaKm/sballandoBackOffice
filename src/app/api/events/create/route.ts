@@ -2,12 +2,8 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import crypto from 'crypto';
 import { EventSchema } from "~/schemas/event";
-import { saveEventFile } from '~/lib/fileUpload';
-// ✅ Usa solo date-fns
+import { uploadEventCover } from '~/lib/sftpUpload';
 import { parseISO, format } from 'date-fns';
-
-// ✅ Installa solo date-fns
-// npm install date-fns
 
 const prisma = new PrismaClient();
 
@@ -28,11 +24,11 @@ export async function POST(req: Request) {
             datetime_start: formData.get('datetime_start') as string,
             datetime_end: formData.get('datetime_end') as string,
             is_public: formData.get('is_public') === 'true',
-            music_genres: musicGenres, // Now it's an array of numbers
+            music_genres: musicGenres,
             location_id: parseInt(formData.get('location_id') as string),
             state: formData.get('state') as 'draft' | 'published',
             user_id: parseInt(formData.get('user_id') as string),
-            cover: formData.get('cover') as File || null,
+            cover: coverFile || null,
         };
 
         // Validate using Zod
@@ -58,15 +54,32 @@ export async function POST(req: Request) {
             .update(Date.now().toString() + Math.random().toString())
             .digest('hex');
 
-        // Salva il file se presente
-        let coverPath = null;
-        if (coverFile) {
+        // ✅ CARICA IL FILE SU SFTP SE PRESENTE
+        let coverData = null;
+        if (coverFile && coverFile.size > 0) {
             try {
-                coverPath = await saveEventFile(coverFile, token);
-            } catch (err) {
-                console.error('Errore nel salvataggio del file:', err);
+                console.log('📤 Uploading cover image to SFTP server...');
+                console.log(`📂 Event token: ${token}`);
+                
+                const uploadResult = await uploadEventCover(coverFile, token);
+                
+                coverData = {
+                    fileName: uploadResult.fileName,
+                    relativePath: uploadResult.relativePath,
+                    // ✅ CORREGGI IL FULL PATH
+                    fullPath: `${process.env.SFTP_UPLOAD_PATH}/images/events/${token}/${uploadResult.fileName}`,
+                    // ✅ AGGIUNGI L'URL PUBBLICO
+                    publicUrl: `${process.env.UPLOADS_BASE_URL}/${uploadResult.relativePath}`
+                };
+                
+                console.log(`✅ Cover image uploaded:`, coverData);
+            } catch (uploadError) {
+                console.error('❌ Error uploading cover image:', uploadError);
                 return NextResponse.json(
-                    { error: 'Errore nel salvataggio del file' },
+                    { 
+                        error: 'Errore nel caricamento dell\'immagine di copertina',
+                        details: uploadError instanceof Error ? uploadError.message : 'Upload failed'
+                    },
                     { status: 500 }
                 );
             }
@@ -76,6 +89,8 @@ export async function POST(req: Request) {
         console.log('Validated Data:', {
             ...validatedData,
             music_genres: JSON.stringify(validatedData.music_genres),
+            cover_uploaded: !!coverData,
+            cover_path: coverData?.relativePath
         });
 
         // Create event and music genre relations in a transaction
@@ -97,24 +112,29 @@ export async function POST(req: Request) {
                     title: validatedData.title,
                     subtitle: validatedData.subtitle,
                     description_extended: validatedData.description_extended,
-                    datetime_start: startDateTime, // ✅ Usa la data corretta
-                    datetime_end: endDateTime,     // ✅ Usa la data corretta
+                    datetime_start: startDateTime,
+                    datetime_end: endDateTime,
                     is_public: validatedData.is_public ? 1 : 0,
                     location_id: validatedData.location_id,
                     state: validatedData.state,
                     user_id: validatedData.user_id,
-                    cover: coverPath, // Salva il percorso completo
+                    cover: coverData?.relativePath || null, // ✅ SALVA IL PATH RELATIVO
                     created_at: now,
                     updated_at: now,
                     token,
                 },
             });
 
-            console.log('Evento creato:', event);
+            console.log('✅ Event created:', {
+                id: event.id,
+                title: event.title,
+                cover: event.cover,
+                token: event.token
+            });
 
             // Create records in event_music_genres one by one
             for (const genreId of validatedData.music_genres) {
-                console.log('Creazione relazione per il genere:', genreId);
+                console.log('🎵 Creating genre relation:', genreId);
                 await tx.event_music_genres.create({
                     data: {
                         event_id: event.id,
@@ -125,28 +145,113 @@ export async function POST(req: Request) {
                 });
             }
 
-            return { event };
+            // ✅ RECUPERA L'EVENTO COMPLETO CON TUTTE LE RELAZIONI
+            const completeEvent = await tx.events.findUnique({
+                where: { id: event.id },
+                include: {
+                    entry_types: true,
+                    event_music_genres: {
+                        include: {
+                            music_genre: true,
+                        },
+                    },
+                    collaborators: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    surname: true,
+                                    nickname: true,
+                                    email: true,
+                                }
+                            },
+                        },
+                    },
+                    products: true,
+                    location_: {
+                        select: {
+                            id: true,
+                            name: true,
+                            address: true,
+                            cap: true,
+                        }
+                    },
+                },
+            });
+
+            if (!completeEvent) {
+                throw new Error('Errore nel recupero dell\'evento appena creato');
+            }
+
+            return { event: completeEvent };
         });
 
-        return NextResponse.json(result.event);
+        // ✅ AGGIUNGI INFORMAZIONI AGGIUNTIVE ALL'EVENTO COMPLETO
+        const enhancedEvent = {
+            ...result.event,
+            // ✅ URL COMPLETO DELLA COVER
+            cover_url: coverData 
+                ? `${process.env.UPLOADS_BASE_URL}/${coverData.relativePath}`
+                : null,
+            
+            // ✅ INFORMAZIONI AGGIUNTIVE UTILI PER IL FRONTEND
+
+            // ✅ INFORMAZIONI TEMPORALI FORMATTATE
+
+            
+            // ✅ INFORMAZIONI UPLOAD (se presente)
+            upload_info: coverData ? {
+                uploaded: true,
+                file_name: coverData.fileName,
+                relative_path: coverData.relativePath,
+                full_server_path: coverData.fullPath,
+                public_url: `${process.env.UPLOADS_BASE_URL}/${coverData.relativePath}`,
+                server_directory: `${process.env.SFTP_UPLOAD_PATH}/events/${result.event.token}/`
+            } : { 
+                uploaded: false 
+            }
+        };
+
+        // ✅ LOG DETTAGLIATO DEL RISULTATO
+        console.log('🎉 Event creation completed:', {
+            event_id: result.event.id,
+            title: result.event.title,
+            token: result.event.token,
+            has_cover: !!coverData,
+            state: result.event.state,
+            is_public: !!result.event.is_public
+        });
+
+        return NextResponse.json({
+            success: true,
+            message: 'Evento creato con successo',
+            event: enhancedEvent,
+            // ✅ INFORMAZIONI AGGIUNTIVE PER DEBUG/FRONTEND
+            creation_summary: {
+                event_id: result.event.id,
+                token: result.event.token,
+                created_at: result.event.created_at.toISOString(),
+                has_cover_image: !!coverData,
+                music_genres_count: result.event.music_genres?.length,
+                location_id: result.event.location_id,
+                creator_id: result.event.user_id,
+                state: result.event.state
+            }
+        });
 
     } catch (error) {
         // Log dettagliato dell'errore
-        if (typeof error === 'object' && error !== null) {
-            console.error('Detailed error:', {
-                name: (error as { name?: string }).name,
-                message: (error as { message?: string }).message,
-                stack: (error as { stack?: string }).stack,
-                cause: (error as { cause?: unknown }).cause,
-            });
-        } else {
-            console.error('Detailed error:', { error });
-        }
+        console.error('❌ Event creation error:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
+        });
 
         return NextResponse.json(
             { 
+                success: false,
                 error: 'Failed to create event',
-                details: typeof error === 'object' && error !== null && 'message' in error ? (error as { message?: string }).message : String(error)
+                details: error instanceof Error ? error.message : String(error)
             },
             { status: 500 }
         );
