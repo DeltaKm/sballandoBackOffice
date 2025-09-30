@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const [tables] = await connection.execute('SHOW TABLES LIKE "users"');
     console.log('Tables found:', tables);
     
-    if (!tables || tables.length === 0) {
+    if (!tables) {
       throw new Error('Table "users" not found');
     }
     
@@ -53,17 +53,10 @@ export async function GET(request: NextRequest) {
       LIMIT 5
     `, [searchTerm]);
 
-    console.log('Query executed successfully, rows found:', rows.length);
-    console.log('Sample data:', rows);
 
     return NextResponse.json(rows);
     
-  } catch (error) {
-    console.error("=== ERROR DETAILS ===");
-    console.error("Error message:", error.message);
-    console.error("Error code:", error.code);
-    console.error("Error stack:", error.stack);
-    
+  } catch (error: any) {
     return NextResponse.json(
       { 
         error: "Errore durante la ricerca degli utenti",

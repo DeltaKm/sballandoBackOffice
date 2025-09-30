@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
         },
         entry_types: true,
         products: true,
-        location: true
+        location_: true
       }
     });
 
@@ -335,7 +335,7 @@ export async function DELETE(request: NextRequest) {
         },
         entry_types: true,
         products: true,
-        location: true
+        location_: true
       }
     });
 
@@ -354,41 +354,3 @@ export async function DELETE(request: NextRequest) {
     await prisma.$disconnect();
   }
 }
-
-const handleToggleGenre = async (genreId: number, isRemoving: boolean = false) => {
-  if (!user?.token) {
-    alert('Devi essere loggato per modificare i generi musicali');
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const res = await fetch(`/api/music-genres/add-event`, {
-      method: isRemoving ? 'DELETE' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        event_id: event.id,
-        music_genre_id: genreId,
-        user_token: user.token 
-      }),
-    });
-
-    if (res.ok) {
-      const updatedEvent = await res.json();
-      onUpdate?.(updatedEvent);
-      
-      // Se abbiamo aggiunto un genere, aggiorna i risultati di ricerca
-      if (!isRemoving) {
-        searchGenres();
-      }
-    } else {
-      const error = await res.json();
-      alert(error.error || 'Errore durante l\'operazione');
-    }
-  } catch (err) {
-    console.error('Error updating genre:', err);
-    alert('Errore di connessione');
-  } finally {
-    setLoading(false);
-  }
-};

@@ -8,7 +8,7 @@ export const EventSchema = z.object({
     subtitle: z.string().min(3, "Il sottotitolo deve avere almeno 3 caratteri"),
 
     // ID del locale, deve essere un numero intero positivo
-    location_id: z.number().int().positive("Location ID non valido"),
+    location_id: z.number().int().positive("location_ ID non valido"),
 
     // ID dell'utente che crea l'evento
     user_id: z.number().int().positive("User ID non valido"),

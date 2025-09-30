@@ -4,13 +4,13 @@ import { useEffect, useState, use } from "react";
 import { useAuthStore } from "~/store/auth";
 import Link from "next/link";
 import { EventCard } from "~/components/EventCard";
-import type { Location, Event } from "~/types";
+import type { location_, Event } from "~/types";
 
-export default function LocationPage({ params }: { params: Promise<{ id: string }> }) {
+export default function locationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const user = useAuthStore((state) => state.user);
 
-  const [location, setLocation] = useState<Location & { events: Event[] } | null>(null);
+  const [location_, setlocation] = useState<location_ & { events: Event[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +26,7 @@ export default function LocationPage({ params }: { params: Promise<{ id: string 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_token: user.token }),
     })
-      .then(async (res) => { 
+      .then(async (res) => {
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || "Errore nel caricamento");
@@ -34,12 +34,12 @@ export default function LocationPage({ params }: { params: Promise<{ id: string 
         return res.json();
       })
       .then((data) => {
-        setLocation(data);
+        setlocation(data);
         setError(null);
       })
       .catch((err) => {
         setError(err.message);
-        setLocation(null);
+        setlocation(null);
       })
       .finally(() => {
         setLoading(false);
@@ -73,7 +73,7 @@ export default function LocationPage({ params }: { params: Promise<{ id: string 
     );
   }
 
-  if (!location) {
+  if (!location_) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
@@ -84,15 +84,15 @@ export default function LocationPage({ params }: { params: Promise<{ id: string 
   }
 
   const now = new Date();
-  const futureEvents = Array.isArray(location.events)
-    ? location.events.filter(e => {
+  const futureEvents = Array.isArray(location_.events)
+    ? location_.events.filter(e => {
         const eventDate = new Date(e.datetime_start || "");
         return eventDate >= now;
       })
     : [];
 
-  const pastEvents = Array.isArray(location.events)
-    ? location.events.filter(e => {
+  const pastEvents = Array.isArray(location_.events)
+    ? location_.events.filter(e => {
         const eventDate = new Date(e.datetime_start || "");
         return eventDate < now;
       })
@@ -104,20 +104,20 @@ export default function LocationPage({ params }: { params: Promise<{ id: string 
         {/* Header locale */}
         <div className="mb-8">
           <div className="flex items-start gap-6 mb-6">
-            {location.cover && (
+            {location_.cover && (
               <img
-                src={location.cover}
-                alt={location.name}
+                src={location_.cover}
+                alt={location_.name}
                 className="w-32 h-32 object-cover rounded-lg border border-white/20"
               />
             )}
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-white mb-2">{location.name}</h1>
+              <h1 className="text-3xl font-bold text-white mb-2">{location_.name}</h1>
               <p className="text-white/80 text-lg mb-2">
-                📍 {location.address}{location.city && `, ${location.city}`}
+                📍 {location_.address}{location_.city && `, ${location_.city}`}
               </p>
-              {location.description && (
-                <p className="text-white/60">{location.description}</p>
+              {location_.description && (
+                <p className="text-white/60">{location_.description}</p>
               )}
             </div>
           </div>
@@ -125,7 +125,7 @@ export default function LocationPage({ params }: { params: Promise<{ id: string 
           {/* Statistiche */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="p-4 bg-white/5 border border-white/10 rounded-lg text-center">
-              <div className="text-2xl font-bold text-[#FC0045]">{location.events.length}</div>
+              <div className="text-2xl font-bold text-[#FC0045]">{location_.events.length}</div>
               <div className="text-white/60 text-sm">Eventi Totali</div>
             </div>
             <div className="p-4 bg-white/5 border border-white/10 rounded-lg text-center">

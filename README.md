@@ -2,7 +2,7 @@
 
 ## Tipi e Modelli
 
-- **Usa sempre i tipi TypeScript definiti in `/src/types/index.ts`** per tutte le entità (Event, Location, Product, EntryType, Collaborator, ecc).
+- **Usa sempre i tipi TypeScript definiti in `/src/types/index.ts`** per tutte le entità (Event, location_, Product, EntryType, Collaborator, ecc).
 - **Non ridefinire mai i tipi nelle pagine o nei componenti**: importa sempre da `~/types`.
 - Se aggiungi un nuovo campo o modello, aggiorna prima `/src/types/index.ts`.
 

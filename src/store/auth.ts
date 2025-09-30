@@ -7,7 +7,7 @@ interface User {
   surname: string;
   role: string;
   is_super_admin: boolean;
-  token: string; // Assicurati che questo campo ci sia
+  token: string;
 }
 
 interface AuthStore {
@@ -18,7 +18,7 @@ interface AuthStore {
 }
 
 // Funzioni helper per localStorage
-function saveUserToStorage(user: any) {
+function saveUserToStorage(user: User) {
   if (typeof window !== 'undefined') {
     localStorage.setItem('user_data', JSON.stringify(user));
   }
@@ -73,8 +73,8 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
       });
 
       if (res.ok) {
-        const userData = await res.json();
-        set({ user: userData });
+        const userData = (await res.json()) as { user: User };
+        set({ user: userData.user });
       } else {
         // Token non valido, rimuovi tutto
         get().logout();

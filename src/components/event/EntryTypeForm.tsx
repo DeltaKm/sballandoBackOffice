@@ -104,6 +104,143 @@ interface EntryTypeFormProps {
   onCancel: () => void;
 }
 
+const QUICK_TEMPLATES = [
+  {
+    id: 'pista',
+    name: '🕺 Ingresso Pista',
+    icon: '🎪',
+    color: 'from-purple-500 to-pink-500',
+    data: {
+      label: "Ingresso Pista",
+      description: "Accesso alla pista da ballo principale",
+      category: "Standard",
+      type: "free" as const,
+      quantity: "100",
+      price: "15.00",
+      seats: 4,
+      fairplay_min: "0",
+      gender_min_enabled: false,
+      gender_min_type: "",
+      gender_min_quantity: 1,
+      consumations: [
+        { label: "Drink di Benvenuto", description: "Un cocktail a scelta", category: "Bevande" }
+      ]
+    }
+  },
+  {
+    id: 'vip',
+    name: '✨ Tavolo VIP',
+    icon: '👑',
+    color: 'from-yellow-500 to-orange-500',
+    data: {
+      label: "Tavolo VIP",
+      description: "Tavolo riservato in zona premium con servizio dedicato",
+      category: "VIP",
+      type: "invite" as const,
+      quantity: "10",
+      price: "80.00",
+      seats: 6,
+      fairplay_min: "20",
+      gender_min_enabled: true,
+      gender_min_type: "female",
+      gender_min_quantity: 2,
+      consumations: [
+        { label: "Bottiglia Premium", description: "Bottiglia di champagne o vodka", category: "Alcolici" },
+        { label: "Mixers & Frutta", description: "Accompagnamento per cocktail", category: "Bevande" }
+      ]
+    }
+  },
+  {
+    id: 'privee',
+    name: '🌟 Privée',
+    icon: '🏆',
+    color: 'from-red-500 to-purple-600',
+    data: {
+      label: "Privée Exclusive",
+      description: "Area privata con servizio di lusso",
+      category: "Luxury",
+      type: "invite" as const,
+      quantity: "3",
+      price: "200.00",
+      seats: 8,
+      fairplay_min: "50",
+      gender_min_enabled: true,
+      gender_min_type: "female",
+      gender_min_quantity: 3,
+      consumations: [
+        { label: "Champagne Dom Pérignon", description: "Bottiglia premium", category: "Champagne" },
+        { label: "Selezione Sushi", description: "Piatto gourmet", category: "Cibo" },
+        { label: "Hostess Dedicata", description: "Servizio personalizzato", category: "Servizi" }
+      ]
+    }
+  },
+  {
+    id: 'aperitivo',
+    name: '🍸 Aperitivo',
+    icon: '🥂',
+    color: 'from-blue-500 to-teal-500',
+    data: {
+      label: "Aperitivo Pre-Serata",
+      description: "Ingresso per l'aperitivo dalle 19:00 alle 23:00",
+      category: "Aperitivo",
+      type: "free" as const,
+      quantity: "50",
+      price: "25.00",
+      seats: 2,
+      fairplay_min: "0",
+      gender_min_enabled: false,
+      gender_min_type: "",
+      gender_min_quantity: 1,
+      consumations: [
+        { label: "Cocktail", description: "2 cocktail a scelta", category: "Bevande" },
+        { label: "Stuzzichini", description: "Selezione di finger food", category: "Cibo" }
+      ]
+    }
+  },
+  {
+    id: 'student',
+    name: '🎓 Studenti',
+    icon: '📚',
+    color: 'from-green-500 to-blue-500',
+    data: {
+      label: "Ingresso Studenti",
+      description: "Tariffa agevolata per studenti universitari",
+      category: "Student",
+      type: "free" as const,
+      quantity: "80",
+      price: "10.00",
+      seats: 2,
+      fairplay_min: "0",
+      gender_min_enabled: false,
+      gender_min_type: "",
+      gender_min_quantity: 1,
+      consumations: [
+        { label: "Shot di Benvenuto", description: "Shot della casa", category: "Bevande" }
+      ]
+    }
+  },
+  {
+    id: 'liste',
+    name: '📝 Lista',
+    icon: '📋',
+    color: 'from-indigo-500 to-purple-500',
+    data: {
+      label: "Ingresso in Lista",
+      description: "Ingresso gratuito per chi è in lista fino alle 24:00",
+      category: "Lista",
+      type: "free" as const,
+      quantity: "200",
+      price: "0.00",
+      seats: 1,
+      fairplay_min: "0",
+      gender_min_enabled: true,
+      gender_min_type: "female",
+      gender_min_quantity: 1,
+      consumations: []
+    }
+  }
+];
+
 export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormProps) {
   const [loading, setLoading] = useState(false);
   const user = useAuthStore((state) => state.user);
@@ -130,6 +267,23 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
     description: "",
     category: ""
   });
+
+  const [showTemplates, setShowTemplates] = useState(true);
+
+  const applyTemplate = (template: typeof QUICK_TEMPLATES[0]) => {
+    console.log('🎯 Applying template:', template.name);
+    setFormData(template.data);
+    setErrors({});
+    setShowTemplates(false);
+    
+    // Scroll to form
+    setTimeout(() => {
+      const formElement = document.querySelector('form');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
 
   const validateForm = () => {
     console.log('🔍 Validating form data:', formData);
@@ -257,7 +411,6 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
         body: JSON.stringify(payload),
       });
 
-      console.log('📥 Response status:', res.status);
       
       if (res.ok) {
         const updatedEvent = await res.json();
@@ -316,366 +469,495 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6 p-6 bg-white/5 border border-white/10 rounded-lg space-y-6">
-      {errors.general && (
-        <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
-          <p className="text-red-400 text-sm">{errors.general}</p>
+    <div className="space-y-6">
+      {/* Quick Templates Section */}
+      {showTemplates && (
+        <div className="mb-6 p-6 bg-gradient-to-r from-gray-800/50 to-gray-700/50 border border-white/10 rounded-xl">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h4 className="text-xl font-bold text-white flex items-center gap-2">
+                ⚡ Compilazione Veloce
+              </h4>
+              <p className="text-white/60 text-sm mt-1">
+                Scegli un template predefinito e personalizzalo secondo le tue esigenze
+              </p>
+            </div>
+            <button
+              onClick={() => setShowTemplates(false)}
+              className="text-white/60 hover:text-white transition-colors"
+              title="Nascondi template"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {QUICK_TEMPLATES.map((template) => (
+              <button
+                key={template.id}
+                onClick={() => applyTemplate(template)}
+                className={`group relative overflow-hidden rounded-lg border border-white/20 bg-gradient-to-r ${template.color} p-1 hover:scale-105 transition-all duration-300`}
+              >
+                <div className="relative bg-gray-900/80 backdrop-blur rounded-md p-4 h-full">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-3xl">{template.icon}</span>
+                    <div className="text-left">
+                      <h5 className="font-semibold text-white text-sm leading-tight">
+                        {template.name}
+                      </h5>
+                      <p className="text-white/60 text-xs">
+                        {template.data.seats} posti • €{template.data.price}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-white/70 text-xs mb-3 line-clamp-2">
+                    {template.data.description}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    <span className="px-2 py-1 bg-white/10 rounded-full text-white/80 text-xs">
+                      {template.data.category}
+                    </span>
+                    <span className="px-2 py-1 bg-white/10 rounded-full text-white/80 text-xs">
+                      {template.data.type === 'free' ? 'Libero' : 'Solo Invito'}
+                    </span>
+                    {template.data.consumations.length > 0 && (
+                      <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs">
+                        {template.data.consumations.length} consumazioni
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md flex items-center justify-center">
+                    <span className="text-white font-medium text-sm bg-black/50 px-3 py-1 rounded-full">
+                      Clicca per usare
+                    </span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => setShowTemplates(false)}
+              className="text-white/60 hover:text-white text-sm underline transition-colors"
+            >
+              Oppure crea da zero senza template
+            </button>
+          </div>
         </div>
       )}
 
-      <div>
-        <h4 className="text-white font-medium mb-4">Informazioni Base</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-white/80 text-sm mb-2">Nome Ingresso *</label>
-            <input
-              type="text"
-              value={formData.label}
-              onChange={(e) => {
-                setFormData({ ...formData, label: e.target.value });
-                clearError('label');
-              }}
-              placeholder="es. VIP, Standard, Early Bird..."
-              className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 ${
-                errors.label 
-                  ? 'border-red-500 focus:ring-red-500' 
-                  : 'border-white/20 focus:ring-[#FC0045]'
-              }`}
-            />
-            {errors.label && (
-              <p className="text-red-400 text-sm mt-1">{errors.label}</p>
-            )}
-          </div>
-          
-          <div>
-            <label className="block text-white/80 text-sm mb-2">Categoria</label>
-            <input
-              type="text"
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              placeholder="es. Premium, Standard..."
-              className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 ${
-                errors.category 
-                  ? 'border-red-500 focus:ring-red-500' 
-                  : 'border-white/20 focus:ring-[#FC0045]'
-              }`}
-            />
-            {errors.category && (
-              <p className="text-red-400 text-sm mt-1">{errors.category}</p>
-            )}
-          </div>
-          
-          <div className="md:col-span-2">
-            <label className="block text-white/80 text-sm mb-2">Descrizione</label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Descrizione dettagliata dell'ingresso..."
-              rows={3}
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FC0045]"
-            />
-          </div>
+      {/* Show templates button when hidden */}
+      {!showTemplates && (
+        <div className="mb-4 text-center">
+          <button
+            onClick={() => setShowTemplates(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white transition-colors"
+          >
+            ⚡ Mostra Template Veloci
+          </button>
         </div>
-      </div>
+      )}
 
-      <div>
-        <h4 className="text-white font-medium mb-4">Tipo e Prezzo</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-white/80 text-sm mb-2">Tipo</label>
-            <select
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as "free" | "invite" })}
-              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#FC0045]"
-            >
-              <option value="free">Gratuito</option>
-              <option value="invite">Solo Invito</option>
-            </select>
+      {/* Original Form */}
+      <form onSubmit={handleSubmit} className="p-6 bg-white/5 border border-white/10 rounded-lg space-y-6">
+        {/* Form content remains exactly the same */}
+        {errors.general && (
+          <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
+            <p className="text-red-400 text-sm">{errors.general}</p>
           </div>
-          
-          <div>
-            <label className="block text-white/80 text-sm mb-2">Quantità</label>
-            <input
-              type="number"
-              value={formData.quantity}
-              onChange={(e) => {
-                setFormData({ ...formData, quantity: e.target.value });
-                clearError('quantity');
-              }}
-              placeholder="Illimitato se vuoto"
-              className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 ${
-                errors.quantity 
-                  ? 'border-red-500 focus:ring-red-500' 
-                  : 'border-white/20 focus:ring-[#FC0045]'
-              }`}
-            />
-            {errors.quantity && (
-              <p className="text-red-400 text-sm mt-1">{errors.quantity}</p>
-            )}
-          </div>
-          
-          <div>
-            <label className="block text-white/80 text-sm mb-2">Prezzo (€)</label>
-            <input
-              type="number"
-              step="0.01"
-              value={formData.price}
-              onChange={(e) => {
-                setFormData({ ...formData, price: e.target.value });
-                clearError('price');
-              }}
-              placeholder="0.00"
-              className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 ${
-                errors.price 
-                  ? 'border-red-500 focus:ring-red-500' 
-                  : 'border-white/20 focus:ring-[#FC0045]'
-              }`}
-            />
-            {errors.price && (
-              <p className="text-red-400 text-sm mt-1">{errors.price}</p>
-            )}
-          </div>
-        </div>
-      </div>
+        )}
 
-      <div>
-        <h4 className="text-white font-medium mb-4">Configurazione</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-white/80 text-sm mb-2">Posti a Sedere *</label>
-            <select
-              value={formData.seats}
-              onChange={(e) => {
-                setFormData({ ...formData, seats: parseInt(e.target.value) });
-                clearError('seats');
-              }}
-              className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white focus:outline-none focus:ring-2 ${
-                errors.seats 
-                  ? 'border-red-500 focus:ring-red-500' 
-                  : 'border-white/20 focus:ring-[#FC0045]'
-              }`}
-            >
-              {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
-                <option key={num} value={num}>{num}</option>
-              ))}
-            </select>
-            {errors.seats && (
-              <p className="text-red-400 text-sm mt-1">{errors.seats}</p>
-            )}
+        {/* Applied Template Indicator */}
+        {!showTemplates && formData.label && (
+          <div className="p-3 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+            <p className="text-blue-300 text-sm flex items-center gap-2">
+              ⚡ Template applicato: <strong>{formData.label}</strong>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({
+                    label: "",
+                    description: "",
+                    category: "",
+                    type: "free",
+                    quantity: "",
+                    price: "",
+                    seats: 1,
+                    fairplay_min: "",
+                    gender_min_enabled: false,
+                    gender_min_type: "",
+                    gender_min_quantity: 1,
+                    consumations: []
+                  });
+                  setShowTemplates(true);
+                }}
+                className="text-blue-300 hover:text-blue-200 underline"
+              >
+                Resetta
+              </button>
+            </p>
           </div>
-          
-          <div>
-            <label className="block text-white/80 text-sm mb-2">Fairplay Minimo</label>
-            <input
-              type="number"
-              value={formData.fairplay_min}
-              onChange={(e) => {
-                setFormData({ ...formData, fairplay_min: e.target.value });
-                clearError('fairplay_min');
-              }}
-              placeholder="0"
-              className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 ${
-                errors.fairplay_min 
-                  ? 'border-red-500 focus:ring-red-500' 
-                  : 'border-white/20 focus:ring-[#FC0045]'
-              }`}
-            />
-            {errors.fairplay_min && (
-              <p className="text-red-400 text-sm mt-1">{errors.fairplay_min}</p>
-            )}
-          </div>
-        </div>
-      </div>
+        )}
 
-      <div>
-        <div className="flex items-center gap-3 mb-4">
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.gender_min_enabled}
-              onChange={(e) => {
-                setFormData({ ...formData, gender_min_enabled: e.target.checked });
-                if (!e.target.checked) {
-                  clearError('gender_min_type');
-                  clearError('gender_min_quantity');
-                }
-              }}
-              className="sr-only"
-            />
-            <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.gender_min_enabled ? 'bg-[#FC0045]' : 'bg-white/20'}`}>
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.gender_min_enabled ? 'translate-x-6' : 'translate-x-1'}`} />
-            </div>
-          </label>
-          <span className="text-white font-medium">Genere Minimo</span>
-        </div>
-        
-        {formData.gender_min_enabled && (
+        {/* Rest of the form remains exactly the same */}
+        <div>
+          <h4 className="text-white font-medium mb-4">Informazioni Base</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-white/80 text-sm mb-2">Tipo Genere *</label>
-              <select
-                value={formData.gender_min_type}
+              <label className="block text-white/80 text-sm mb-2">Nome Ingresso *</label>
+              <input
+                type="text"
+                value={formData.label}
                 onChange={(e) => {
-                  setFormData({ ...formData, gender_min_type: e.target.value });
-                  clearError('gender_min_type');
+                  setFormData({ ...formData, label: e.target.value });
+                  clearError('label');
                 }}
-                className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white focus:outline-none focus:ring-2 ${
-                  errors.gender_min_type 
+                placeholder="es. VIP, Standard, Early Bird..."
+                className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 ${
+                  errors.label 
                     ? 'border-red-500 focus:ring-red-500' 
                     : 'border-white/20 focus:ring-[#FC0045]'
                 }`}
-              >
-                <option value="">Seleziona genere</option>
-                <option value="male">Maschio</option>
-                <option value="female">Femmina</option>
-                <option value="other">Altro</option>
-              </select>
-              {errors.gender_min_type && (
-                <p className="text-red-400 text-sm mt-1">{errors.gender_min_type}</p>
+              />
+              {errors.label && (
+                <p className="text-red-400 text-sm mt-1">{errors.label}</p>
               )}
             </div>
             
             <div>
-              <label className="block text-white/80 text-sm mb-2">Quantità Minima</label>
+              <label className="block text-white/80 text-sm mb-2">Categoria</label>
+              <input
+                type="text"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                placeholder="es. Premium, Standard..."
+                className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 ${
+                  errors.category 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-white/20 focus:ring-[#FC0045]'
+                }`}
+              />
+              {errors.category && (
+                <p className="text-red-400 text-sm mt-1">{errors.category}</p>
+              )}
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-white/80 text-sm mb-2">Descrizione</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Descrizione dettagliata dell'ingresso..."
+                rows={3}
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FC0045]"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="text-white font-medium mb-4">Tipo e Prezzo</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-white/80 text-sm mb-2">Tipo</label>
               <select
-                value={formData.gender_min_quantity}
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as "free" | "invite" })}
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#FC0045]"
+              >
+                <option value="free">Gratuito</option>
+                <option value="invite">Solo Invito</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-white/80 text-sm mb-2">Quantità</label>
+              <input
+                type="number"
+                value={formData.quantity}
                 onChange={(e) => {
-                  setFormData({ ...formData, gender_min_quantity: parseInt(e.target.value) });
-                  clearError('gender_min_quantity');
+                  setFormData({ ...formData, quantity: e.target.value });
+                  clearError('quantity');
+                }}
+                placeholder="Illimitato se vuoto"
+                className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 ${
+                  errors.quantity 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-white/20 focus:ring-[#FC0045]'
+                }`}
+              />
+              {errors.quantity && (
+                <p className="text-red-400 text-sm mt-1">{errors.quantity}</p>
+              )}
+            </div>
+            
+            <div>
+              <label className="block text-white/80 text-sm mb-2">Prezzo (€)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => {
+                  setFormData({ ...formData, price: e.target.value });
+                  clearError('price');
+                }}
+                placeholder="0.00"
+                className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 ${
+                  errors.price 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-white/20 focus:ring-[#FC0045]'
+                }`}
+              />
+              {errors.price && (
+                <p className="text-red-400 text-sm mt-1">{errors.price}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="text-white font-medium mb-4">Configurazione</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-white/80 text-sm mb-2">Posti a Sedere *</label>
+              <select
+                value={formData.seats}
+                onChange={(e) => {
+                  setFormData({ ...formData, seats: parseInt(e.target.value) });
+                  clearError('seats');
                 }}
                 className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white focus:outline-none focus:ring-2 ${
-                  errors.gender_min_quantity 
+                  errors.seats 
                     ? 'border-red-500 focus:ring-red-500' 
                     : 'border-white/20 focus:ring-[#FC0045]'
                 }`}
               >
-                {Array.from({ length: formData.seats }, (_, i) => i + 1).map(num => (
+                {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
                   <option key={num} value={num}>{num}</option>
                 ))}
               </select>
-              {errors.gender_min_quantity && (
-                <p className="text-red-400 text-sm mt-1">{errors.gender_min_quantity}</p>
+              {errors.seats && (
+                <p className="text-red-400 text-sm mt-1">{errors.seats}</p>
+              )}
+            </div>
+            
+            <div>
+              <label className="block text-white/80 text-sm mb-2">Fairplay Minimo</label>
+              <input
+                type="number"
+                value={formData.fairplay_min}
+                onChange={(e) => {
+                  setFormData({ ...formData, fairplay_min: e.target.value });
+                  clearError('fairplay_min');
+                }}
+                placeholder="0"
+                className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 ${
+                  errors.fairplay_min 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-white/20 focus:ring-[#FC0045]'
+                }`}
+              />
+              {errors.fairplay_min && (
+                <p className="text-red-400 text-sm mt-1">{errors.fairplay_min}</p>
               )}
             </div>
           </div>
-        )}
-      </div>
-
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h4 className="text-white font-medium">Consumazioni Incluse</h4>
-          <button
-            type="button"
-            onClick={() => setShowConsumationForm(true)}
-            disabled={formData.consumations.length >= 10}
-            className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            ➕ Aggiungi Consumazione
-          </button>
         </div>
 
-        {errors.consumations && (
-          <p className="text-red-400 text-sm mb-2">{errors.consumations}</p>
-        )}
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.gender_min_enabled}
+                onChange={(e) => {
+                  setFormData({ ...formData, gender_min_enabled: e.target.checked });
+                  if (!e.target.checked) {
+                    clearError('gender_min_type');
+                    clearError('gender_min_quantity');
+                  }
+                }}
+                className="sr-only"
+              />
+              <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.gender_min_enabled ? 'bg-[#FC0045]' : 'bg-white/20'}`}>
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.gender_min_enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+              </div>
+            </label>
+            <span className="text-white font-medium">Genere Minimo</span>
+          </div>
+          
+          {formData.gender_min_enabled && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-white/80 text-sm mb-2">Tipo Genere *</label>
+                <select
+                  value={formData.gender_min_type}
+                  onChange={(e) => {
+                    setFormData({ ...formData, gender_min_type: e.target.value });
+                    clearError('gender_min_type');
+                  }}
+                  className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white focus:outline-none focus:ring-2 ${
+                    errors.gender_min_type 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : 'border-white/20 focus:ring-[#FC0045]'
+                  }`}
+                >
+                  <option value="">Seleziona genere</option>
+                  <option value="male">Maschio</option>
+                  <option value="female">Femmina</option>
+                  <option value="other">Altro</option>
+                </select>
+                {errors.gender_min_type && (
+                  <p className="text-red-400 text-sm mt-1">{errors.gender_min_type}</p>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-white/80 text-sm mb-2">Quantità Minima</label>
+                <select
+                  value={formData.gender_min_quantity}
+                  onChange={(e) => {
+                    setFormData({ ...formData, gender_min_quantity: parseInt(e.target.value) });
+                    clearError('gender_min_quantity');
+                  }}
+                  className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white focus:outline-none focus:ring-2 ${
+                    errors.gender_min_quantity 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : 'border-white/20 focus:ring-[#FC0045]'
+                  }`}
+                >
+                  {Array.from({ length: formData.seats }, (_, i) => i + 1).map(num => (
+                    <option key={num} value={num}>{num}</option>
+                  ))}
+                </select>
+                {errors.gender_min_quantity && (
+                  <p className="text-red-400 text-sm mt-1">{errors.gender_min_quantity}</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
-        {formData.consumations.length > 0 && (
-          <div className="space-y-2 mb-4">
-            {formData.consumations.map((consumation, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                <div>
-                  <span className="text-white font-medium">{consumation.label}</span>
-                  {consumation.category && (
-                    <span className="ml-2 px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">
-                      {consumation.category}
-                    </span>
-                  )}
-                  {consumation.description && (
-                    <p className="text-white/60 text-sm mt-1">{consumation.description}</p>
-                  )}
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h4 className="text-white font-medium">Consumazioni Incluse</h4>
+            <button
+              type="button"
+              onClick={() => setShowConsumationForm(true)}
+              disabled={formData.consumations.length >= 10}
+              className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ➕ Aggiungi Consumazione
+            </button>
+          </div>
+
+          {errors.consumations && (
+            <p className="text-red-400 text-sm mb-2">{errors.consumations}</p>
+          )}
+
+          {formData.consumations.length > 0 && (
+            <div className="space-y-2 mb-4">
+              {formData.consumations.map((consumation, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                  <div>
+                    <span className="text-white font-medium">{consumation.label}</span>
+                    {consumation.category && (
+                      <span className="ml-2 px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">
+                        {consumation.category}
+                      </span>
+                    )}
+                    {consumation.description && (
+                      <p className="text-white/60 text-sm mt-1">{consumation.description}</p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveConsumation(index)}
+                    className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs hover:bg-red-500/30 transition-colors"
+                  >
+                    Rimuovi
+                  </button>
                 </div>
+              ))}
+            </div>
+          )}
+
+          {showConsumationForm && (
+            <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
+              <h5 className="text-white font-medium mb-3">Nuova Consumazione</h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-white/80 text-sm mb-1">Nome *</label>
+                  <input
+                    type="text"
+                    value={consumationFormData.label}
+                    onChange={(e) => setConsumationFormData({ ...consumationFormData, label: e.target.value })}
+                    placeholder="es. Drink, Appetizer..."
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FC0045]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/80 text-sm mb-1">Categoria</label>
+                  <input
+                    type="text"
+                    value={consumationFormData.category}
+                    onChange={(e) => setConsumationFormData({ ...consumationFormData, category: e.target.value })}
+                    placeholder="es. Bevande, Cibo..."
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FC0045]"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-white/80 text-sm mb-1">Descrizione</label>
+                  <input
+                    type="text"
+                    value={consumationFormData.description}
+                    onChange={(e) => setConsumationFormData({ ...consumationFormData, description: e.target.value })}
+                    placeholder="Descrizione della consumazione..."
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FC0045]"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-3">
                 <button
                   type="button"
-                  onClick={() => handleRemoveConsumation(index)}
-                  className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs hover:bg-red-500/30 transition-colors"
+                  onClick={() => setShowConsumationForm(false)}
+                  className="px-3 py-1 bg-white/10 text-white rounded text-sm hover:bg-white/20 transition-colors"
                 >
-                  Rimuovi
+                  Annulla
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddConsumation}
+                  className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
+                >
+                  Aggiungi
                 </button>
               </div>
-            ))}
-          </div>
-        )}
-
-        {showConsumationForm && (
-          <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
-            <h5 className="text-white font-medium mb-3">Nuova Consumazione</h5>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-white/80 text-sm mb-1">Nome *</label>
-                <input
-                  type="text"
-                  value={consumationFormData.label}
-                  onChange={(e) => setConsumationFormData({ ...consumationFormData, label: e.target.value })}
-                  placeholder="es. Drink, Appetizer..."
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FC0045]"
-                />
-              </div>
-              <div>
-                <label className="block text-white/80 text-sm mb-1">Categoria</label>
-                <input
-                  type="text"
-                  value={consumationFormData.category}
-                  onChange={(e) => setConsumationFormData({ ...consumationFormData, category: e.target.value })}
-                  placeholder="es. Bevande, Cibo..."
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FC0045]"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-white/80 text-sm mb-1">Descrizione</label>
-                <input
-                  type="text"
-                  value={consumationFormData.description}
-                  onChange={(e) => setConsumationFormData({ ...consumationFormData, description: e.target.value })}
-                  placeholder="Descrizione della consumazione..."
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FC0045]"
-                />
-              </div>
             </div>
-            <div className="flex justify-end gap-2 mt-3">
-              <button
-                type="button"
-                onClick={() => setShowConsumationForm(false)}
-                className="px-3 py-1 bg-white/10 text-white rounded text-sm hover:bg-white/20 transition-colors"
-              >
-                Annulla
-              </button>
-              <button
-                type="button"
-                onClick={handleAddConsumation}
-                className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
-              >
-                Aggiungi
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      <div className="flex justify-end gap-3 mt-6">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-6 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-        >
-          Annulla
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-6 py-2 bg-[#FC0045] text-white rounded-lg hover:bg-[#FC0045]/80 transition-colors disabled:opacity-50"
-        >
-          {loading ? 'Aggiungendo...' : 'Aggiungi Ingresso'}
-        </button>
-      </div>
-    </form>
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-6 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+          >
+            Annulla
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-2 bg-[#FC0045] text-white rounded-lg hover:bg-[#FC0045]/80 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Aggiungendo...' : 'Aggiungi Ingresso'}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

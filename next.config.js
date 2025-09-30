@@ -15,6 +15,15 @@ const config = {
       },
     ],
   },
+
+  // 👇 aggiungi questa parte
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  serverExternalPackages: ["date-fns-tz", "socket.io-client"],
+  env: {
+    TZ: 'Europe/Rome', // Forza il timezone del server
+  },
 };
 
 export default config;

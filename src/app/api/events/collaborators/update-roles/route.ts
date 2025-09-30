@@ -148,7 +148,7 @@ export async function PATCH(request: NextRequest) {
             }
           }
         },
-        location: true
+        location_: true
       }
     });
 

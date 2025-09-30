@@ -55,7 +55,7 @@ const validateImageFile = (file: File): ValidationResult => {
   };
 };
 
-const validateLocationData = (data: {
+const validatelocationData = (data: {
   name: string;
   description: string;
   address: string;
@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validazione dettagliata dei dati
-    const dataValidation = validateLocationData({
+    const dataValidation = validatelocationData({
       name, description, address, comune, provincia, regione, cap, phone, email
     });
 
@@ -269,14 +269,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica se esiste già un locale con lo stesso nome per questo utente
-    const existingLocation = await prisma.locations.findFirst({
+    const existinglocation = await prisma.locations.findFirst({
       where: {
         name: name,
         user_id: user.id
       }
     });
 
-    if (existingLocation) {
+    if (existinglocation) {
       return NextResponse.json({ 
         error: "Locale già esistente",
         details: "Hai già creato un locale con questo nome"
@@ -305,7 +305,7 @@ export async function POST(request: NextRequest) {
 
     // Crea locale nel database usando una transazione
     const result = await prisma.$transaction(async (tx) => {
-      const location = await tx.locations.create({
+      const location_ = await tx.locations.create({
         data: {
           name,
           description,
@@ -322,13 +322,13 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      return location;
+      return location_;
     });
 
     return NextResponse.json({
       success: true,
       message: "Locale creato con successo",
-      location: {
+      location_: {
         id: result.id,
         name: result.name,
         description: result.description,

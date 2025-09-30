@@ -47,7 +47,7 @@ export default function EditEventPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [allMusicGenres, setAllMusicGenres] = useState<Array<{ id: number; label: string }>>([]);
     const [filteredGenres, setFilteredGenres] = useState<Array<{ id: number; label: string }>>([]);
-    const [locations, setLocations] = useState<Array<{ id: number; name: string }>>([]);
+    const [locations, setlocations] = useState<Array<{ id: number; name: string }>>([]);
     const [showGenres, setShowGenres] = useState(false);
 
     // Funzione separata per caricare i dati dell'evento
@@ -107,16 +107,16 @@ export default function EditEventPage() {
             }
         };
 
-        const fetchLocations = async () => {
+        const fetchlocations = async () => {
             try {
                 const res = await fetch('/api/locations', {
                     method: "POST",
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: user?.id }),
+                    body: JSON.stringify({ user_token: user?.token }),
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    setLocations(data);
+                    setlocations(data);
                 }
             } catch (err) {
                 console.error('Error fetching locations:', err);
@@ -128,7 +128,7 @@ export default function EditEventPage() {
             try {
                 await Promise.all([
                     fetchMusicGenres(),
-                    fetchLocations()
+                    fetchlocations()
                 ]);
             } catch (err) {
                 console.error('Error loading initial data:', err);
@@ -274,10 +274,10 @@ export default function EditEventPage() {
                             </div>
                         </div>
 
-                        {/* Location */}
+                        {/* location_ */}
                         <div>
                             <label className="block text-sm font-medium text-white/80 mb-2">
-                                Location *
+                                location_ *
                             </label>
                             <select
                                 required
@@ -285,10 +285,10 @@ export default function EditEventPage() {
                                 onChange={(e) => setFormData({...formData, location_id: e.target.value})}
                                 className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white"
                             >
-                                <option value="">Seleziona una location</option>
-                                {locations.map((location) => (
-                                    <option key={location.id} value={location.id}>
-                                        {location.name}
+                                <option value="">Seleziona una location_</option>
+                                {locations.map((location_) => (
+                                    <option key={location_.id} value={location_.id}>
+                                        {location_.name}
                                     </option>
                                 ))}
                             </select>

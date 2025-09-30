@@ -60,11 +60,21 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
     category: "",
   });
 
-  const { myProductsByCategory, collaboratorsProductsByCategory, myCategories, collaboratorCategories } = useMemo(() => {
+  const { myProductsByCategory, collaboratorsProductsByCategory, myCategories, collaboratorCategories } = useMemo((): {
+    myProductsByCategory: Record<string, Product[]>;
+    collaboratorsProductsByCategory: Array<{
+      user_id: number;
+      collaboratorName: string;
+      collaboratorRole: string;
+      categoriesData: Record<string, Product[]>;
+    }>;
+    myCategories: string[];
+    collaboratorCategories: Record<number, string[]>;
+  } => {
     if (!event.products || event.products.length === 0 || !user) {
       return { 
         myProductsByCategory: {}, 
-        collaboratorsProductsByCategory: {}, 
+        collaboratorsProductsByCategory: [], 
         myCategories: [],
         collaboratorCategories: {}
       };
@@ -102,10 +112,10 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
       }
 
       const category = product.category || 'Senza Categoria';
-      if (!acc[product.user_id].categoriesData[category]) {
-        acc[product.user_id].categoriesData[category] = [];
+      if (!acc[product.user_id]!.categoriesData[category]) {
+        acc[product.user_id]!.categoriesData[category] = [];
       }
-      acc[product.user_id].categoriesData[category].push(product);
+      acc[product.user_id]!.categoriesData[category]!.push(product);
       return acc;
     }, {} as Record<number, {
       user_id: number;
@@ -115,7 +125,10 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
     }>);
 
     const collaboratorCategories = Object.keys(collaboratorsProductsByCategory).reduce((acc, userId) => {
-      acc[parseInt(userId)] = Object.keys(collaboratorsProductsByCategory[parseInt(userId)].categoriesData);
+      const collaborator = collaboratorsProductsByCategory[parseInt(userId)];
+      if (collaborator && collaborator.categoriesData) {
+        acc[parseInt(userId)] = Object.keys(collaborator.categoriesData);
+      }
       return acc;
     }, {} as Record<number, string[]>);
 

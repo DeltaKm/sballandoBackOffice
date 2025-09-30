@@ -58,7 +58,7 @@ export default function CreateEventPage() {
     const [filteredGenres, setFilteredGenres] = useState<Array<{
         label: ReactNode; id: number; name: string
     }>>([]);
-    const [locations, setLocations] = useState<Array<{ id: number; name: string }>>([]);
+    const [locations, setlocations] = useState<Array<{ id: number; name: string }>>([]);
 
     // 2. Tutti gli useEffect
     useEffect(() => {
@@ -86,7 +86,7 @@ export default function CreateEventPage() {
             }
         };
 
-        const fetchLocations = async () => {
+        const fetchlocations = async () => {
             try {
                 const res = await fetch('/api/locations', {
                     method: "POST",
@@ -97,7 +97,7 @@ export default function CreateEventPage() {
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    setLocations(data);
+                    setlocations(data);
                 }
             } catch (err) {
                 console.error('Error fetching locations:', err);
@@ -105,7 +105,7 @@ export default function CreateEventPage() {
         };
 
         fetchMusicGenres();
-        fetchLocations();
+        fetchlocations();
     }, [user?.id]);
 
     useEffect(() => {
@@ -392,24 +392,24 @@ export default function CreateEventPage() {
                         </div>
 
                         <div>
-                            <label htmlFor="location" className="block text-sm font-medium text-white/80 mb-2">
+                            <label htmlFor="location_" className="block text-sm font-medium text-white/80 mb-2">
                                 Locale *
                             </label>
                             <select
-                                id="location"
+                                id="location_"
                                 required
                                 value={formData.location_id}
                                 onChange={(e) => setFormData({ ...formData, location_id: e.target.value })}
                                 className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#FC0045]/50"
                             >
                                 <option value="" className="bg-[#212938]">Seleziona un locale</option>
-                                {locations.map((location) => (
+                                {locations.map((location_) => (
                                     <option
-                                        key={location.id}
-                                        value={location.id}
+                                        key={location_.id}
+                                        value={location_.id}
                                         className="bg-[#212938]"
                                     >
-                                        {location.name}
+                                        {location_.name}
                                     </option>
                                 ))}
                             </select>

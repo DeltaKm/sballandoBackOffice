@@ -11,6 +11,11 @@ import { EntryTypesSection } from "~/components/event/EntryTypesSection";
 import { CollaboratorsSection } from "~/components/event/CollaboratorsSection";
 import { MusicGenresSection } from "~/components/event/MusicGenresSection";
 import { StatisticsSection } from "~/components/event/StatisticsSection";
+import { ChatSection } from "~/components/event/ChatSection";
+import { JukeboxSection } from "~/components/event/JukeboxSection";
+import { PaymentsSection } from "~/components/event/PaymentsSection";
+
+
 import type { Event } from "~/types";
 
 export default function EventDetailPage() {
@@ -28,6 +33,10 @@ export default function EventDetailPage() {
     { id: 'collaborators', label: 'Collaboratori', icon: '👥', count: event?.collaborators?.length || 0 },
     { id: 'entry_types', label: 'Ingressi', icon: '🎟️', count: event?.entry_types?.length || 0 },
     { id: 'products', label: 'Prodotti', icon: '🛍️', count: event?.products?.length || 0 },
+    { id: 'jukebox', label: 'JukeBox', icon: '🎶' },
+    { id: 'chat', label: 'Chat', icon: '💬' },
+
+
   ];
 
   const [activeSection, setActiveSection] = useState('info');
@@ -136,7 +145,7 @@ export default function EventDetailPage() {
         {/* Contenuto principale */}
         <div className="p-6">
           {activeSection === 'info' && (
-            <EventInfoSection event={event} onUpdate={handleEventUpdate} />
+            <EventInfoSection event={event} />
           )}
           {activeSection === 'dashboard' && (
             <StatisticsSection event={event} />
@@ -152,6 +161,15 @@ export default function EventDetailPage() {
           )}
           {activeSection === 'music_genres' && (
             <MusicGenresSection event={event} onUpdate={handleEventUpdate} />
+          )}
+          {activeSection === 'jukebox' && (
+            <JukeboxSection event={event} onUpdate={handleEventUpdate} />
+          )}
+          {activeSection === 'chat' && (
+            <ChatSection event={event} onUpdate={handleEventUpdate} />
+          )}
+          {activeSection === 'payments' && (
+            <PaymentsSection event={event} onUpdate={handleEventUpdate} />
           )}
         </div>
       </div>

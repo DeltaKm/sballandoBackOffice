@@ -3,6 +3,11 @@ import { PrismaClient } from "@prisma/client";
 import crypto from 'crypto';
 import { EventSchema } from "~/schemas/event";
 import { saveEventFile } from '~/lib/fileUpload';
+// ✅ Usa solo date-fns
+import { parseISO, format } from 'date-fns';
+
+// ✅ Installa solo date-fns
+// npm install date-fns
 
 const prisma = new PrismaClient();
 
@@ -75,14 +80,25 @@ export async function POST(req: Request) {
 
         // Create event and music genre relations in a transaction
         const result = await prisma.$transaction(async (tx) => {
+            // ✅ Parsing semplice delle date
+            const startDateTime = parseISO(validatedData.datetime_start);
+            const endDateTime = parseISO(validatedData.datetime_end);
+            
+            console.log('🕐 Date parsing:', {
+                start_input: validatedData.datetime_start,
+                start_parsed: startDateTime.toISOString(),
+                end_input: validatedData.datetime_end,
+                end_parsed: endDateTime.toISOString()
+            });
+
             // Create the event first
             const event = await tx.events.create({
                 data: {
                     title: validatedData.title,
                     subtitle: validatedData.subtitle,
                     description_extended: validatedData.description_extended,
-                    datetime_start: new Date(validatedData.datetime_start),
-                    datetime_end: new Date(validatedData.datetime_end),
+                    datetime_start: startDateTime, // ✅ Usa la data corretta
+                    datetime_end: endDateTime,     // ✅ Usa la data corretta
                     is_public: validatedData.is_public ? 1 : 0,
                     location_id: validatedData.location_id,
                     state: validatedData.state,

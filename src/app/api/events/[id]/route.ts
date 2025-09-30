@@ -24,7 +24,7 @@ export async function GET(
           },
         },
         products: true,
-        location: true,
+        location_: true,
       },
     });
 

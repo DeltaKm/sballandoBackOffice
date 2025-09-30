@@ -48,7 +48,7 @@ export function TransferProductModal({ show, product, event, onClose, onSuccess 
 
   const handleTransferChange = (collaboratorId: number, value: string) => {
     const numValue = parseInt(value) || 0;
-    const maxAllowed = Math.min(availableQuantity - (totalToTransfer - (parseInt(transfers[collaboratorId]) || 0)), availableQuantity);
+    const maxAllowed = Math.min(availableQuantity - (totalToTransfer - (parseInt(transfers[collaboratorId] ?? "") || 0)), availableQuantity);
     
     if (numValue <= maxAllowed && numValue >= 0) {
       setTransfers(prev => ({
@@ -170,8 +170,12 @@ export function TransferProductModal({ show, product, event, onClose, onSuccess 
           ) : (
             <div className="space-y-3">
               {collaboratorsData.map(({ collaborator, user: collabUser, compatibleProducts, hasCompatibleProduct, totalStock }) => {
-                const maxTransfer = Math.min(availableQuantity - (totalToTransfer - (parseInt(transfers[collaborator.user_id]) || 0)), availableQuantity);
-                const currentValue = transfers[collaborator.user_id] || '';
+                const userId = collaborator.user_id ?? 0;
+                const maxTransfer = Math.min(
+                  availableQuantity - (totalToTransfer - (parseInt(transfers[userId] ?? "") || 0)),
+                  availableQuantity
+                );
+                const currentValue = transfers[userId] || '';
                 
                 return (
                   <div key={collaborator.user_id} className="p-4 bg-white/5 border border-white/10 rounded-lg">
@@ -182,7 +186,6 @@ export function TransferProductModal({ show, product, event, onClose, onSuccess 
                             {collabUser?.picture && (
                               <img 
                                 src={collabUser.picture} 
-                                alt={collabUser.name} 
                                 className="w-8 h-8 rounded-full"
                               />
                             )}
@@ -223,7 +226,11 @@ export function TransferProductModal({ show, product, event, onClose, onSuccess 
                               min="0"
                               max={maxTransfer}
                               value={currentValue}
-                              onChange={(e) => handleTransferChange(collaborator.user_id, e.target.value)}
+                              onChange={(e) => {
+                                if (collaborator.user_id !== null && collaborator.user_id !== undefined) {
+                                  handleTransferChange(collaborator.user_id, e.target.value);
+                                }
+                              }}
                               placeholder="0"
                               className="w-20 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                               disabled={maxTransfer === 0}

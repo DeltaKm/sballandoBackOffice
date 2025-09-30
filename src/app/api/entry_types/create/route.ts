@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
         description: description?.trim() || null,
         category: category?.trim() || null,
         type: type || 'free',
-        price: price ? parseFloat(price) : 0,
+        price: price ? parseFloat(price) : null,
         seats: seats ? parseInt(seats) : 1,
         fairplay_min: fairplay_min ? parseInt(fairplay_min) : 0,
         stock: quantity ? parseInt(quantity) : null,
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
               label: consumation.label.trim(),
               description: consumation.description?.trim() || null,
               category: consumation.category?.trim() || null,
-              price: 0, // Le consumazioni incluse sono gratuite
+              price: null, // Le consumazioni incluse sono gratuite
               stock: quantity ? parseInt(quantity) : null,
               created_qnt: quantity ? parseInt(quantity) : null,
               // Altri campi opzionali se necessari
@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
       where: { id: parseInt(event_id) },
       include: {
         entry_types: true, // Rimuovi l'include di products se non esiste la relazione
-        location: true,
+        location_: true,
         collaborators: true,
         event_music_genres: true,
         products: true // I prodotti sono collegati direttamente all'evento

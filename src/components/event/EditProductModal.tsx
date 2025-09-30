@@ -231,7 +231,7 @@ export function EditProductModal({ show, product, onClose, onSuccess }: EditProd
               value={formData.label}
               onChange={(e) => setFormData({ ...formData, label: e.target.value })}
               placeholder="es. Birra, Cocktail..."
-              disabled={updating || isLimitedEdit}
+              disabled={updating || !!isLimitedEdit}
               className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
                 errors.label ? 'border-red-500' : 'border-white/20'
               }`}
@@ -253,7 +253,7 @@ export function EditProductModal({ show, product, onClose, onSuccess }: EditProd
               value={formData.price}
               onChange={(e) => setFormData({ ...formData, price: e.target.value })}
               placeholder="0.00"
-              disabled={updating || isLimitedEdit}
+              disabled={updating || !!isLimitedEdit}
               className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
                 errors.price ? 'border-red-500' : 'border-white/20'
               }`}
@@ -306,7 +306,7 @@ export function EditProductModal({ show, product, onClose, onSuccess }: EditProd
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               placeholder="es. Bevande, Cibo..."
-              disabled={updating || isLimitedEdit}
+              disabled={updating || !!isLimitedEdit}
               className={`w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed`}
             />
             {isLimitedEdit && (

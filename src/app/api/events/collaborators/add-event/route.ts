@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
             music_genre: true
           }
         },
-        location: true
+        location_: true
       }
     });
 

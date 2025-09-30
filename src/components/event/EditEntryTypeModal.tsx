@@ -138,14 +138,14 @@ export function EditEntryTypeModal({ show, entry, onClose, onSuccess }: EditEntr
         description: entry.description || '',
         category: entry.category || '',
         type: (entry.type as "free" | "invite") || 'free',
-        quantity: entry.quantity?.toString() || '',
+        quantity: entry.stock?.toString() || '',
         price: entry.price?.toString() || '',
         seats: entry.seats || 1,
         fairplay_min: entry.fairplay_min?.toString() || '',
         gender_min_enabled: entry.gender_min_enabled || false,
         gender_min_type: entry.gender_min_type || '',
         gender_min_quantity: entry.gender_min_quantity || 1,
-        consumations: entry.consumations || []
+        consumations: entry.products || []
       });
       setErrors({});
       setShowConsumationForm(false);
@@ -236,7 +236,7 @@ export function EditEntryTypeModal({ show, entry, onClose, onSuccess }: EditEntr
     setLoading(true);
     try {
       const payload = {
-        entry_id: entry.id,
+        entry_type_id: entry.id,
         label: formData.label.trim(),
         description: formData.description || null,
         category: formData.category,

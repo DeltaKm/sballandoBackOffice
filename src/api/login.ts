@@ -14,15 +14,15 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await prisma.users.findUnique({ 
-
       where: { email },
       // escludi password se presente
       select: {
         id: true,
         email: true,
+        token: true,
         name: true,
         role: true,
-        createdAt: true,
+        created_at: true, // ✅ This is correct
         // aggiungi altri campi che vuoi ritornare
       },
     });

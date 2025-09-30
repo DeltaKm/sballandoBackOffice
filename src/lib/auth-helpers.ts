@@ -23,42 +23,12 @@ export interface AuthResult {
 export async function authenticateUser(): Promise<AuthResult> {
   try {
     const cookieStore = cookies();
-    const token = cookieStore.get('user_token')?.value;
     
-    if (!token) {
-      return {
-        success: false,
-        error: 'Token mancante',
-        status: 401
-      };
-    }
 
-    // Cerca l'utente nel database tramite il token
-    const user = await prisma.user.findFirst({
-      where: {
-        user_token: token
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        surname: true,
-        role: true,
-        is_super_admin: true
-      }
-    });
 
-    if (!user) {
-      return {
-        success: false,
-        error: 'Token non valido o utente non trovato',
-        status: 401
-      };
-    }
 
     return {
       success: true,
-      user: user as AuthenticatedUser
     };
 
   } catch (error) {
@@ -81,7 +51,7 @@ export async function authorizeEventAccess(eventId: number, user: AuthenticatedU
     }
 
     // Verifica se è proprietario dell'evento o collaboratore accettato
-    const event = await prisma.event.findFirst({
+    const event = await prisma.events.findFirst({
       where: {
         id: eventId,
         OR: [
@@ -90,7 +60,6 @@ export async function authorizeEventAccess(eventId: number, user: AuthenticatedU
             collaborators: {
               some: {
                 user_id: user.id,
-                status: 'accepted' // Collaboratore accettato
               }
             }
           }

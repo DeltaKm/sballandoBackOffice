@@ -38,12 +38,12 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verifica che il locale esista
-    const location = await prisma.locations.findUnique({
+    const location_ = await prisma.locations.findUnique({
       where: { id: location_id },
       select: { id: true, name: true, enable: true }
     });
 
-    if (!location) {
+    if (!location_) {
       return NextResponse.json(
         { error: "Locale non trovato" },
         { status: 404 }
@@ -54,7 +54,7 @@ export async function PUT(request: NextRequest) {
     const enableValue = enable ? 1 : 0;
 
     // Aggiorna lo stato del locale
-    const updatedLocation = await prisma.locations.update({
+    const updatedlocation = await prisma.locations.update({
       where: { id: location_id },
       data: { 
         enable: enable,
@@ -69,23 +69,23 @@ export async function PUT(request: NextRequest) {
     });
 
     // Log dell'operazione per tracciabilità
-    console.log(`Super Admin ${user.id} ha ${enable ? 'attivato' : 'disattivato'} il locale ${location_id} (${location.name})`);
+    console.log(`Super Admin ${user.id} ha ${enable ? 'attivato' : 'disattivato'} il locale ${location_id} (${location_.name})`);
 
     // Risposta di successo
     return NextResponse.json({
       success: true,
       message: `Locale ${enable ? 'attivato' : 'disattivato'} con successo`,
-      location: {
-        id: updatedLocation.id,
-        name: updatedLocation.name,
-        enable: updatedLocation.enable,
-        previous_status: location.enable,
+      location_: {
+        id: updatedlocation.id,
+        name: updatedlocation.name,
+        enable: updatedlocation.enable,
+        previous_status: location_.enable,
         updated_by: user.id,
-        updated_at: updatedLocation.updated_at.toISOString()
+        updated_at: updatedlocation.updated_at!.toISOString()
       }
     });
 
-  } catch (error) {
+  } catch (error: undefined | any) {
     console.error("Errore nell'endpoint toggle-status:", error);
     
     return NextResponse.json(

@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     // Ritorna evento aggiornato
     const updatedEvent = await prisma.events.findUnique({
-      where: { id: entryType.event_id },
+      where: { id: entryType.event_id || 0 },
       include: {
         entry_types: true,
         collaborators: {
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
             }
           }
         },
-        location: true
+        location_: true
       }
     });
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "~/store/auth";
-import type { LocationFormData } from "~/types";
+import type { locationFormData } from "~/types";
 
 interface Regione {
     nome: string;
@@ -20,11 +20,11 @@ interface Comune {
     cap: string;
 }
 
-export default function CreateLocationPage() {
+export default function CreatelocationPage() {
     const router = useRouter();
     const user = useAuthStore((state) => state.user);
     
-    const [formData, setFormData] = useState<LocationFormData>({
+    const [formData, setFormData] = useState<locationFormData>({
         name: "",
         description: "",
         address: "",

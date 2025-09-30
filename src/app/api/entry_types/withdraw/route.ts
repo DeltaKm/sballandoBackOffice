@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('🔄 Richiesta ritiro ingressi:', { 
+    console.log('🔄 Richiesta ritiro ingressi collaboratori:', { 
       entry_type_id,
       user_token: user_token.substring(0, 8) + '...' 
     });
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('🎫 Ingresso originale trovato:', originalEntry.label, 'Evento:', originalEntry.event.title);
+    console.log('🎫 Ingresso originale trovato:', originalEntry.label, 'Evento:', originalEntry.event!.title);
 
     // Verifica autorizzazione (deve essere il proprietario dell'ingresso originale o SUPERADMIN)
     if (originalEntry.user_id !== user.id && user.role !== 'SUPERADMIN') {
@@ -64,13 +64,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Trova tutti gli ingressi dei collaboratori con stesso label
+    // MODIFICA PRINCIPALE: Trova solo gli ingressi dei collaboratori
+    // Recupera prima i collaboratori dell'evento
+    const collaborators = await prisma.collaborators.findMany({
+      where: {
+        event_id: originalEntry.event_id || 0,
+        user_id: {
+          not: user.id // Esclude il proprietario dell'evento
+        }
+      },
+      select: {
+        user_id: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    if (collaborators.length === 0) {
+      return NextResponse.json(
+        { error: "Nessun collaboratore trovato per questo evento" },
+        { status: 400 }
+      );
+    }
+
+    const collaboratorUserIds = collaborators.map(c => c.user_id);
+    console.log('👥 Collaboratori trovati:', collaborators.length, 'IDs:', collaboratorUserIds);
+
+    // AGGIUNGI DEBUG: Trova tutti gli ingressi dell'evento per debugging
+    const allEventEntries = await prisma.entry_types.findMany({
+      where: {
+        event_id: originalEntry.event_id
+      },
+      select: {
+        id: true,
+        label: true,
+        user_id: true,
+        stock: true
+      }
+    });
+    
+    console.log('🔍 DEBUG - Tutti gli ingressi dell\'evento:', allEventEntries);
+
+    // Trova gli ingressi SOLO dei collaboratori con stesso label
     const collaboratorEntries = await prisma.entry_types.findMany({
       where: {
         event_id: originalEntry.event_id,
         label: originalEntry.label,
         user_id: {
-          not: user.id // Esclude gli ingressi dell'utente che fa la richiesta
+          in: collaboratorUserIds.filter(id => id !== null) as number[] // Filtra i null
         },
         stock: {
           gt: 0 // Solo quelli con stock > 0
@@ -78,39 +125,64 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    console.log('📦 DEBUG - Query collaboratori:', {
+      event_id: originalEntry.event_id,
+      label: originalEntry.label,
+      user_ids: collaboratorUserIds.filter(id => id !== null),
+      found: collaboratorEntries.length
+    });
+
     if (collaboratorEntries.length === 0) {
+      // AGGIUNGI DEBUG: Cerca senza filtro stock per vedere se esistono
+      const allCollabEntries = await prisma.entry_types.findMany({
+        where: {
+          event_id: originalEntry.event_id,
+          label: originalEntry.label,
+          user_id: {
+            in: collaboratorUserIds.filter(id => id !== null) as number[]
+          }
+        }
+      });
+      
+      console.log('🔍 DEBUG - Ingressi collaboratori senza filtro stock:', allCollabEntries);
+      
       return NextResponse.json(
-        { error: "Nessun ingresso da ritirare dai collaboratori" },
+        { 
+          error: "Nessun ingresso da ritirare dai collaboratori",
+          debug: {
+            total_event_entries: allEventEntries.length,
+            collaborator_entries_all: allCollabEntries.length,
+            collaborator_entries_with_stock: collaboratorEntries.length,
+            original_label: originalEntry.label,
+            collaborator_ids: collaboratorUserIds.filter(id => id !== null)
+          }
+        },
         { status: 400 }
       );
     }
 
-    console.log('📦 Trovati', collaboratorEntries.length, 'ingressi da ritirare');
+    console.log('📦 Trovati', collaboratorEntries.length, 'ingressi da ritirare dai collaboratori');
 
-    // Recupera informazioni degli utenti separatamente
-    const userIds = collaboratorEntries.map(entry => entry.user_id).filter(Boolean);
-    const users = await prisma.users.findMany({
-      where: {
-        id: { in: userIds }
-      },
-      select: {
-        id: true,
-        name: true,
-        surname: true,
-        email: true
+    // Mappa collaboratori per ID per facile accesso (FIX: gestisci user_id nullable)
+    const collaboratorsMap = collaborators.reduce((acc, collab) => {
+      if (collab.user_id && collab.user) {
+        acc[collab.user_id] = collab.user;
       }
-    });
-
-    // Mappa utenti per ID per facile accesso
-    const usersMap = users.reduce((acc, user) => {
-      acc[user.id] = user;
       return acc;
-    }, {} as Record<number, typeof users[0]>);
+    }, {} as Record<number, any>);
 
     // Calcola totale da ritirare
-    const totalToWithdraw = collaboratorEntries.reduce((sum, entry) => sum + (entry.stock || 0), 0);
+    const totalToWithdraw = collaboratorEntries.reduce((sum, entry) => sum + (entry.stock ?? 0), 0);
     
-    console.log('📊 Totale da ritirare:', totalToWithdraw);
+    console.log('📊 Totale da ritirare dai collaboratori:', totalToWithdraw);
+
+    // Verifica che ci siano effettivamente ingressi da ritirare
+    if (totalToWithdraw === 0) {
+      return NextResponse.json(
+        { error: "Nessun ingresso disponibile da ritirare dai collaboratori" },
+        { status: 400 }
+      );
+    }
 
     // Esegui il ritiro in transazione
     const result = await prisma.$transaction(async (tx) => {
@@ -119,11 +191,11 @@ export async function POST(request: NextRequest) {
 
       // Per ogni ingresso dei collaboratori
       for (const collabEntry of collaboratorEntries) {
-        const stockToWithdraw = collabEntry.stock || 0;
+        const stockToWithdraw = collabEntry.stock ?? 0;
         
-        if (stockToWithdraw > 0) {
-          const userInfo = usersMap[collabEntry.user_id];
-          console.log(`🔄 Ritirando ${stockToWithdraw} da ${userInfo?.email || `User ${collabEntry.user_id}`} e cancellando il record`);
+        if (stockToWithdraw > 0 && collabEntry.user_id) {
+          const collabInfo = collaboratorsMap[collabEntry.user_id];
+          console.log(`🔄 Ritirando ${stockToWithdraw} dal collaboratore ${collabInfo?.email ?? `User ${collabEntry.user_id}`} e cancellando il record`);
 
           // Cancella completamente il record del collaboratore
           await tx.entry_types.delete({
@@ -132,7 +204,8 @@ export async function POST(request: NextRequest) {
 
           deletedEntries.push({
             id: collabEntry.id,
-            user_email: userInfo?.email,
+            collaborator_email: collabInfo?.email,
+            collaborator_name: `${collabInfo?.name ?? ''} ${collabInfo?.surname ?? ''}`,
             stock: stockToWithdraw
           });
 
@@ -144,19 +217,19 @@ export async function POST(request: NextRequest) {
       await tx.entry_types.update({
         where: { id: parseInt(entry_type_id) },
         data: {
-          stock: (originalEntry.stock || 0) + totalWithdrawn
+          stock: (originalEntry.stock ?? 0) + totalWithdrawn
         }
       });
 
-      console.log(`✅ Ritirato totale di ${totalWithdrawn} ingressi e cancellati ${deletedEntries.length} record`);
-      console.log('🗑️ Record cancellati:', deletedEntries);
+      console.log(`✅ Ritirato totale di ${totalWithdrawn} ingressi dai collaboratori e cancellati ${deletedEntries.length} record`);
+      console.log('🗑️ Record collaboratori cancellati:', deletedEntries);
       
       return { totalWithdrawn, deletedEntries };
     });
 
     // Recupera l'evento aggiornato
     const updatedEvent = await prisma.events.findUnique({
-      where: { id: originalEntry.event_id },
+      where: { id: originalEntry.event_id || 0 },
       include: {
         entry_types: {
           orderBy: {
@@ -193,16 +266,23 @@ export async function POST(request: NextRequest) {
             }
           }
         },
-        location: true
+        location_: true
       }
     });
 
-    console.log('✅ Evento aggiornato recuperato');
+    console.log('✅ Evento aggiornato recuperato con ingressi ritirati dai collaboratori');
 
-    return NextResponse.json(updatedEvent);
+    return NextResponse.json({
+      ...updatedEvent,
+      withdraw_result: {
+        total_withdrawn: result.totalWithdrawn,
+        deleted_entries: result.deletedEntries,
+        message: `Ritirati ${result.totalWithdrawn} ingressi da ${result.deletedEntries.length} collaboratori`
+      }
+    });
 
   } catch (error) {
-    console.error("❌ Errore ritiro ingressi:", error);
+    console.error("❌ Errore ritiro ingressi collaboratori:", error);
     return NextResponse.json(
       { 
         error: "Errore interno del server: " + (error instanceof Error ? error.message : String(error))

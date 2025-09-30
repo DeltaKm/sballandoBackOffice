@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
             }
           }
         },
-        location: true
+        location_: true
       }
     });
 

@@ -62,11 +62,11 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    console.log('🛍️ Prodotto trovato:', productToDelete.label, 'Evento:', productToDelete.event.title);
+    console.log('🛍️ Prodotto trovato:', productToDelete.label, 'Evento:', productToDelete.event!.title);
 
     // Verifica autorizzazione: deve essere il proprietario del prodotto, proprietario dell'evento o SUPERADMIN
     const isProductOwner = productToDelete.user_id === requestingUser.id;
-    const isEventOwner = productToDelete.event.user_id === requestingUser.id;
+    const isEventOwner = productToDelete.event!.user_id === requestingUser.id;
     const isSuperAdmin = requestingUser.role === 'SUPERADMIN';
 
     console.log('🔐 Verifica autorizzazione:', {
@@ -93,7 +93,7 @@ export async function DELETE(request: NextRequest) {
 
     // Recupera l'evento aggiornato con tutti i prodotti rimanenti
     const updatedEvent = await prisma.events.findUnique({
-      where: { id: productToDelete.event.id },
+      where: { id: productToDelete.event!.id },
       include: {
         products: {
           orderBy: {
@@ -126,7 +126,7 @@ export async function DELETE(request: NextRequest) {
             }
           }
         },
-        location: true
+        location_: true
       }
     });
 
@@ -165,34 +165,3 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-const handleConfirmDelete = async () => {
-  if (!deleteModal.productId || !user?.token) return;
-
-  setDeleting(true);
-  try {
-    const res = await fetch('/api/products/delete', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        product_id: deleteModal.productId,
-        user_token: user.token
-      }),
-    });
-
-    if (res.ok) {
-      const updatedEvent = await res.json();
-      onUpdate?.(updatedEvent);
-      closeDeleteModal();
-    } else {
-      const errorData = await res.json();
-      alert(`Errore durante l'eliminazione: ${errorData.error || 'Errore sconosciuto'}`);
-    }
-  } catch (err) {
-    console.error('Error deleting product:', err);
-    alert('Errore durante la connessione al server');
-  } finally {
-    setDeleting(false);
-  }
-};

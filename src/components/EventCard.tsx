@@ -116,10 +116,10 @@ export function EventCard({
             </span>
           </div>
           
-          {event.location && (
+          {event.location_ && (
             <div className="flex items-center gap-2">
               <span>📍</span>
-              <span className="line-clamp-1">{event.location.name}</span>
+              <span className="line-clamp-1">{event.location_.name}</span>
             </div>
           )}
 

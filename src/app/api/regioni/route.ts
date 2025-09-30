@@ -3,6 +3,23 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Definisci i tipi per una migliore type safety
+interface Comune {
+  nome: string;
+  cap: string;
+}
+
+interface Provincia {
+  nome: string;
+  sigla: string;
+  comuni: Comune[];
+}
+
+interface Regione {
+  nome: string;
+  province: Map<string, Provincia>;
+}
+
 export async function GET() {
   try {
     // Recupera tutti i comuni dalla tabella comunis
@@ -14,8 +31,8 @@ export async function GET() {
       ]
     });
 
-    // Raggruppa per regione
-    const regioniMap = new Map();
+    // Raggruppa per regione con typing appropriato
+    const regioniMap = new Map<string, Regione>();
     
     comunis.forEach(comune => {
       const regioneNome = comune.regione;
@@ -23,37 +40,37 @@ export async function GET() {
       const provinciaSigla = comune.provincia_sigla;
       
       // Se la regione non esiste, creala
-      if (!regioniMap.has(regioneNome)) {
-        regioniMap.set(regioneNome, {
-          nome: regioneNome,
-          province: new Map()
+      if (!regioniMap.has(regioneNome!)) {
+        regioniMap.set(regioneNome!, {
+          nome: regioneNome!,
+          province: new Map<string, Provincia>()
         });
       }
-      
-      const regione = regioniMap.get(regioneNome);
-      
+
+      const regione = regioniMap.get(regioneNome!)!;
+
       // Se la provincia non esiste nella regione, creala
-      if (!regione.province.has(provinciaNome)) {
-        regione.province.set(provinciaNome, {
-          nome: provinciaNome,
-          sigla: provinciaSigla,
+      if (!regione.province.has(provinciaNome!)) {
+        regione.province.set(provinciaNome!, {
+          nome: provinciaNome!,
+          sigla: provinciaSigla!,
           comuni: []
         });
       }
       
-      const provincia = regione.province.get(provinciaNome);
+      const provincia = regione.province.get(provinciaNome!)!;
       
       // Aggiungi il comune alla provincia
       provincia.comuni.push({
-        nome: comune.comune,
-        cap: comune.cap
+        nome: comune.comune!,
+        cap: comune.cap!
       });
     });
 
-    // Converti le Map in array per la risposta JSON
+    // Converti le Map in array per la risposta JSON con typing corretto
     const regioniFormatted = Array.from(regioniMap.entries()).map(([regioneNome, regione]) => ({
       nome: regioneNome,
-      province: Array.from(regione.province.entries()).map(([provinciaNome, provincia]) => ({
+      province: Array.from(regione.province.entries()).map(([provinciaNome, provincia]: [string, Provincia]) => ({
         nome: provinciaNome,
         sigla: provincia.sigla,
         comuni: provincia.comuni
@@ -128,7 +145,7 @@ export async function POST(request: Request) {
 
     // Se richiede solo le province
     if (only_province) {
-      const provinceSet = new Set();
+      const provinceSet = new Set<string>();
       comunis.forEach(c => {
         provinceSet.add(JSON.stringify({
           nome: c.provincia,
@@ -137,7 +154,7 @@ export async function POST(request: Request) {
         }));
       });
       
-      const province = Array.from(provinceSet).map(p => JSON.parse(p as string)).sort((a, b) => a.nome.localeCompare(b.nome));
+      const province = Array.from(provinceSet).map(p => JSON.parse(p)).sort((a, b) => a.nome.localeCompare(b.nome));
       
       return NextResponse.json({
         success: true,
@@ -146,42 +163,42 @@ export async function POST(request: Request) {
       });
     }
 
-    // Altrimenti raggruppa normalmente
-    const regioniMap = new Map();
+    // Altrimenti raggruppa normalmente con typing appropriato
+    const regioniMap = new Map<string, Regione>();
     
     comunis.forEach(comune => {
       const regioneNome = comune.regione;
       const provinciaNome = comune.provincia;
       const provinciaSigla = comune.provincia_sigla;
       
-      if (!regioniMap.has(regioneNome)) {
-        regioniMap.set(regioneNome, {
-          nome: regioneNome,
-          province: new Map()
+      if (!regioniMap.has(regioneNome!)) {
+        regioniMap.set(regioneNome!, {
+          nome: regioneNome!,
+          province: new Map<string, Provincia>()
         });
       }
       
-      const regione = regioniMap.get(regioneNome);
+      const regione = regioniMap.get(regioneNome!)!;
       
-      if (!regione.province.has(provinciaNome)) {
-        regione.province.set(provinciaNome, {
-          nome: provinciaNome,
-          sigla: provinciaSigla,
+      if (!regione.province.has(provinciaNome!)) {
+        regione.province.set(provinciaNome!, {
+          nome: provinciaNome!,
+          sigla: provinciaSigla!,
           comuni: []
         });
       }
       
-      const provincia = regione.province.get(provinciaNome);
+      const provincia = regione.province.get(provinciaNome!)!;
       
       provincia.comuni.push({
-        nome: comune.comune,
-        cap: comune.cap
+        nome: comune.comune!,
+        cap: comune.cap!
       });
     });
 
     const regioniFormatted = Array.from(regioniMap.entries()).map(([regioneNome, regione]) => ({
       nome: regioneNome,
-      province: Array.from(regione.province.entries()).map(([provinciaNome, provincia]) => ({
+      province: Array.from(regione.province.entries()).map(([provinciaNome, provincia]: [string, Provincia]) => ({
         nome: provinciaNome,
         sigla: provincia.sigla,
         comuni: provincia.comuni

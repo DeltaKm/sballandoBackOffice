@@ -4,12 +4,12 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "~/store/auth";
 import { Sidebar } from "~/components/Sidebar";
-import { Location } from "~/types";
+import type { location_ } from "~/types";
 
-export default function LocationsPage() {
+export default function locationsPage() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [locations, setlocations] = useState<location_[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,36 +19,36 @@ export default function LocationsPage() {
   const isSuperAdmin = user?.role === 'SUPERADMIN';
 
   // Filtra i locali in base alla ricerca
-  const filteredLocations = useMemo(() => {
+  const filteredlocations = useMemo(() => {
     if (!searchQuery.trim()) return locations;
-    
+
     const query = searchQuery.toLowerCase();
-    return locations.filter(location => 
-      location.name?.toLowerCase().includes(query) ||
-      location.address?.toLowerCase().includes(query) ||
-      location.city?.toLowerCase().includes(query) ||
-      location.description?.toLowerCase().includes(query) ||
-      location.phone?.toLowerCase().includes(query) ||
-      location.email?.toLowerCase().includes(query)
+    return locations.filter(location_ =>
+      location_.name?.toLowerCase().includes(query) ||
+      location_.address?.toLowerCase().includes(query) ||
+      location_.city?.toLowerCase().includes(query) ||
+      location_.description?.toLowerCase().includes(query) ||
+      location_.phone?.toLowerCase().includes(query) ||
+      location_.email?.toLowerCase().includes(query)
     );
   }, [locations, searchQuery]);
 
   // Funzione per attivare/disattivare un locale
-  const toggleLocationStatus = async (locationId: number, currentStatus: boolean) => {
+  const togglelocationStatus = async (locationId: number, currentStatus: boolean) => {
     if (!user?.token || !isSuperAdmin) return;
-    
+
     setToggleLoading(locationId);
-    
+
     try {
       const res = await fetch('/api/locations/toggle-status', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           location_id: locationId,
           enable: !currentStatus,  // Inverte il valore: 0 diventa 1, 1 diventa 0
-          user_token: user.token 
+          user_token: user.token
         }),
       });
 
@@ -57,11 +57,13 @@ export default function LocationsPage() {
       }
 
       // Aggiorna lo stato locale
-      setLocations(prev => prev.map(location => 
-  location.id === locationId 
-    ? { ...location, enable: !currentStatus }  // Aggiorna il campo enable
-    : location
-));
+  setlocations(prev =>
+  prev.map(location_ =>
+    location_.id === locationId
+      ? { ...location_, enable: currentStatus ? 0 : 1 } // 0 = false, 1 = true
+      : location_
+  )
+);
 
     } catch (err) {
       console.error('Errore nel toggle del locale:', err);
@@ -72,7 +74,7 @@ export default function LocationsPage() {
   };
 
   useEffect(() => {
-    const fetchLocations = async () => {
+    const fetchlocations = async () => {
       try {
         const res = await fetch('/api/locations', {
           method: 'POST',
@@ -87,7 +89,7 @@ export default function LocationsPage() {
         }
 
         const data = await res.json();
-        setLocations(data);
+        setlocations(data);
       } catch (err) {
         setError("Errore nel caricamento dei locali");
         console.error(err);
@@ -97,7 +99,7 @@ export default function LocationsPage() {
     };
 
     if (user?.id) {
-      fetchLocations();
+      fetchlocations();
     }
   }, [user?.id]);
 
@@ -115,7 +117,7 @@ export default function LocationsPage() {
   return (
     <main className="min-h-screen bg-[#212938] flex">
       <Sidebar />
-      
+
       {/* Main Content */}
       <div className="flex-1 ml-64">
         {/* Header */}
@@ -163,7 +165,7 @@ export default function LocationsPage() {
           {searchQuery && (
             <div className="mb-4">
               <p className="text-white/60 text-sm">
-                {filteredLocations.length} {filteredLocations.length === 1 ? 'locale trovato' : 'locali trovati'} 
+                {filteredlocations.length} {filteredlocations.length === 1 ? 'locale trovato' : 'locali trovati'}
                 {searchQuery && ` per "${searchQuery}"`}
               </p>
             </div>
@@ -176,7 +178,7 @@ export default function LocationsPage() {
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-white">
               {error}
             </div>
-          ) : filteredLocations.length === 0 ? (
+          ) : filteredlocations.length === 0 ? (
             <div className="text-center py-12">
               {searchQuery ? (
                 <div>
@@ -204,22 +206,22 @@ export default function LocationsPage() {
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredLocations.map((location) => (
+              {filteredlocations.map((location_) => (
                 <div
-                  key={location.id}
-                  onClick={() => router.push(`/locations/${location.id}`)}
+                  key={location_.id}
+                  onClick={() => router.push(`/locations/${location_.id}`)}
                   className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-all duration-300 hover:scale-105 cursor-pointer"
                 >
                   {/* Immagine di copertina */}
-                  {location.cover && location.token ? (
+                  {location_.cover && location_.token ? (
                     <div className="relative h-48 w-full">
                       <img
-                        src={`/uploads/locations/${location.token}/${location.cover}`}
-                        alt={location.name}
+                        src={`/uploads/locations/${location_.token}/${location_.cover}`}
+                        alt={location_.name}
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                      
+
                       {/* Badge Super Admin in overlay */}
                       {isSuperAdmin && (
                         <div className="absolute top-3 left-3">
@@ -232,7 +234,7 @@ export default function LocationsPage() {
                   ) : (
                     <div className="h-48 w-full bg-gradient-to-br from-[#FC0045]/20 to-purple-600/20 flex items-center justify-center relative">
                       <span className="text-4xl">🏢</span>
-                      
+
                       {/* Badge Super Admin */}
                       {isSuperAdmin && (
                         <div className="absolute top-3 left-3">
@@ -248,72 +250,71 @@ export default function LocationsPage() {
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="text-xl font-semibold text-white line-clamp-2">
-                        {location.name}
+                        {location_.name}
                       </h3>
                       <div className="flex gap-2">
                         {/* Badge stato */}
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          location.enable 
-                            ? 'bg-green-500/20 text-green-400' 
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${location_.enable
+                            ? 'bg-green-500/20 text-green-400'
                             : 'bg-gray-500/20 text-gray-400'
-                        }`}>
-                          {location.enable ? 'Attivo' : 'Inattivo'}
+                          }`}>
+                          {location_.enable ? 'Attivo' : 'Inattivo'}
                         </span>
                       </div>
                     </div>
 
                     {/* Descrizione se presente */}
-                    {location.description && (
+                    {location_.description && (
                       <p className="text-white/60 text-sm mb-3 line-clamp-2">
-                        {location.description}
+                        {location_.description}
                       </p>
                     )}
 
-                    {/* Informazioni location */}
+                    {/* Informazioni location_ */}
                     <div className="space-y-2 text-white/60 text-sm">
                       <div className="flex items-center gap-2">
                         <span>📍</span>
                         <span className="line-clamp-1">
-                          {location.address}
-                          {location.city && `, ${location.city}`}
+                          {location_.address}
+                          {location_.city && `, ${location_.city}`}
                         </span>
                       </div>
-                      
-                      {location.phone && (
+
+                      {location_.phone && (
                         <div className="flex items-center gap-2">
                           <span>📞</span>
-                          <span>{location.phone}</span>
+                          <span>{location_.phone}</span>
                         </div>
                       )}
 
-                      {location.email && (
+                      {location_.email && (
                         <div className="flex items-center gap-2">
                           <span>📧</span>
-                          <span className="line-clamp-1">{location.email}</span>
+                          <span className="line-clamp-1">{location_.email}</span>
                         </div>
                       )}
 
                       <div className="flex items-center gap-2">
                         <span>📊</span>
                         <span>
-                          Creato il {new Date(location.created_at).toLocaleDateString('it-IT')}
+                          Creato il {new Date(location_.created_at).toLocaleDateString('it-IT')}
                         </span>
                       </div>
                     </div>
 
                     {/* Statistiche se disponibili */}
-                    {(location.events_count !== undefined || location.capacity !== undefined) && (
+                    {(location_.events_count !== undefined || location_.capacity !== undefined) && (
                       <div className="mt-4 pt-4 border-t border-white/10">
                         <div className="flex justify-between text-sm">
-                          {location.events_count !== undefined && (
+                          {location_.events_count !== undefined && (
                             <div className="text-center">
-                              <div className="text-white font-medium">{location.events_count}</div>
+                              <div className="text-white font-medium">{location_.events_count}</div>
                               <div className="text-white/60">Eventi</div>
                             </div>
                           )}
-                          {location.capacity !== undefined && (
+                          {location_.capacity !== undefined && (
                             <div className="text-center">
-                              <div className="text-white font-medium">{location.capacity}</div>
+                              <div className="text-white font-medium">{location_.capacity}</div>
                               <div className="text-white/60">Capacità</div>
                             </div>
                           )}
@@ -329,22 +330,21 @@ export default function LocationsPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              toggleLocationStatus(location.id, location.enable);
+                              togglelocationStatus(location_.id, location_.enable == 1);
                             }}
-                            disabled={toggleLoading === location.id}
-                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                              location.enable
+                            disabled={toggleLoading === location_.id}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${location_.enable
                                 ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/40'
                                 : 'bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-500/40'
-                            } ${toggleLoading === location.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            title={location.enable ? 'Disattiva locale' : 'Attiva locale'}
+                              } ${toggleLoading === location_.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            title={location_.enable ? 'Disattiva locale' : 'Attiva locale'}
                           >
-                            {toggleLoading === location.id ? (
+                            {toggleLoading === location_.id ? (
                               <>
                                 <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></div>
                                 <span className="text-xs">...</span>
                               </>
-                            ) : location.enable ? (
+                            ) : location_.enable ? (
                               <>
                                 <span>❌</span>
                                 <span className="text-xs">Disattiva</span>
@@ -358,12 +358,12 @@ export default function LocationsPage() {
                           </button>
                         </div>
                       )}
-                      
+
                       {/* Pulsante Modifica sempre presente */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          router.push(`/locations/${location.id}/edit`);
+                          router.push(`/locations/${location_.id}/edit`);
                         }}
                         className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
                       >

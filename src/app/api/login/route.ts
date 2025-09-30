@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.users.findUnique({ 
       where: { email },
+      // Remove select to return all fields
     });
 
     if (!user) {

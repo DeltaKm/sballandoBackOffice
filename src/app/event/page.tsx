@@ -23,7 +23,7 @@ export default function EventsPage() {
     return events.filter(event => 
       event.title?.toLowerCase().includes(query) ||
       event.subtitle?.toLowerCase().includes(query) ||
-      event.location?.name?.toLowerCase().includes(query) ||
+      event.location_?.name?.toLowerCase().includes(query) ||
       event.description_extended?.toLowerCase().includes(query)
     );
   }, [events, searchQuery]);
@@ -99,7 +99,7 @@ export default function EventsPage() {
             </div>
             <input
               type="text"
-              placeholder="Cerca eventi per titolo, sottotitolo, location..."
+              placeholder="Cerca eventi per titolo, sottotitolo, location_..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-[#FC0045] focus:border-transparent"

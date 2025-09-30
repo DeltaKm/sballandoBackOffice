@@ -35,7 +35,7 @@ export default function HomePage() {
 
   // Gestisci il redirect in un useEffect separato
   useEffect(() => {
-    if (shouldRedirect || (user && !checking)) {
+    if (shouldRedirect ?? (user && !checking)) {
       router.push('/dashboard');
     }
   }, [shouldRedirect, user, checking, router]);
@@ -57,7 +57,7 @@ export default function HomePage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Errore durante il login");
+        setError(data.message ?? "Errore durante il login");
       } else {
         // Salva l'utente nello store (che automaticamente salva anche nel localStorage)
         setUser(data);
@@ -81,7 +81,7 @@ export default function HomePage() {
   }
 
   // Non mostrare il form se l'utente è già loggato o sta per essere reindirizzato
-  if (user || shouldRedirect) {
+  if (user ?? shouldRedirect) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-[#FC0045]">
         <div className="text-white text-lg">Reindirizzamento...</div>

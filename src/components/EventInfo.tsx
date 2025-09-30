@@ -3,7 +3,7 @@ import { InfoItem } from './InfoItem';
 interface Event {
   datetime_start: string | null;
   datetime_end: string | null;
-  location?: {
+  location_?: {
     name: string;
     address?: string;
   };
@@ -13,6 +13,14 @@ interface Event {
   description_extended?: string;
 }
 
+// ✅ Utility per aggiustare le date per il frontend
+const adjustDateForDisplay = (dateString: string): Date => {
+  const date = new Date(dateString);
+  // Sottrai 2 ore per compensare l'offset del server
+  date.setHours(date.getHours() - 2);
+  return date;
+};
+
 export function EventInfo({ event }: { event: Event }) {
   return (
     <>
@@ -21,20 +29,25 @@ export function EventInfo({ event }: { event: Event }) {
           <InfoItem 
             icon="📅" 
             label="Data Inizio" 
-            value={event.datetime_start ? new Date(event.datetime_start).toLocaleString('it-IT') : 'Non specificata'} 
+            value={event.datetime_start ? 
+              adjustDateForDisplay(event.datetime_start).toLocaleString('it-IT', {
+              }) : 
+              'Non specificata'
+            } 
           />
           {event.datetime_end && (
             <InfoItem 
               icon="🏁" 
               label="Data Fine" 
-              value={new Date(event.datetime_end).toLocaleString('it-IT')} 
+              value={adjustDateForDisplay(event.datetime_end).toLocaleString('it-IT', {
+              })} 
             />
           )}
-          {event.location && (
+          {event.location_ && (
             <InfoItem 
               icon="📍" 
               label="Location" 
-              value={`${event.location.name}${event.location.address ? ` - ${event.location.address}` : ''}`} 
+              value={`${event.location_.name}${event.location_.address ? ` - ${event.location_.address}` : ''}`} 
             />
           )}
         </div>
@@ -42,18 +55,20 @@ export function EventInfo({ event }: { event: Event }) {
           <InfoItem 
             icon="👥" 
             label="Iscritti" 
-            value={`${event.subscribers || 0}`} 
+            value={`${event.subscribers ?? 0}`} 
           />
           <InfoItem 
             icon="📅" 
             label="Creato il" 
-            value={new Date(event.created_at).toLocaleDateString('it-IT')} 
+            value={adjustDateForDisplay(event.created_at).toLocaleDateString('it-IT', {
+            })} 
           />
           {event.updated_at && (
             <InfoItem 
               icon="🔄" 
               label="Aggiornato il" 
-              value={new Date(event.updated_at).toLocaleDateString('it-IT')} 
+              value={adjustDateForDisplay(event.updated_at).toLocaleDateString('it-IT', {
+              })} 
             />
           )}
         </div>

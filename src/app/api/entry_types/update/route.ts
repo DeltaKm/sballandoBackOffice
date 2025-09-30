@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-export async function PATCH(request: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
     const {
       entry_type_id,
@@ -14,8 +14,29 @@ export async function PATCH(request: NextRequest) {
       stock,
     } = await request.json();
 
-    if (!entry_type_id || !user_token || !label || price === undefined || price === null) {
-      return NextResponse.json({ error: "Dati mancanti" }, { status: 400 });
+    // Validazione dati con errori specifici
+    const missingFields = [];
+    
+    if (!entry_type_id) missingFields.push('entry_type_id');
+    if (!user_token) missingFields.push('user_token');
+    if (!label) missingFields.push('label');
+    if (price === undefined || price === null) missingFields.push('price');
+
+    if (missingFields.length > 0) {
+      return NextResponse.json({ 
+        error: `Dati mancanti: ${missingFields.join(', ')}`,
+        code: "MISSING_REQUIRED_FIELDS",
+        missing_fields: missingFields,
+        received_data: {
+          entry_type_id: entry_type_id || 'NON FORNITO',
+          user_token: user_token ? 'FORNITO' : 'NON FORNITO',
+          label: label || 'NON FORNITO',
+          price: price !== undefined && price !== null ? price : 'NON FORNITO',
+          description: description || 'NON FORNITO',
+          category: category || 'NON FORNITO',
+          stock: stock !== undefined ? stock : 'NON FORNITO'
+        }
+      }, { status: 400 });
     }
 
     const user = await prisma.users.findFirst({
@@ -24,7 +45,10 @@ export async function PATCH(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "Accesso non autorizzato" }, { status: 401 });
+      return NextResponse.json({ 
+        error: "Accesso non autorizzato: token utente non valido",
+        code: "INVALID_USER_TOKEN" 
+      }, { status: 401 });
     }
 
     const existingEntry = await prisma.entry_types.findUnique({
@@ -33,11 +57,20 @@ export async function PATCH(request: NextRequest) {
     });
 
     if (!existingEntry) {
-      return NextResponse.json({ error: "Ingresso non trovato" }, { status: 404 });
+      return NextResponse.json({ 
+        error: `Ingresso non trovato con ID: ${entry_type_id}`,
+        code: "ENTRY_NOT_FOUND",
+        entry_type_id: entry_type_id
+      }, { status: 404 });
     }
 
     if (existingEntry.user_id !== user.id && user.role !== 'SUPERADMIN') {
-      return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
+      return NextResponse.json({ 
+        error: "Non autorizzato: non sei il proprietario di questo ingresso",
+        code: "NOT_OWNER",
+        owner_id: existingEntry.user_id,
+        your_id: user.id
+      }, { status: 403 });
     }
 
     // Verifica modifiche
@@ -57,7 +90,7 @@ export async function PATCH(request: NextRequest) {
 
     if (!isChangingLabel && !isChangingPrice && !isChangingCategory && !isChangingDescription && !isChangingStock) {
       const currentEvent = await prisma.events.findUnique({
-        where: { id: existingEntry.event_id },
+        where: { id: existingEntry.event_id || 0 },
         include: { entry_types: { orderBy: { created_at: "desc" } } }
       });
       return NextResponse.json(currentEvent, { status: 200 });
@@ -76,13 +109,25 @@ export async function PATCH(request: NextRequest) {
     const totalTransferredStock = transferredEntries.reduce((sum, e) => sum + (e.stock || 0), 0);
 
     if (isTransferred) {
-      if (isChangingLabel || isChangingCategory || isChangingPrice) {
+      // CORREZIONE: Controlla solo se STA REALMENTE CAMBIANDO i valori
+      if (isChangingLabel || isChangingCategory ) {
         return NextResponse.json(
           {
             error: "Non puoi modificare nome, prezzo o categoria di un ingresso già trasferito. Puoi modificare solo la descrizione e la quantità.",
             code: "ENTRY_TRANSFERRED_LIMITED_EDIT",
             allowed_changes: ["description", "stock"],
-            total_transferred_stock: totalTransferredStock
+            total_transferred_stock: totalTransferredStock,
+            debug_changes: {
+              isChangingLabel,
+              isChangingCategory, 
+              isChangingPrice,
+              current_label: normalizedExistingLabel,
+              sent_label: normalizedLabel,
+              current_category: normalizedExistingCategory,
+              sent_category: normalizedCategory,
+              current_price: existingEntry.price,
+              sent_price: price
+            }
           },
           { status: 400 }
         );
@@ -105,15 +150,31 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    // Validazione dati
+    // Validazione dati più specifica
     if (typeof label !== 'string' || label.trim().length === 0) {
-      return NextResponse.json({ error: "Il nome dell'ingresso è obbligatorio" }, { status: 400 });
+      return NextResponse.json({ 
+        error: "Il nome dell'ingresso è obbligatorio e deve essere una stringa non vuota",
+        code: "INVALID_LABEL",
+        received_label: label
+      }, { status: 400 });
     }
+    
     if (typeof price !== 'number' || price < 0) {
-      return NextResponse.json({ error: "Il prezzo deve essere un numero valido maggiore o uguale a 0" }, { status: 400 });
+      return NextResponse.json({ 
+        error: "Il prezzo deve essere un numero valido maggiore o uguale a 0",
+        code: "INVALID_PRICE",
+        received_price: price,
+        price_type: typeof price
+      }, { status: 400 });
     }
+    
     if (stock !== null && stock !== undefined && stock !== "" && (isNaN(parseInt(stock)) || parseInt(stock) < 0)) {
-      return NextResponse.json({ error: "La quantità deve essere un numero intero maggiore o uguale a 0" }, { status: 400 });
+      return NextResponse.json({ 
+        error: "La quantità deve essere un numero intero maggiore o uguale a 0",
+        code: "INVALID_STOCK",
+        received_stock: stock,
+        stock_type: typeof stock
+      }, { status: 400 });
     }
 
     // Verifica duplicati (solo se cambia nome e non è trasferito)
@@ -127,7 +188,12 @@ export async function PATCH(request: NextRequest) {
         }
       });
       if (duplicateEntry) {
-        return NextResponse.json({ error: "Esiste già un ingresso con questo nome per questo evento" }, { status: 400 });
+        return NextResponse.json({ 
+          error: `Esiste già un ingresso con questo nome "${label.trim()}" per questo evento`,
+          code: "DUPLICATE_ENTRY_NAME",
+          duplicate_entry_id: duplicateEntry.id,
+          event_id: existingEntry.event_id
+        }, { status: 400 });
       }
     }
 
@@ -147,7 +213,7 @@ export async function PATCH(request: NextRequest) {
         updateData.stock = newStock;
 
         // Se lo stock aumenta, incrementa anche created_qnt
-        if (newStock !== null && newStock > existingEntry.created_qnt) {
+        if (newStock !== null && newStock > (existingEntry.created_qnt || 0)) {
           updateData.created_qnt = newStock;
         }
         // Se lo stock diminuisce, NON diminuire created_qnt!
@@ -177,7 +243,7 @@ export async function PATCH(request: NextRequest) {
 
     // Recupera evento aggiornato
     const updatedEvent = await prisma.events.findUnique({
-      where: { id: existingEntry.event_id },
+      where: { id: existingEntry.event_id || 0},
       include: {
         entry_types: { orderBy: { created_at: "desc" } },
         products: { orderBy: { created_at: "desc" } },
@@ -199,15 +265,20 @@ export async function PATCH(request: NextRequest) {
         event_music_genres: {
           include: { music_genre: { select: { id: true, label: true } } }
         },
-        location: true
+        location_: true
       }
     });
 
     return NextResponse.json(updatedEvent, { status: 200 });
 
   } catch (error) {
+    console.error('❌ Error updating entry:', error);
     return NextResponse.json(
-      { error: "Si è verificato un errore durante l'aggiornamento. Riprova." },
+      { 
+        error: "Si è verificato un errore durante l'aggiornamento. Riprova.",
+        code: "INTERNAL_SERVER_ERROR",
+        details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined
+      },
       { status: 500 }
     );
   } finally {

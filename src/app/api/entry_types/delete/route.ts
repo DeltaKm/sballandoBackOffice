@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
 export async function DELETE(request: NextRequest) {
-  let prisma: PrismaClient;
+  let prisma: PrismaClient | undefined = undefined;
   
   try {
     // Inizializza Prisma all'interno del try block
@@ -62,12 +62,12 @@ export async function DELETE(request: NextRequest) {
     const isSuperAdmin = user.role === 'SUPERADMIN';
     
     // Verifica se è proprietario dell'evento
-    const isEventOwner = entryType.event.user_id === user.id;
+    const isEventOwner = entryType.event!.user_id === user.id;
     
     // Verifica se è collaboratore dell'evento
     const isCollaborator = await prisma.collaborators.findFirst({
       where: {
-        event_id: entryType.event.id,
+        event_id: entryType.event!.id,
         user_id: user.id
       }
     });
@@ -97,10 +97,10 @@ export async function DELETE(request: NextRequest) {
 
     // Recupera l'evento aggiornato
     const updatedEvent = await prisma.events.findUnique({
-      where: { id: entryType.event.id },
+      where: { id: entryType.event!.id },
       include: {
         entry_types: true,
-        location: true,
+        location_: true,
         collaborators: {
           include: {
             user: true

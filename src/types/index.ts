@@ -9,11 +9,15 @@ export interface User {
   followers_count: number;
   following_count: number;
   bio?: string | null;
+  fcm_token?: string | null;
+  role: string;
+  token: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface Location {
+export interface location_ {
+  events: any;
   id: number;
   name: string;
   address: string;
@@ -22,6 +26,10 @@ export interface Location {
   phone?: string;
   email: string;
   cover?: string | null;
+  stripe_account?: {
+    active: boolean;
+    id: string;
+  };
   token?: string;
   enable?: number;
   capacity?: number;
@@ -47,7 +55,12 @@ export interface EventMusicGenre {
 }
 
 export interface Product {
+  burned: number;
+  category: string;
   id: number;
+  paid: string;
+  event_id: number;
+  old_user_id?: number | null;
   user_id: number;
   label: string;
   price: number;
@@ -58,9 +71,21 @@ export interface Product {
 }
 
 export interface EntryType {
+  products: never[];
+  gender_min_quantity: number;
+  gender_min_type: string;
+  gender_min_enabled: boolean;
+  fairplay_min: any;
+  seats: number;
+  type: "free" | "invite";
+  burned: number;
+  category: string;
   id: number;
   user_id: number;
   label: string;
+  old_user_id?: number | null;
+  paid: string;
+
   price: number;
   description?: string;
   stock?: number | null;
@@ -72,6 +97,9 @@ export interface EntryType {
 }
 
 export interface Collaborator {
+  guest_enabled: boolean;
+  vidimate_enabled_product: boolean;
+  vidimate_enabled_entry: boolean;
   id: number;
   label: string;
   user_id: number | null;
@@ -80,9 +108,12 @@ export interface Collaborator {
 }
 
 export interface Event {
+  spotify_token_expires_at: any;
+  spotify_access_token: any;
   id: number;
   user_id: number;
   title: string | null;
+  qr_enter?: string | null;
   subtitle?: string;
   datetime_start: string | null;
   datetime_end: string | null;
@@ -97,7 +128,7 @@ export interface Event {
   collaborators: Collaborator[];
   event_music_genres: EventMusicGenre[];
   music_genres: MusicGenre[];
-  location?: Location;
+  location_?: location_;
   
   description_extended?: string;
   state?: "draft" | "published";
@@ -139,7 +170,7 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
-export interface LocationFormData {
+export interface locationFormData {
   name: string;
   description: string;
   address: string;

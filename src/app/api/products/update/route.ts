@@ -83,7 +83,7 @@ export async function PATCH(request: NextRequest) {
       !isChangingStock
     ) {
       const currentEvent = await prisma.events.findUnique({
-        where: { id: existingProduct.event_id },
+        where: { id: existingProduct.event_id || 0 },
         include: {
           products: { orderBy: { created_at: "desc" } },
           collaborators: {
@@ -105,7 +105,7 @@ export async function PATCH(request: NextRequest) {
           event_music_genres: {
             include: { music_genre: { select: { id: true, label: true } } },
           },
-          location: true,
+          location_: true,
         },
       });
 
@@ -261,7 +261,7 @@ const result = await prisma.$transaction(async (tx) => {
 
     // Ritorna evento aggiornato
     const updatedEvent = await prisma.events.findUnique({
-      where: { id: existingProduct.event_id },
+      where: { id: existingProduct.event_id  || 0 },
       include: {
         products: { orderBy: { created_at: "desc" } },
         collaborators: {
@@ -283,7 +283,7 @@ const result = await prisma.$transaction(async (tx) => {
         event_music_genres: {
           include: { music_genre: { select: { id: true, label: true } } },
         },
-        location: true,
+        location_: true,
       },
     });
 

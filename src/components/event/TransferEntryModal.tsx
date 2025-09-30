@@ -48,7 +48,10 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
 
   const handleTransferChange = (collaboratorId: number, value: string) => {
     const numValue = parseInt(value) || 0;
-    const maxAllowed = Math.min(availableQuantity - (totalToTransfer - (parseInt(transfers[collaboratorId]) || 0)), availableQuantity);
+    const maxAllowed = Math.min(
+      availableQuantity - (totalToTransfer - (parseInt(transfers[collaboratorId] ?? "") || 0)),
+      availableQuantity
+    );
     
     if (numValue <= maxAllowed && numValue >= 0) {
       setTransfers(prev => ({
@@ -170,11 +173,17 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
           ) : (
             <div className="space-y-3">
               {collaboratorsData.map(({ collaborator, user: collabUser, compatibleEntries, hasCompatibleEntry, totalStock }) => {
-                const maxTransfer = Math.min(availableQuantity - (totalToTransfer - (parseInt(transfers[collaborator.user_id]) || 0)), availableQuantity);
-                const currentValue = transfers[collaborator.user_id] || '';
+                // Early return if user_id is null
+                if (collaborator.user_id === null) {
+                  return null;
+                }
+
+                const userId = collaborator.user_id; // TypeScript now knows this is number
+                const maxTransfer = Math.min(availableQuantity - (totalToTransfer - (parseInt(transfers[userId] ?? "") || 0)), availableQuantity);
+                const currentValue = transfers[userId] || '';
                 
                 return (
-                  <div key={collaborator.user_id} className="p-4 bg-white/5 border border-white/10 rounded-lg">
+                  <div key={userId} className="p-4 bg-white/5 border border-white/10 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -182,13 +191,12 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
                             {collabUser?.picture && (
                               <img 
                                 src={collabUser.picture} 
-                                alt={collabUser.name} 
                                 className="w-8 h-8 rounded-full"
                               />
                             )}
                             <div>
                               <span className="text-white font-medium">
-                                {collabUser ? `${collabUser.name} ${collabUser.surname}` : `User ${collaborator.user_id}`}
+                                {collabUser ? `${collabUser.name} ${collabUser.surname}` : `User ${userId}`}
                               </span>
                               <span className="ml-2 px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs">
                                 {collaborator.role}
@@ -223,7 +231,7 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
                               min="0"
                               max={maxTransfer}
                               value={currentValue}
-                              onChange={(e) => handleTransferChange(collaborator.user_id, e.target.value)}
+                              onChange={(e) => handleTransferChange(userId, e.target.value)}
                               placeholder="0"
                               className="w-20 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                               disabled={maxTransfer === 0}

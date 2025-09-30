@@ -25,7 +25,7 @@ model blocked_users {
 model collaborators {
   id                       Int                 @id @default(autoincrement()) @db.UnsignedInt
   user_id                  Int                 @db.UnsignedInt
-  event_id                 Int                 // Rimosso @db.UnsignedInt per matchare con events.id
+  event_id                 Int
   label                    String?             @db.VarChar(50)
   role                     collaborators_role?
   vidimate_enabled_entry   Boolean?            @default(false)
@@ -33,9 +33,8 @@ model collaborators {
   guest_enabled            Boolean?            @default(false)
   created_at               DateTime?           @db.Timestamp(0)
   updated_at               DateTime?           @db.Timestamp(0)
-
-  event events @relation(fields: [event_id], references: [id])
-  user users @relation(fields: [user_id], references: [id])
+  event                    events              @relation(fields: [event_id], references: [id])
+  user                     users               @relation(fields: [user_id], references: [id])
 
   @@index([event_id])
   @@index([user_id])
@@ -76,7 +75,6 @@ model entry_types {
   type                     entry_types_type?
   stock                    Int?
   created_qnt              Int?
-  transfer_qnt             Int?
   created_at               DateTime?                 @default(now()) @db.DateTime(0)
   requested_date           DateTime?                 @db.DateTime(0)
   updated_at               DateTime?                 @db.DateTime(0)
@@ -91,8 +89,9 @@ model entry_types {
   paid                     entry_types_paid          @default(not_paid)
   stripe_payment_intent_id String?                   @db.VarChar(50)
   pending_time             Int?
+  transfer_qnt             Int?
+  event                    events?                   @relation(fields: [event_id], references: [id])
 
-  event events? @relation(fields: [event_id], references: [id])
   @@index([burned], map: "burned")
   @@index([event_id], map: "event_id")
   @@index([old_user_id], map: "old_user_id")
@@ -108,35 +107,37 @@ model event_user_favorites {
 }
 
 model events {
-  id                       Int           @id @default(autoincrement())
+  id                       Int                  @id @default(autoincrement())
   user_id                  Int?
-  location_id              Int           @db.UnsignedInt
-  token                    String?       @db.Char(50)
-  cover                    String?       @db.VarChar(255)
-  is_public                Int?          @db.TinyInt
-  created_at               DateTime      @default(now()) @db.DateTime(0)
-  title                    String?       @db.Text
-  subtitle                 String?       @db.Text
-  music_genres             String?       @db.LongText
-  collaborators_id         String?       @db.LongText
-  token_payment            Int?          @default(0)
-  description_extended     String?       @db.Text
-  datetime_start           DateTime?     @db.DateTime(0)
-  datetime_end             DateTime?     @db.DateTime(0)
-  subscribers              Int?          @default(0)
-  state                    events_state? @default(draft)
-  enabled                  Int?          @default(0)
-  updated_at               DateTime?     @db.Timestamp(0)
-  spotify_access_token     String?       @db.VarChar(5345)
-  spotify_refresh_token    String?       @db.VarChar(5435)
-  spotify_token_expires_at String?       @db.VarChar(5345)
-  spotify_playlist_id      String?       @db.VarChar(255)
-
-  location                 locations?    @relation(fields: [location_id], references: [id])
+  location_id              Int                  @db.UnsignedInt
+  token                    String?              @db.Char(50)
+  cover                    String?              @db.VarChar(255)
+  is_public                Int?                 @db.TinyInt
+  created_at               DateTime             @default(now()) @db.DateTime(0)
+  title                    String?              @db.Text
+  subtitle                 String?              @db.Text
+  music_genres             String?              @db.LongText
+  collaborators_id         String?              @db.LongText
+  token_payment            Int?                 @default(0)
+  description_extended     String?              @db.Text
+  datetime_start           DateTime?            @db.DateTime(0)
+  datetime_end             DateTime?            @db.DateTime(0)
+  subscribers              Int?                 @default(0)
+  state                    events_state?        @default(draft)
+  enabled                  Int?                 @default(0)
+  updated_at               DateTime?            @db.Timestamp(0)
+  spotify_access_token     String?              @db.VarChar(5345)
+  spotify_refresh_token    String?              @db.VarChar(5435)
+  spotify_token_expires_at String?              @db.VarChar(5345)
+  spotify_playlist_id      String?              @db.VarChar(255)
+  qr_enter                 String?              @db.VarChar(255)
   collaborators            collaborators[]
   entry_types              entry_types[]
   event_music_genres       event_music_genres[]
+  location_                locations            @relation(fields: [location_id], references: [id])
+  messages                 messages[]
   products                 products[]
+
   @@index([location_id], map: "location_id")
   @@index([user_id], map: "user_id")
 }
@@ -235,29 +236,34 @@ model locations {
   link_whatsapp  String?   @db.VarChar(500)
   link_facebook  String?   @db.VarChar(500)
   link_tiktok    String?   @db.VarChar(500)
+  events         events[]
+  users          users?    @relation(fields: [user_id], references: [id])
 
-  events      events[]
-  users       users? @relation(fields: [user_id], references: [id])
   @@index([user_id], map: "user_id")
 }
 
 model messages {
-  id                  Int       @id @default(autoincrement())
-  sender_id           Int?
-  receiver_id         Int?
+  id                  Int               @id @default(autoincrement())
+  sender_id           Int?              @db.UnsignedInt
+  receiver_id         Int?              @db.UnsignedInt
   event_id            Int?
-  message             String?   @db.Text
+  message             String?           @db.Text
   product_id          Int?
-  created_at          DateTime? @db.Timestamp(0)
-  updated_at          DateTime? @db.Timestamp(0)
-  picture             String?   @db.Text
-  read                Int?      @default(0) @db.TinyInt
-  spotify_playlist_id Int?
+  created_at          DateTime?         @db.Timestamp(0)
+  updated_at          DateTime?         @db.Timestamp(0)
+  picture             String?           @db.Text
+  read                Int?              @default(0) @db.TinyInt
+  spotify_playlist_id Int?              @db.UnsignedInt
+  event               events?           @relation(fields: [event_id], references: [id])
+  receiver            users?            @relation("MessageReceiver", fields: [receiver_id], references: [id])
+  sender              users?            @relation("MessageSender", fields: [sender_id], references: [id])
+  spotify_playlist    spotify_playlist? @relation(fields: [spotify_playlist_id], references: [id])
 
   @@index([event_id], map: "event_id")
   @@index([product_id], map: "product_id")
   @@index([receiver_id], map: "receiver_id")
   @@index([sender_id], map: "sender_id")
+  @@index([spotify_playlist_id], map: "messages_spotify_playlist_id_fkey")
 }
 
 model migrations {
@@ -267,12 +273,11 @@ model migrations {
 }
 
 model music_genres {
-  id      Int      @id @default(autoincrement()) @db.UnsignedInt
-  label   String?  @db.VarChar(100)
-  default Boolean?
-
-  event_music_genres       event_music_genres[]
-  user_music_genres        user_music_genres[]
+  id                 Int                  @id @default(autoincrement()) @db.UnsignedInt
+  label              String?              @db.VarChar(100)
+  default            Boolean?
+  event_music_genres event_music_genres[]
+  user_music_genres  user_music_genres[]
 }
 
 model notifications {
@@ -339,7 +344,6 @@ model products {
   label                    String?        @db.VarChar(50)
   description              String?        @db.Text
   stock                    Int?
-  transfer_qnt             Int?
   created_qnt              Int?
   created_at               DateTime?      @db.DateTime(0)
   requested_date           DateTime?      @db.DateTime(0)
@@ -351,8 +355,9 @@ model products {
   paid                     products_paid? @default(not_paid)
   entry_type_id            Int?
   game                     products_game?
+  transfer_qnt             Int?
+  event                    events?        @relation(fields: [event_id], references: [id])
 
-  event events? @relation(fields: [event_id], references: [id])
   @@index([entry_type_id], map: "entry_type_id")
   @@index([event_id], map: "event_id")
   @@index([old_user_id], map: "old_user_id")
@@ -370,14 +375,15 @@ model reports {
 }
 
 model spotify_playlist {
-  id         Int       @id @default(autoincrement()) @db.UnsignedInt
-  created_at DateTime  @default(now()) @db.Timestamp(0)
-  title      String?   @db.VarChar(255)
+  id         Int        @id @default(autoincrement()) @db.UnsignedInt
+  created_at DateTime   @default(now()) @db.Timestamp(0)
+  title      String?    @db.VarChar(255)
   event_id   Int?
-  cover      String?   @db.VarChar(255)
-  subtitle   String?   @db.VarChar(255)
-  updated_at DateTime? @db.Timestamp(0)
+  cover      String?    @db.VarChar(255)
+  subtitle   String?    @db.VarChar(255)
+  updated_at DateTime?  @db.Timestamp(0)
   user_id    Int?
+  messages   messages[]
 }
 
 model user_blocks {
@@ -389,63 +395,61 @@ model user_blocks {
 }
 
 model users {
-  id                                             Int             @id @default(autoincrement()) @db.UnsignedInt
-  token                                          String?         @unique(map: "users_token_unique") @db.VarChar(255)
-  email                                          String          @unique(map: "users_email_unique") @db.VarChar(255)
-  nickname                                       String?         @unique(map: "users_nickname_unique") @db.VarChar(255)
-  name                                           String          @db.VarChar(255)
-  surname                                        String?         @db.VarChar(255)
-  email_verified_at                              DateTime?       @db.Timestamp(0)
-  password                                       String?         @db.VarChar(255)
-  remember_token                                 String?         @db.VarChar(100)
-  bio                                            String?         @db.Text
-  music_genres                                   String?         @db.LongText
-  prefix_phone                                   String?         @db.VarChar(255)
-  phone                                          String?         @db.VarChar(255)
-  birthday                                       DateTime?       @db.Date
+  id                                             Int                 @id @default(autoincrement()) @db.UnsignedInt
+  token                                          String?             @unique(map: "users_token_unique") @db.VarChar(255)
+  email                                          String              @unique(map: "users_email_unique") @db.VarChar(255)
+  nickname                                       String?             @unique(map: "users_nickname_unique") @db.VarChar(255)
+  name                                           String              @db.VarChar(255)
+  surname                                        String?             @db.VarChar(255)
+  email_verified_at                              DateTime?           @db.Timestamp(0)
+  password                                       String?             @db.VarChar(255)
+  remember_token                                 String?             @db.VarChar(100)
+  bio                                            String?             @db.Text
+  music_genres                                   String?             @db.LongText
+  prefix_phone                                   String?             @db.VarChar(255)
+  phone                                          String?             @db.VarChar(255)
+  birthday                                       DateTime?           @db.Date
   gender                                         users_gender?
-  role                                           users_role      @default(USER)
-  last_access                                    DateTime?       @db.Timestamp(0)
-  visibility                                     Boolean         @default(true)
-  enabled                                        Boolean         @default(true)
-  country                                        String?         @db.VarChar(255)
-  region                                         String?         @db.VarChar(255)
-  city                                           String?         @db.VarChar(255)
-  address                                        String?         @db.VarChar(255)
-  created_at                                     DateTime?       @db.Timestamp(0)
-  updated_at                                     DateTime?       @db.Timestamp(0)
-  reset_token                                    String?         @db.VarChar(255)
-  tags                                           String?         @db.VarChar(255)
-  storage_token                                  String?         @db.VarChar(50)
-  current_token_jwt                              String?         @db.Text
-  picture                                        String?         @db.VarChar(255)
-  highlight                                      String?         @default("red") @db.VarChar(10)
-  fairplay                                       Int?            @default(0) @db.SmallInt
-  fairplay_collaborator                          Int?            @default(0) @db.MediumInt
-  fcm_token                                      String?         @db.VarChar(255)
-  link_instagram                                 String?         @db.VarChar(500)
-  link_tiktok                                    String?         @db.VarChar(500)
-  followers_followers_follower_idTousers         followers[]     @relation("followers_follower_idTousers")
-  followers_followers_followed_idTousers         followers[]     @relation("followers_followed_idTousers")
-  notifications_notifications_receiver_idTousers notifications[] @relation("notifications_receiver_idTousers")
-  notifications_notifications_sender_idTousers   notifications[] @relation("notifications_sender_idTousers")
-
-  collaborators            collaborators[]
-  locations                locations[]
-  user_music_genres        user_music_genres[]
+  last_access                                    DateTime?           @db.Timestamp(0)
+  visibility                                     Boolean             @default(true)
+  enabled                                        Boolean             @default(true)
+  country                                        String?             @db.VarChar(255)
+  region                                         String?             @db.VarChar(255)
+  city                                           String?             @db.VarChar(255)
+  address                                        String?             @db.VarChar(255)
+  created_at                                     DateTime?           @db.Timestamp(0)
+  updated_at                                     DateTime?           @db.Timestamp(0)
+  reset_token                                    String?             @db.VarChar(255)
+  tags                                           String?             @db.VarChar(255)
+  storage_token                                  String?             @db.VarChar(50)
+  current_token_jwt                              String?             @db.Text
+  picture                                        String?             @db.VarChar(255)
+  highlight                                      String?             @default("red") @db.VarChar(10)
+  fairplay                                       Int?                @default(0) @db.SmallInt
+  fairplay_collaborator                          Int?                @default(0) @db.MediumInt
+  fcm_token                                      String?             @db.VarChar(255)
+  link_instagram                                 String?             @db.VarChar(500)
+  link_tiktok                                    String?             @db.VarChar(500)
+  role                                           users_role          @default(USER)
+  collaborators                                  collaborators[]
+  followers_followers_follower_idTousers         followers[]         @relation("followers_follower_idTousers")
+  followers_followers_followed_idTousers         followers[]         @relation("followers_followed_idTousers")
+  locations                                      locations[]
+  messages_received                              messages[]          @relation("MessageReceiver")
+  messages_sent                                  messages[]          @relation("MessageSender")
+  notifications_notifications_receiver_idTousers notifications[]     @relation("notifications_receiver_idTousers")
+  notifications_notifications_sender_idTousers   notifications[]     @relation("notifications_sender_idTousers")
+  user_music_genres                              user_music_genres[]
 }
 
-
 model user_music_genres {
-  id            Int          @id @default(autoincrement()) @db.UnsignedInt
-  user_id       Int          @db.UnsignedInt
-  music_genre_id Int         @db.UnsignedInt
-  created_at    DateTime     @default(now()) @db.Timestamp(0)
-  updated_at    DateTime     @updatedAt @db.Timestamp(0)
-  
-  user         users        @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  music_genre  music_genres @relation(fields: [music_genre_id], references: [id], onDelete: Cascade)
-  
+  id             Int          @id @default(autoincrement()) @db.UnsignedInt
+  user_id        Int          @db.UnsignedInt
+  music_genre_id Int          @db.UnsignedInt
+  created_at     DateTime     @default(now()) @db.Timestamp(0)
+  updated_at     DateTime     @updatedAt @db.Timestamp(0)
+  music_genre    music_genres @relation(fields: [music_genre_id], references: [id], onDelete: Cascade)
+  user           users        @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, music_genre_id])
   @@index([user_id])
@@ -453,20 +457,18 @@ model user_music_genres {
 }
 
 model event_music_genres {
-  id            Int          @id @default(autoincrement()) @db.UnsignedInt
-  event_id      Int
-  music_genre_id Int         @db.UnsignedInt
-  created_at    DateTime     @default(now()) @db.Timestamp(0)
-  updated_at    DateTime     @updatedAt @db.Timestamp(0)
-
-  event         events       @relation(fields: [event_id], references: [id], onDelete: Cascade)
-  music_genre   music_genres @relation(fields: [music_genre_id], references: [id], onDelete: Cascade)
+  id             Int          @id @default(autoincrement()) @db.UnsignedInt
+  event_id       Int
+  music_genre_id Int          @db.UnsignedInt
+  created_at     DateTime     @default(now()) @db.Timestamp(0)
+  updated_at     DateTime     @updatedAt @db.Timestamp(0)
+  event          events       @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  music_genre    music_genres @relation(fields: [music_genre_id], references: [id], onDelete: Cascade)
 
   @@unique([event_id, music_genre_id])
   @@index([event_id])
   @@index([music_genre_id])
 }
-
 
 enum collaborators_role {
   admin
@@ -525,7 +527,7 @@ enum entry_types_paid {
 enum notifications_redirect {
   user
   event
-  location
+  location_
   checkout
   product
 }

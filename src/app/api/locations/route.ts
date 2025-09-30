@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
         }
 
         if (!locations || locations.length === 0) {
-            return NextResponse.json({ message: "location non trovati" }, { status: 404 });
+            return NextResponse.json({ message: "location_ non trovati" }, { status: 404 });
         }
 
         return NextResponse.json(locations);

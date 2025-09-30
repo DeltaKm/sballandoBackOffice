@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('🛍️ Prodotto trovato:', product.label, 'Evento:', product.event.title);
+    console.log('🛍️ Prodotto trovato:', product.label, 'Evento:', product.event!.title);
 
     // Verifica autorizzazione
     if (product.user_id !== user.id && user.role !== 'SUPERADMIN') {
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
 
     // Ritorna evento aggiornato
     const updatedEvent = await prisma.events.findUnique({
-      where: { id: product.event_id },
+      where: { id: product.event_id || 0 },
       include: {
         products: {
           orderBy: {
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
             }
           }
         },
-        location: true
+        location_: true
       }
     });
 
