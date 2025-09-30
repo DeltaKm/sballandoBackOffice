@@ -1,3 +1,5 @@
+"use client";
+
 import { EventInfo } from "~/components/EventInfo";
 import type { Event } from "~/types";
 

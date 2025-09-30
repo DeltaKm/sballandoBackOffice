@@ -5,7 +5,6 @@ import type { Socket } from "socket.io-client";
 import { useAuthStore } from "~/store/auth";
 import type { Event } from "~/types";
 
-const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
 interface JukeboxSectionProps {
   event: Event;
   onUpdate?: (updatedEvent: Event) => void;
@@ -44,6 +43,7 @@ interface ChatMessage {
 }
 
 export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
+  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
   const { user } = useAuthStore();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentTrack, setCurrentTrack] = useState<CurrentTrack | null>(null);
