@@ -63,8 +63,12 @@ export async function POST(req: Request) {
                 const sftpService = getSFTPService();
                 const uploadResult = await sftpService.uploadEventCover(coverFile, token);
                 
+                // Costruisci il percorso relativo per il database
+                const relativePath = `images/events/${token}/${uploadResult.fileName}`;
+                
                 coverData = {
                     fileName: uploadResult.fileName,
+                    relativePath: relativePath,
                     remotePath: uploadResult.remotePath,
                     publicUrl: uploadResult.publicUrl,
                     fileSize: uploadResult.fileSize
@@ -99,7 +103,7 @@ export async function POST(req: Request) {
                     location_id: validatedData.location_id,
                     state: validatedData.state,
                     user_id: validatedData.user_id,
-                    cover: coverData?.fileName || null,
+                    cover: coverData?.relativePath || null,
                     created_at: now,
                     updated_at: now,
                     token,
