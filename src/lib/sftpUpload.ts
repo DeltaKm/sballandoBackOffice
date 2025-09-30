@@ -1,4 +1,3 @@
-import SFTPClient from 'ssh2-sftp-client';
 import { writeFile, unlink } from 'fs/promises';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,7 +15,8 @@ export async function uploadFileToSFTP(
   remotePath: string,
   fileName?: string
 ): Promise<string> {
-  const sftp = new SFTPClient();
+
+const sftp = require('ssh2-sftp-client');
   let tempPath: string | null = null;
 
   try {

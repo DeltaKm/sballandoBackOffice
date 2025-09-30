@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, unlink } from 'fs/promises';
 import { join } from 'path';
-import SFTPClient from 'ssh2-sftp-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +26,8 @@ export async function POST(request: NextRequest) {
     console.log(`📁 File temporaneo salvato: ${tempPath}`);
 
     // ✅ CARICA SU SERVER REMOTO VIA SFTP
-    const sftp = new SFTPClient();
+    const sftp = require('ssh2-sftp-client');
+
     
     try {
       await sftp.connect({
