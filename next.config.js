@@ -20,7 +20,6 @@ const config = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  serverExternalPackages: ["date-fns-tz", "socket.io-client"],
   env: {
     TZ: 'Europe/Rome', // Forza il timezone del server
   },
@@ -28,27 +27,27 @@ const config = {
   // ✅ CONFIGURAZIONE CORRETTA PER NEXT.JS 14
   experimental: {
     serverComponentsExternalPackages: ['ssh2', 'ssh2-sftp-client'],
+    // ✅ Configurazione Turbopack per moduli esterni
+    turbo: {
+      rules: {
+        '*.node': {
+          loaders: ['ignore-loader'],
+        },
+      },
+    },
   },
   
-  // ✅ CONFIGURA WEBPACK PER ESCLUDERE MODULI NATIVI
+  // ✅ CONFIGURA WEBPACK PER ESCLUDERE MODULI NATIVI (solo quando non si usa Turbopack)
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     // ✅ SOLO SUL SERVER
     if (isServer) {
       // Escludi moduli nativi dal bundling
+      config.externals = config.externals || [];
       config.externals.push({
-        'ssh2': 'ssh2',
-        'ssh2-sftp-client': 'ssh2-sftp-client',
-        'node:fs': 'node:fs',
-        'node:path': 'node:path',
-        'node:crypto': 'node:crypto',
+        'ssh2': 'commonjs ssh2',
+        'ssh2-sftp-client': 'commonjs ssh2-sftp-client',
       });
     }
-
-    // ✅ PREVIENI BUNDLING DI MODULI NATIVI
-    config.module.rules.push({
-      test: /\.node$/,
-      use: 'ignore-loader',
-    });
 
     return config;
   },
