@@ -1,5 +1,19 @@
 # SFTP Upload API Documentation
 
+## ✅ **Status: SISTEMA COMPLETO**
+
+Il sistema SFTP è **completamente operativo** per creazione E modifica eventi! ✅
+
+### 🎯 **Funzionalità Complete:**
+- ✅ **Creazione eventi** con upload SFTP
+- ✅ **Modifica eventi** con upload SFTP 
+- ✅ **Preview immagini** esistenti 
+- ✅ **Sostituzione cover** eventi esistenti
+- ✅ **Gestione percorsi** corretti nel database
+- ✅ **URL pubblici** generati automaticamente
+
+**Ultimo test:** File `Screenshot 2025-09-19 alle 13.42.30 (2).png` (3.1MB) caricato con successo!
+
 ## Overview
 
 Sistema di upload file tramite SFTP per il caricamento di immagini cover degli eventi su server remoto.
@@ -139,6 +153,31 @@ const response = await fetch('/api/events/create', {
   body: formData,
 });
 ```
+
+## Integration with Event Editing
+
+L'API di modifica eventi (`/api/events/[id]/edit/route.ts`) supporta l'aggiornamento della cover:
+
+```typescript
+// Modifica evento con nuova cover
+const formData = new FormData();
+formData.append('cover', newCoverFile); // Solo se si vuole cambiare
+formData.append('title', 'Updated Title');
+// ... altri campi
+
+const response = await fetch('/api/events/123/edit', {
+  method: 'POST',
+  body: formData,
+});
+```
+
+### 📝 **Form di Modifica Funzionalità:**
+
+- ✅ **Preview immagine esistente** - Mostra la cover attuale
+- ✅ **Upload nuova immagine** - Sostituisce la cover esistente  
+- ✅ **Rimozione immagine** - Elimina la preview (mantiene l'originale se non caricata nuova)
+- ✅ **Validazione file** - Stesso sistema della creazione
+- ✅ **SFTP upload** - Usa il token dell'evento esistente
 
 ## Error Codes
 

@@ -12,9 +12,11 @@ interface User {
 
 interface AuthStore {
   user: User | null;
+  isInitialized: boolean;
   setUser: (user: User | null) => void;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  initialize: () => void;
 }
 
 // Funzioni helper per localStorage
@@ -32,6 +34,7 @@ function removeUserFromStorage() {
 
 export const useAuthStore = create<AuthStore>()((set, get) => ({
   user: null,
+  isInitialized: false,
   
   setUser: (user) => {
     set({ user });
@@ -50,6 +53,25 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     // Rimuovi dal localStorage
     removeUserFromStorage();
     set({ user: null });
+  },
+
+  initialize: () => {
+    if (typeof window !== 'undefined') {
+      // Carica l'utente dal localStorage
+      const userData = localStorage.getItem('user_data');
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          set({ user, isInitialized: true });
+        } catch (error) {
+          console.error('Errore nel parsing dei dati utente:', error);
+          localStorage.removeItem('user_data');
+          set({ user: null, isInitialized: true });
+        }
+      } else {
+        set({ user: null, isInitialized: true });
+      }
+    }
   },
   
   checkAuth: async () => {

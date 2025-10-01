@@ -21,11 +21,15 @@ export interface location_ {
   id: number;
   name: string;
   address: string;
-  city?: string;
+  comune?: string; // Changed from city to comune
+  provincia?: string; // Added provincia field
+  regione?: string; // Added regione field
+  cap?: string; // Added cap field
+  coordinates?: string; // Added coordinates field
   description?: string;
   phone?: string;
   email: string;
-  cover?: string | null;
+  logo?: string | null; // Changed from cover to logo
   stripe_account?: {
     active: boolean;
     id: string;
@@ -174,7 +178,7 @@ export interface locationFormData {
   name: string;
   description: string;
   address: string;
-  city: string;
+  // Remove city, using comune instead
   logo: File | null;
   regione: string;
   provincia: string;

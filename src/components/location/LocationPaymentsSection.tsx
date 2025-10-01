@@ -274,7 +274,7 @@ export function locationPaymentsSection({ location_, onUpdate }: locationPayment
                 </div>
                 <p className="text-gray-400 text-xs">
                   📍 {location_.address}
-                  {location_.city && `, ${location_.city}`}
+                  {location_.comune && `, ${location_.comune}`}
                 </p>
               </div>
             </div>

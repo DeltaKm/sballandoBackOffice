@@ -18,6 +18,7 @@ export interface SFTPUploadResult {
   fileSize: number;
   publicUrl: string;
   uploadedAt: Date;
+  error?: string;
 }
 
 export interface SFTPUploadOptions {

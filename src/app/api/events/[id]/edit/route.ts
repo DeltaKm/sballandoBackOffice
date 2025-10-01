@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { EventSchema } from "~/schemas/event";
-import { saveEventFile } from "~/lib/fileUpload";
 import { adjustEventDates } from "~/lib/timezone";
+import getSFTPService from "~/lib/sftpService.server";
 
 const prisma = new PrismaClient();
 
@@ -64,14 +64,34 @@ export async function POST(
     }
 
     // Handle file upload if new cover is provided
-    let coverPath = undefined;
-    if (coverFile) {
+    let coverData = null;
+    if (coverFile && coverFile.size > 0) {
         try {
-            coverPath = await saveEventFile(coverFile, existingEvent.token ?? "");
-        } catch (err) {
-            console.error('Errore nel salvataggio del file:', err);
+            console.log('📤 Uploading updated cover image...');
+            console.log(`📂 Event token: ${existingEvent.token}`);
+            
+            const sftpService = getSFTPService();
+            const uploadResult = await sftpService.uploadEventCover(coverFile, existingEvent.token || '');
+            
+            // Costruisci il percorso relativo per il database
+            const relativePath = `images/events/${existingEvent.token}/${uploadResult.fileName}`;
+            
+            coverData = {
+                fileName: uploadResult.fileName,
+                relativePath: relativePath,
+                remotePath: uploadResult.remotePath,
+                publicUrl: uploadResult.publicUrl,
+                fileSize: uploadResult.fileSize
+            };
+            
+            console.log(`✅ Updated cover uploaded:`, coverData);
+        } catch (uploadError) {
+            console.error('❌ Cover upload error:', uploadError);
             return NextResponse.json(
-                { error: 'Errore nel salvataggio del file' },
+                { 
+                    error: 'Errore nel caricamento dell\'immagine',
+                    details: uploadError instanceof Error ? uploadError.message : 'Upload failed'
+                },
                 { status: 500 }
             );
         }
@@ -105,7 +125,7 @@ export async function POST(
                 is_public: adjustedData.is_public ? 1 : 0,
                 location_id: adjustedData.location_id,
                 state: adjustedData.state,
-                ...(coverPath && { cover: coverPath }),
+                ...(coverData && { cover: coverData.relativePath }),
                 updated_at: new Date(),
             },
         });
@@ -130,7 +150,12 @@ export async function POST(
         return { event };
     });
 
-    return NextResponse.json(result.event);
+    return NextResponse.json({
+        success: true,
+        message: 'Evento aggiornato con successo',
+        event: result.event,
+        upload_info: coverData
+    });
 
   } catch (error) {
     console.error('Error updating event:', error);

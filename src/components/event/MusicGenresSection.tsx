@@ -97,6 +97,7 @@ export function MusicGenresSection({ event, onUpdate }: MusicGenresSectionProps)
   };
 
   const selectedGenres = event.event_music_genres || [];
+  const validSelectedGenres = selectedGenres.filter((emg) => emg.music_genre);
 
   return (
     <div className="pt-6 border-t border-white/10">
@@ -116,13 +117,13 @@ export function MusicGenresSection({ event, onUpdate }: MusicGenresSectionProps)
         <div className="flex items-center gap-2 mb-3">
           <h4 className="text-white/80 font-medium">Generi Selezionati</h4>
           <span className="px-2 py-1 bg-[#FC0045]/20 text-[#FC0045] rounded-full text-xs">
-            {selectedGenres.length}
+            {validSelectedGenres.length}
           </span>
         </div>
 
-        {selectedGenres.length > 0 ? (
+        {validSelectedGenres.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {selectedGenres.map((emg) => (
+            {validSelectedGenres.map((emg) => (
               <div
                 key={emg.id}
                 className="flex items-center justify-between p-3 bg-[#FC0045]/10 border border-[#FC0045]/30 rounded-lg"

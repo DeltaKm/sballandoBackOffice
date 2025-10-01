@@ -71,7 +71,7 @@ export default function EditEventPage() {
                 is_public: Boolean(event.is_public),
                 cover: null,
                 cover_preview: event.cover ? 
-                    `/uploads/events/${event.token}/${event.cover}` : "",
+                    `https://webservice.sballando.it/storage/${event.cover}` : "",
                 music_genres: event.event_music_genres?.map((item: any) => item.music_genre.id) || [],
                 state: event.state as "draft" | "published" || "published",
                 user_id: event.user_id || (typeof user?.id === 'number' ? user.id : 0),
@@ -150,6 +150,21 @@ export default function EditEventPage() {
         setFilteredGenres(filtered);
     }, [searchQuery, allMusicGenres]);
 
+    // Gestione upload immagine di copertina
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Crea l'anteprima
+            const objectUrl = URL.createObjectURL(file);
+
+            setFormData({
+                ...formData,
+                cover: file,
+                cover_preview: objectUrl,
+            });
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
@@ -160,7 +175,12 @@ export default function EditEventPage() {
             Object.entries(formData).forEach(([key, value]) => {
                 if (key === 'music_genres') {
                     formDataToSend.append(key, JSON.stringify(value));
-                } else if (value !== null) {
+                } else if (key === 'cover' && value instanceof File) {
+                    formDataToSend.append(key, value);
+                } else if (key === 'cover_preview') {
+                    // Non inviare cover_preview
+                    return;
+                } else if (value !== null && value !== undefined) {
                     formDataToSend.append(key, value.toString());
                 }
             });
@@ -205,6 +225,58 @@ export default function EditEventPage() {
                                 {error}
                             </div>
                         )}
+
+                        {/* Immagine di Copertina */}
+                        <div>
+                            <label className="block text-sm font-medium text-white/80 mb-2">
+                                Immagine di Copertina
+                            </label>
+                            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-white/10 border-dashed rounded-lg">
+                                <div className="space-y-1 text-center">
+                                    {formData.cover_preview ? (
+                                        <div className="relative w-full h-48">
+                                            <img
+                                                src={formData.cover_preview}
+                                                alt="Preview"
+                                                className="w-full h-full object-cover rounded-lg"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (formData.cover_preview && formData.cover_preview.startsWith('blob:')) {
+                                                        URL.revokeObjectURL(formData.cover_preview);
+                                                    }
+                                                    setFormData({
+                                                        ...formData,
+                                                        cover: null,
+                                                        cover_preview: '',
+                                                    });
+                                                }}
+                                                className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+                                            >
+                                                <FaTimes size={14} />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <svg className="mx-auto h-12 w-12 text-white/40" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                            <div className="flex text-sm text-white/60">
+                                                <label htmlFor="cover" className="relative cursor-pointer rounded-md font-medium text-[#FC0045] hover:text-[#FC0045]/80">
+                                                    <span>Carica un file</span>
+                                                    <input id="cover" name="cover" type="file" className="sr-only" onChange={handleImageUpload} accept="image/*" />
+                                                </label>
+                                                <p className="pl-1">o trascina e rilascia</p>
+                                            </div>
+                                            <p className="text-xs text-white/40">
+                                                PNG, JPG, GIF fino a 10MB
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Titolo */}
                         <div>

@@ -14,6 +14,7 @@ import { StatisticsSection } from "~/components/event/StatisticsSection";
 import { ChatSection } from "~/components/event/ChatSection";
 import { JukeboxSection } from "~/components/event/JukeboxSection";
 import { PaymentsSection } from "~/components/event/PaymentsSection";
+import { NotificationModal } from "~/components/event/NotificationModal";
 
 
 import type { Event } from "~/types";
@@ -22,6 +23,7 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
   const user = useAuthStore((state) => state.user);
   const router = useRouter();
   const params = useParams();
@@ -127,6 +129,13 @@ export default function EventDetailPage() {
             </div>
             <div className="flex gap-3">
               <button
+                onClick={() => setShowNotificationModal(true)}
+                className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors flex items-center gap-2"
+                title="Invia notifica agli iscritti"
+              >
+                📢 Notifica
+              </button>
+              <button
                 onClick={() => router.push(`/event/${event.id}/edit`)}
                 className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors flex items-center gap-2"
               >
@@ -173,6 +182,15 @@ export default function EventDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Notification Modal */}
+      <NotificationModal
+        isOpen={showNotificationModal}
+        onClose={() => setShowNotificationModal(false)}
+        eventId={event.id}
+        eventTitle={event.title || ''}
+        subscribersCount={event.subscribers || 0}
+      />
     </main>
   );
 }

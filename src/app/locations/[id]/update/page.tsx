@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useAuthStore } from "~/store/auth";
-import Image from "next/image";
+import { useAuthRedirect } from "~/lib/useAuth";
 import { FaSearch, FaTimes, FaMapMarkerAlt, FaPhone, FaEnvelope, FaGlobe, FaInstagram, FaFacebook, FaTwitter } from 'react-icons/fa';
 import { Switch } from '@headlessui/react';
 
@@ -34,29 +34,22 @@ interface Location {
     name: string;
     description: string | null;
     address: string;
-    city: string;
-    state: string;
-    postal_code: string;
-    country: string;
-    latitude: number | null;
-    longitude: number | null;
+    comune: string;  // invece di city
+    provincia: string; // invece di state
+    cap: string; // invece di postal_code
     phone: string | null;
     email: string | null;
-    website: string | null;
-    instagram: string | null;
-    facebook: string | null;
-    twitter: string | null;
-    is_active: boolean;
-    cover: string | null;
+    logo: string | null; // invece di cover
     created_at: string;
     updated_at: string;
 }
 
 export default function UpdateLocationPage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const locationId = searchParams.get('id');
-    const { user } = useAuthStore();
+    const params = useParams();
+    const locationId = params.id as string;
+    const auth = useAuthRedirect();
+    const user = auth.user;
 
     const [formData, setFormData] = useState<LocationFormData>({
         name: "",
@@ -95,11 +88,18 @@ export default function UpdateLocationPage() {
 
         const fetchLocation = async () => {
             try {
+                if (!user?.token) {
+                    throw new Error('Token di autenticazione mancante');
+                }
+
                 const response = await fetch(`/api/locations/${locationId}`, {
+                    method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${user?.token}`,
                         'Content-Type': 'application/json',
                     },
+                    body: JSON.stringify({
+                        user_token: user.token
+                    }),
                 });
 
                 if (!response.ok) {
@@ -112,22 +112,22 @@ export default function UpdateLocationPage() {
                     name: location.name || "",
                     description: location.description || null,
                     address: location.address || "",
-                    city: location.city || "",
-                    state: location.state || "",
-                    postal_code: location.postal_code || "",
-                    country: location.country || "Italia",
-                    latitude: location.latitude,
-                    longitude: location.longitude,
+                    city: location.comune || "", // mappa comune -> city nel form
+                    state: location.provincia || "", // mappa provincia -> state nel form
+                    postal_code: location.cap || "", // mappa cap -> postal_code nel form
+                    country: "Italia", // valore fisso
+                    latitude: null, // non più supportato
+                    longitude: null, // non più supportato
                     phone: location.phone || null,
                     email: location.email || null,
-                    website: location.website || null,
-                    instagram: location.instagram || null,
-                    facebook: location.facebook || null,
-                    twitter: location.twitter || null,
-                    is_active: location.is_active,
+                    website: null, // non più supportato
+                    instagram: null, // non più supportato
+                    facebook: null, // non più supportato
+                    twitter: null, // non più supportato
+                    is_active: true, // valore di default
                     cover: null,
-                    cover_preview: location.cover ? `/uploads/locations/${location.cover}` : '',
-                    cover_path: location.cover || undefined
+                    cover_preview: location.logo || '', // usa logo invece di cover
+                    cover_path: location.logo || undefined
                 });
 
             } catch (err) {
@@ -141,7 +141,7 @@ export default function UpdateLocationPage() {
         if (user?.token) {
             fetchLocation();
         }
-    }, [locationId, user?.token]);
+    }, [locationId, auth.isAuthenticated, user?.token]);
 
     // ✅ GESTIONE UPLOAD IMMAGINE
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -183,34 +183,25 @@ export default function UpdateLocationPage() {
 
             const submitFormData = new FormData();
             
-            // Aggiungi tutti i campi
+            // Aggiungi tutti i campi usando la struttura corretta per l'API
+            submitFormData.append('user_token', user.token);
             submitFormData.append('name', formData.name);
             submitFormData.append('description', formData.description || '');
             submitFormData.append('address', formData.address);
-            submitFormData.append('city', formData.city);
-            submitFormData.append('state', formData.state);
+            submitFormData.append('city', formData.city); // Sarà mappato su 'comune' nell'API
+            submitFormData.append('province', formData.state); // Mappa state -> province
             submitFormData.append('postal_code', formData.postal_code);
-            submitFormData.append('country', formData.country);
-            submitFormData.append('latitude', formData.latitude?.toString() || '');
-            submitFormData.append('longitude', formData.longitude?.toString() || '');
             submitFormData.append('phone', formData.phone || '');
             submitFormData.append('email', formData.email || '');
-            submitFormData.append('website', formData.website || '');
-            submitFormData.append('instagram', formData.instagram || '');
-            submitFormData.append('facebook', formData.facebook || '');
-            submitFormData.append('twitter', formData.twitter || '');
-            submitFormData.append('is_active', formData.is_active.toString());
             
+            // Se c'è un'immagine, aggiungila come 'logo' invece di 'cover'
             if (formData.cover) {
-                submitFormData.append('cover', formData.cover);
+                submitFormData.append('logo', formData.cover);
             }
 
             const response = await fetch(`/api/locations/${locationId}`, {
                 method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${user.token}`,
-                },
-                body: submitFormData,
+                body: submitFormData, // Rimuovo il header Authorization perché è nei FormData
             });
 
             if (!response.ok) {
@@ -234,22 +225,21 @@ export default function UpdateLocationPage() {
         }
     };
 
-    // ✅ VERIFICA AUTENTICAZIONE
-    useEffect(() => {
-        if (!user) {
-            router.push('/auth/login');
-        }
-    }, [user, router]);
-
-    if (!user) {
+    // Se non è ancora inizializzato, mostra loading
+    if (auth.isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-600">Caricamento...</p>
+                    <p className="text-gray-600">Caricamento autenticazione...</p>
                 </div>
             </div>
         );
+    }
+
+    // Se non è autenticato, non mostrare nulla (verrà reindirizzato)
+    if (!auth.isAuthenticated) {
+        return null;
     }
 
     if (isLoadingLocation) {
@@ -635,11 +625,10 @@ export default function UpdateLocationPage() {
                                 {formData.cover_preview && (
                                     <div className="relative">
                                         <div className="w-48 h-32 rounded-lg overflow-hidden border border-gray-200">
-                                            <Image
+                                            <img
                                                 src={formData.cover_preview}
                                                 alt="Preview"
-                                                fill
-                                                className="object-cover"
+                                                className="w-full h-full object-cover"
                                             />
                                         </div>
                                         <button

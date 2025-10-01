@@ -3,12 +3,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "~/store/auth";
+import { useAuthRedirect } from "~/lib/useAuth";
 import { Sidebar } from "~/components/Sidebar";
 import type { location_ } from "~/types";
 
 export default function locationsPage() {
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
+  const auth = useAuthRedirect();
+  const user = auth.user;
   const [locations, setlocations] = useState<location_[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -18,7 +20,7 @@ export default function locationsPage() {
   // Verifica se l'utente è super admin
   const isSuperAdmin = user?.role === 'SUPERADMIN';
 
-  // Filtra i locali in base alla ricerca
+  // Filtra i locali in base alla ricerca (sempre chiamato)
   const filteredlocations = useMemo(() => {
     if (!searchQuery.trim()) return locations;
 
@@ -26,7 +28,7 @@ export default function locationsPage() {
     return locations.filter(location_ =>
       location_.name?.toLowerCase().includes(query) ||
       location_.address?.toLowerCase().includes(query) ||
-      location_.city?.toLowerCase().includes(query) ||
+      location_.comune?.toLowerCase().includes(query) ||
       location_.description?.toLowerCase().includes(query) ||
       location_.phone?.toLowerCase().includes(query) ||
       location_.email?.toLowerCase().includes(query)
@@ -57,13 +59,13 @@ export default function locationsPage() {
       }
 
       // Aggiorna lo stato locale
-  setlocations(prev =>
-  prev.map(location_ =>
-    location_.id === locationId
-      ? { ...location_, enable: currentStatus ? 0 : 1 } // 0 = false, 1 = true
-      : location_
-  )
-);
+      setlocations(prev =>
+        prev.map(location_ =>
+          location_.id === locationId
+            ? { ...location_, enable: currentStatus ? 0 : 1 } // 0 = false, 1 = true
+            : location_
+        )
+      );
 
     } catch (err) {
       console.error('Errore nel toggle del locale:', err);
@@ -75,13 +77,19 @@ export default function locationsPage() {
 
   useEffect(() => {
     const fetchlocations = async () => {
+      // Se non c'è utente, non fare nulla (sarà gestito dall'auth hook)
+      if (!user?.token) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await fetch('/api/locations', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ user_token: user?.token }),
+          body: JSON.stringify({ user_token: user.token }),
         });
 
         if (!res.ok) {
@@ -98,10 +106,28 @@ export default function locationsPage() {
       }
     };
 
-    if (user?.id) {
+    // Fetch solo se l'autenticazione è inizializzata
+    if (auth.isAuthenticated) {
       fetchlocations();
     }
-  }, [user?.id]);
+  }, [auth.isAuthenticated, user?.token]);
+
+  // Render condizionale DOPO che tutti gli hook sono stati chiamati
+  if (auth.isLoading) {
+    return (
+      <div className="min-h-screen bg-[#212938] flex">
+        <Sidebar />
+        <div className="flex-1 ml-64 flex items-center justify-center">
+          <div className="text-white">Caricamento autenticazione...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Se non è autenticato, non mostrare nulla (verrà reindirizzato)
+  if (!auth.isAuthenticated) {
+    return null;
+  }
 
   if (loading) {
     return (
@@ -213,10 +239,10 @@ export default function locationsPage() {
                   className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-all duration-300 hover:scale-105 cursor-pointer"
                 >
                   {/* Immagine di copertina */}
-                  {location_.cover && location_.token ? (
+                  {location_.logo ? (
                     <div className="relative h-48 w-full">
                       <img
-                        src={`/uploads/locations/${location_.token}/${location_.cover}`}
+                        src={location_.logo}
                         alt={location_.name}
                         className="w-full h-full object-cover"
                       />
@@ -276,7 +302,7 @@ export default function locationsPage() {
                         <span>📍</span>
                         <span className="line-clamp-1">
                           {location_.address}
-                          {location_.city && `, ${location_.city}`}
+                          {location_.comune && `, ${location_.comune}`}
                         </span>
                       </div>
 
@@ -363,7 +389,7 @@ export default function locationsPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          router.push(`/locations/${location_.id}/edit`);
+                          router.push(`/locations/${location_.id}/update`);
                         }}
                         className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
                       >

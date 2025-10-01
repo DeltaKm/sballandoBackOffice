@@ -28,7 +28,6 @@ export default function CreatelocationPage() {
         name: "",
         description: "",
         address: "",
-        city: "",
         regione: "",
         cap: "",
         comune: "",

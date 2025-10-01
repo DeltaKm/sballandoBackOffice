@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import getSFTPService from "~/lib/sftpService.server";
 
 const prisma = new PrismaClient();
 
@@ -177,9 +176,17 @@ const validatelocationData = (data: {
 };
 
 export async function POST(request: NextRequest) {
-  let uploadedFilePath: string | null = null;
+  let requestId = '';
 
   try {
+    // Genera un ID unico per la richiesta
+    requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    console.log(`🔄 [${requestId}] Location CREATE API called:`, { 
+      userAgent: request.headers.get('user-agent')?.slice(0, 50),
+      ip: request.headers.get('x-forwarded-for') || 'unknown'
+    });
+
     const formData = await request.formData();
     
     // Estrai i dati dal form
@@ -283,28 +290,22 @@ export async function POST(request: NextRequest) {
       }, { status: 409 });
     }
 
-    // Upload immagine
-    let logoFileName = "";
+    // Upload immagine con SFTP
+    let logoUrl = "";
     if (logo && logo.size > 0) {
-      const bytes = await logo.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      
-      // Genera nome file unico
-      const fileExtension = logo.name.split('.').pop()?.toLowerCase() || 'jpg';
-      logoFileName = `location_logo_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExtension}`;
-      
-      // Crea directory se non esiste
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'locations');
-      await mkdir(uploadDir, { recursive: true });
-      
-      // Salva file
-      const filePath = path.join(uploadDir, logoFileName);
-      await writeFile(filePath, buffer);
-      uploadedFilePath = filePath; // Salva il path per eventuale cleanup
+      console.log(`📷 [${requestId}] Processing logo upload:`, {
+        fileName: logo.name,
+        size: logo.size,
+        type: logo.type
+      });
+
+      // Dovremo prima creare il locale per avere l'ID
+      // Quindi spostiamo l'upload dopo la creazione del locale
     }
 
     // Crea locale nel database usando una transazione
     const result = await prisma.$transaction(async (tx) => {
+      // Prima crea il locale senza logo
       const location_ = await tx.locations.create({
         data: {
           name,
@@ -317,10 +318,33 @@ export async function POST(request: NextRequest) {
           phone,
           email,
           coordinates: coordinates || null, // Campo coordinate
-          logo: logoFileName ? `/uploads/locations/${logoFileName}` : null, // Logo è l'unica immagine
+          logo: null, // Inizialmente null, lo aggiorneremo dopo l'upload
           user_id: user.id,
         }
       });
+
+      // Se c'è un logo, caricalo via SFTP e aggiorna il record
+      if (logo && logo.size > 0) {
+        console.log(`📷 [${requestId}] Uploading logo for location ${location_.id}...`);
+        
+        const sftpService = getSFTPService();
+        const uploadResult = await sftpService.uploadLocationLogo(location_.id, logo);
+        
+        if (uploadResult.success) {
+          console.log(`✅ [${requestId}] Logo uploaded successfully:`, uploadResult.publicUrl);
+          
+          // Aggiorna il locale con l'URL del logo
+          const updatedLocation = await tx.locations.update({
+            where: { id: location_.id },
+            data: { logo: uploadResult.publicUrl }
+          });
+          
+          return updatedLocation;
+        } else {
+          console.error(`❌ [${requestId}] Logo upload failed:`, uploadResult.error);
+          throw new Error(`Errore durante l'upload del logo: ${uploadResult.error}`);
+        }
+      }
 
       return location_;
     });
@@ -346,17 +370,11 @@ export async function POST(request: NextRequest) {
     }, { status: 201 });
 
   } catch (error) {
-    // Se c'è stato un errore e abbiamo caricato un file, rimuovilo
-    if (uploadedFilePath) {
-      try {
-        const fs = await import('fs/promises');
-        await fs.unlink(uploadedFilePath);
-      } catch (cleanupError) {
-        console.error("Errore durante la pulizia del file:", cleanupError);
-      }
-    }
-
-    console.error("Errore nella creazione del locale:", error);
+    console.error(`❌ [${requestId}] Error in location CREATE API:`, {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    });
     
     // Gestione errori specifici del database
     if (error instanceof Error) {

@@ -1,50 +1,78 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
-import { useAuthStore } from "~/store/auth";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { useAuthRedirect } from "~/lib/useAuth";
 import Link from "next/link";
 import { EventCard } from "~/components/EventCard";
 import type { location_, Event } from "~/types";
 
-export default function locationPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const user = useAuthStore((state) => state.user);
+export default function locationPage() {
+  const params = useParams();
+  const id = params.id as string;
+  const auth = useAuthRedirect();
+  const user = auth.user;
 
   const [location_, setlocation] = useState<location_ & { events: Event[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user?.token) {
-      setError("Devi essere loggato per visualizzare questa pagina");
-      setLoading(false);
-      return;
-    }
+    const fetchLocation = async () => {
+      if (!user?.token) {
+        setError("Devi essere loggato per visualizzare questa pagina");
+        setLoading(false);
+        return;
+      }
 
-    fetch(`/api/locations/${id}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_token: user.token }),
-    })
-      .then(async (res) => {
+      try {
+        const res = await fetch(`/api/locations/${id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_token: user.token }),
+        });
+
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || "Errore nel caricamento");
         }
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
         setlocation(data);
         setError(null);
-      })
-      .catch((err) => {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Errore sconosciuto");
         setlocation(null);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
-  }, [id, user?.token]);
+      }
+    };
+
+    // Fetch solo se l'autenticazione è inizializzata
+    if (auth.isAuthenticated && id) {
+      fetchLocation();
+    } else if (auth.isInitialized && !auth.isAuthenticated) {
+      setError("Devi essere loggato per visualizzare questa pagina");
+      setLoading(false);
+    }
+  }, [id, auth.isAuthenticated, auth.isInitialized, user?.token]);
+
+  // Se non è ancora inizializzato, mostra loading
+  if (auth.isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white">Caricamento autenticazione...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se non è autenticato, non mostrare nulla (verrà reindirizzato)
+  if (!auth.isAuthenticated) {
+    return null;
+  }
 
   if (loading) {
     return (
@@ -104,9 +132,9 @@ export default function locationPage({ params }: { params: Promise<{ id: string 
         {/* Header locale */}
         <div className="mb-8">
           <div className="flex items-start gap-6 mb-6">
-            {location_.cover && (
+            {location_.logo && (
               <img
-                src={location_.cover}
+                src={location_.logo}
                 alt={location_.name}
                 className="w-32 h-32 object-cover rounded-lg border border-white/20"
               />
@@ -114,7 +142,7 @@ export default function locationPage({ params }: { params: Promise<{ id: string 
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-white mb-2">{location_.name}</h1>
               <p className="text-white/80 text-lg mb-2">
-                📍 {location_.address}{location_.city && `, ${location_.city}`}
+                📍 {location_.address}{location_.comune && `, ${location_.comune}`}
               </p>
               {location_.description && (
                 <p className="text-white/60">{location_.description}</p>

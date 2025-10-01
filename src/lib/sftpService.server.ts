@@ -292,6 +292,106 @@ class SFTPService {
   }
 
   /**
+   * Carica un logo per una location
+   */
+  public async uploadLocationLogo(
+    locationId: number,
+    file: File,
+    options: SFTPUploadOptions = {}
+  ): Promise<SFTPUploadResult> {
+    try {
+      await this.connect();
+      
+      const timestamp = Date.now();
+      const randomSuffix = Math.random().toString(36).substring(2, 8);
+      const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `logo_${timestamp}_${randomSuffix}.${fileExtension}`;
+      
+      // Directory per le location: images/locations/{locationId}/
+      const remoteDir = `/var/www/html/webservice.sballando.it/storage/app/public/images/locations/${locationId}`;
+      const remotePath = `${remoteDir}/${fileName}`;
+      
+      // Crea la directory se non esiste
+      await this.ensureDirectory(remoteDir);
+      
+      // Upload del file
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await this.client.put(buffer, remotePath);
+      
+      // Verifica che il file sia stato caricato
+      const exists = await this.client.exists(remotePath);
+      if (!exists) {
+        throw new Error('File upload verification failed');
+      }
+      
+      // Percorso per l'URL pubblico
+      const publicUrl = `https://webservice.sballando.it/storage/images/locations/${locationId}/${fileName}`;
+      
+      console.log(`✅ Location logo uploaded successfully:`, {
+        locationId,
+        fileName,
+        publicUrl,
+        size: buffer.length
+      });
+      
+      return {
+        success: true,
+        fileName,
+        remotePath,
+        fileSize: buffer.length,
+        publicUrl,
+        uploadedAt: new Date()
+      };
+      
+    } catch (error: any) {
+      console.error('❌ Failed to upload location logo:', error);
+      this.lastError = error;
+      
+      return {
+        success: false,
+        fileName: '',
+        remotePath: '',
+        fileSize: 0,
+        publicUrl: '',
+        uploadedAt: new Date(),
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Elimina un logo di una location
+   */
+  public async deleteLocationLogo(locationId: number, fileName: string): Promise<boolean> {
+    try {
+      await this.connect();
+      
+      const remotePath = `/var/www/html/webservice.sballando.it/storage/app/public/images/locations/${locationId}/${fileName}`;
+      
+      const exists = await this.client.exists(remotePath);
+      if (!exists) {
+        console.log(`ℹ️ Location logo file doesn't exist, skipping deletion:`, remotePath);
+        return true; // Non è un errore se il file non esiste
+      }
+      
+      await this.client.delete(remotePath);
+      
+      console.log(`✅ Location logo deleted successfully:`, {
+        locationId,
+        fileName,
+        remotePath
+      });
+      
+      return true;
+      
+    } catch (error: any) {
+      console.error('❌ Failed to delete location logo:', error);
+      this.lastError = error;
+      return false;
+    }
+  }
+
+  /**
    * Ottiene lo status del servizio
    */
   public getStatus(): { 

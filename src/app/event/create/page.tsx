@@ -331,11 +331,30 @@ export default function CreateEventPage() {
                             <textarea
                                 id="description"
                                 value={formData.description_extended || ""}
-                                onChange={(e) => setFormData({ ...formData, description_extended: e.target.value })}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value.length <= 400) {
+                                        setFormData({ ...formData, description_extended: value });
+                                    }
+                                }}
                                 rows={4}
+                                maxLength={400}
                                 className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#FC0045]/50"
                                 placeholder="Descrivi il tuo evento..."
                             />
+                            <div className="flex justify-end mt-1">
+                                <span 
+                                    className={`text-xs ${
+                                        (formData.description_extended || "").length > 350 
+                                            ? (formData.description_extended || "").length >= 400 
+                                                ? "text-red-400" 
+                                                : "text-yellow-400"
+                                            : "text-white/60"
+                                    }`}
+                                >
+                                    {(formData.description_extended || "").length}/400 caratteri
+                                </span>
+                            </div>
                         </div>
 
                         {/* Date and Time */}
