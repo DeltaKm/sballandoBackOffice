@@ -5,6 +5,9 @@ import { verifyPassword, generateAccessToken, generateRefreshToken } from "~/lib
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
+  console.log(' Login API called - JWT_SECRET exists:', !!process.env.JWT_SECRET);
+  console.log(' Login API called - JWT_REFRESH_SECRET exists:', !!process.env.JWT_REFRESH_SECRET);
+  
   try {
     const body = await req.json();
     const { email, password } = body;
