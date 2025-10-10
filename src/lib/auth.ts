@@ -1,5 +1,4 @@
 
-// Per testare se funziona il commit per vercel
 
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';

@@ -293,12 +293,43 @@ export async function POST(request: NextRequest) {
 
     // Genera token unico per il locale
     const now = new Date();
-    const token = crypto
-      .createHash('md5')
-      .update(Date.now().toString() + Math.random().toString())
-      .digest('hex');
+    
+    // Genera un token più sicuro usando crypto.randomUUID() + timestamp per garantire unicità
+    let token: string;
+    let tokenExists = true;
+    let attempts = 0;
+    const maxAttempts = 5;
+    
+    // Ciclo per garantire che il token sia unico
+    do {
+      const uniqueId = crypto.randomUUID().replace(/-/g, '');
+      const timestamp = Date.now().toString(36);
+      const randomBytes = crypto.randomBytes(8).toString('hex');
+      token = `${uniqueId}${timestamp}${randomBytes}`.toLowerCase();
+      
+      // Verifica se il token esiste già
+      const existingToken = await prisma.locations.findFirst({
+        where: { token: token },
+        select: { id: true }
+      });
+      
+      tokenExists = !!existingToken;
+      attempts++;
+      
+      if (tokenExists && attempts < maxAttempts) {
+        console.log(`🔄 [${requestId}] Token collision detected, generating new token (attempt ${attempts})`);
+      }
+    } while (tokenExists && attempts < maxAttempts);
+    
+    if (tokenExists) {
+      console.error(`❌ [${requestId}] Failed to generate unique token after ${maxAttempts} attempts`);
+      return NextResponse.json({ 
+        error: "Errore interno",
+        details: "Impossibile generare un token univoco. Riprova più tardi."
+      }, { status: 500 });
+    }
 
-    console.log(`📂 [${requestId}] Generated location token: ${token}`);
+    console.log(`📂 [${requestId}] Generated unique location token: ${token} (attempts: ${attempts})`);
 
     // Crea locale nel database usando una transazione
     const result = await prisma.$transaction(async (tx) => {
