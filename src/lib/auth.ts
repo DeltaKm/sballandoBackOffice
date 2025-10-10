@@ -1,14 +1,10 @@
 
-
+// try to fix ve4rcel build
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
-if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
-  throw new Error('JWT_SECRET and JWT_REFRESH_SECRET must be defined in .env');
-}
-
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || '';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || '';
 
 const ACCESS_TOKEN_EXPIRY = '15m'; 
 const REFRESH_TOKEN_EXPIRY = '7d'; 
@@ -19,8 +15,14 @@ export interface JWTPayload {
   role: string;
 }
 
+function ensureJWTSecrets() {
+  if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
+    throw new Error('JWT_SECRET and JWT_REFRESH_SECRET must be defined in environment variables');
+  }
+}
 
 export function generateAccessToken(payload: JWTPayload): string {
+  ensureJWTSecrets();
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: ACCESS_TOKEN_EXPIRY,
   });
@@ -28,6 +30,7 @@ export function generateAccessToken(payload: JWTPayload): string {
 
 
 export function generateRefreshToken(payload: JWTPayload): string {
+  ensureJWTSecrets();
   return jwt.sign(payload, JWT_REFRESH_SECRET, {
     expiresIn: REFRESH_TOKEN_EXPIRY,
   });
@@ -36,6 +39,7 @@ export function generateRefreshToken(payload: JWTPayload): string {
 
 export function verifyAccessToken(token: string): JWTPayload | null {
   try {
+    ensureJWTSecrets();
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
     return decoded;
   } catch (error) {
@@ -46,6 +50,7 @@ export function verifyAccessToken(token: string): JWTPayload | null {
 
 export function verifyRefreshToken(token: string): JWTPayload | null {
   try {
+    ensureJWTSecrets();
     const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as JWTPayload;
     return decoded;
   } catch (error) {

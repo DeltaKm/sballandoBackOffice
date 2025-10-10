@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "~/store/auth";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 function loadUserFromStorage() {
   if (typeof window !== 'undefined') {
@@ -15,7 +16,6 @@ function loadUserFromStorage() {
 export default function HomePage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [shouldRedirect, setShouldRedirect] = useState(false);
@@ -40,7 +40,6 @@ export default function HomePage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     try {
@@ -56,13 +55,14 @@ export default function HomePage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message ?? "Errore durante il login");
+        toast.error(data.message ?? "Errore durante il login");
       } else {
+        toast.success("Login effettuato con successo!");
         setUser(data.user, data.accessToken);
         setShouldRedirect(true);
       }
     } catch (err) {
-      setError("Errore di rete");
+      toast.error("Errore di connessione al server");
       console.error(err);
     } finally {
       setLoading(false);
@@ -125,8 +125,6 @@ export default function HomePage() {
               placeholder="••••••••"
             />
           </div>
-
-          {error && <p className="text-white/90 text-sm text-center">{error}</p>}
 
           <button
             type="submit"
