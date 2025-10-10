@@ -190,7 +190,6 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     
-    // Estrai i dati dal form
     const name = (formData.get('name') as string)?.trim();
     const description = (formData.get('description') as string)?.trim();
     const address = (formData.get('address') as string)?.trim();
