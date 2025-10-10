@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs'; // cambiato perche lo stratacazzo di vercel non supporta bcrypt standards
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || '';
