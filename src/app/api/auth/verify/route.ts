@@ -12,14 +12,14 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await prisma.users.findFirst({
-      where: { token: user_token }, // Usa user_token invece di token
+      where: { token: user_token }, 
       select: {
         id: true,
         email: true,
         name: true,
         surname: true,
         role: true,
-        token: true, // Includi il token nella risposta
+        token: true, 
       },
     });
 

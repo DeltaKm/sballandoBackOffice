@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useAuthStore } from "~/store/auth";
 import { useRouter } from "next/navigation";
 
-// Funzione helper per caricare l'utente dal localStorage
 function loadUserFromStorage() {
   if (typeof window !== 'undefined') {
     const userData = localStorage.getItem('user_data');
@@ -15,6 +14,7 @@ function loadUserFromStorage() {
 
 export default function HomePage() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -23,7 +23,6 @@ export default function HomePage() {
   const setUser = useAuthStore((state) => state.setUser);
   const router = useRouter();
 
-  // Controlla se c'è già un utente salvato
   useEffect(() => {
     const savedUser = loadUserFromStorage();
     if (savedUser) {
@@ -33,7 +32,6 @@ export default function HomePage() {
     setChecking(false);
   }, [setUser]);
 
-  // Gestisci il redirect in un useEffect separato
   useEffect(() => {
     if (shouldRedirect ?? (user && !checking)) {
       router.push('/dashboard');
@@ -51,7 +49,8 @@ export default function HomePage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
+        credentials: 'include', 
       });
 
       const data = await res.json();
@@ -59,8 +58,7 @@ export default function HomePage() {
       if (!res.ok) {
         setError(data.message ?? "Errore durante il login");
       } else {
-        // Salva l'utente nello store (che automaticamente salva anche nel localStorage)
-        setUser(data);
+        setUser(data.user, data.accessToken);
         setShouldRedirect(true);
       }
     } catch (err) {
@@ -71,27 +69,25 @@ export default function HomePage() {
     }
   };
 
-  // Mostra loading durante il controllo auth
   if (checking) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-[#FC0045]">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#212939]">
         <div className="text-white text-lg">Verificando autenticazione...</div>
       </main>
     );
   }
 
-  // Non mostrare il form se l'utente è già loggato o sta per essere reindirizzato
   if (user ?? shouldRedirect) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-[#FC0045]">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#212939]">
         <div className="text-white text-lg">Reindirizzamento...</div>
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#FC0045]">
-      <div className="w-full max-w-md space-y-8 p-8 rounded-lg bg-white/10 backdrop-blur-sm">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-[#212939]">
+      <div className="w-full max-w-md space-y-8 p-8 rounded-lg bg-[#FC0045] shadow-2xl">
         <div>
           <h1 className="text-4xl font-bold text-center text-white mb-2">
             Sballando
@@ -110,8 +106,23 @@ export default function HomePage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 bg-white/5 border border-white/10 rounded-md text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="mt-1 block w-full px-3 py-2 bg-[#212939] border border-[#212939] rounded-md text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"
               placeholder="admin@sballando.it"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-white">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 bg-[#212939] border border-[#212939] rounded-md text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"
+              placeholder="••••••••"
             />
           </div>
 
@@ -120,7 +131,7 @@ export default function HomePage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-[#FC0045] bg-white hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-white/50"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-[#FC0045] bg-white hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Caricamento..." : "Accedi"}
           </button>

@@ -3,14 +3,14 @@ import type { User } from "~/types";
 
 interface AuthStore {
   user: User | null;
+  accessToken: string | null;
   isInitialized: boolean;
-  setUser: (user: User | null) => void;
+  setUser: (user: User | null, accessToken?: string | null) => void;
   logout: () => void;
-  checkAuth: () => Promise<void>;
+  refreshToken: () => Promise<boolean>;
   initialize: () => void;
 }
 
-// Funzioni helper per localStorage
 function saveUserToStorage(user: User) {
   if (typeof window !== 'undefined') {
     localStorage.setItem('user_data', JSON.stringify(user));
@@ -25,10 +25,11 @@ function removeUserFromStorage() {
 
 export const useAuthStore = create<AuthStore>()((set, get) => ({
   user: null,
+  accessToken: null,
   isInitialized: false,
   
-  setUser: (user) => {
-    set({ user });
+  setUser: (user, accessToken = null) => {
+    set({ user, accessToken });
     if (user) {
       saveUserToStorage(user);
     } else {
@@ -36,24 +37,46 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     }
   },
   
-  logout: () => {
-    // Rimuovi il cookie
+  logout: async () => {
     if (typeof document !== 'undefined') {
-      document.cookie = "user_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     }
-    // Rimuovi dal localStorage
     removeUserFromStorage();
-    set({ user: null });
+    set({ user: null, accessToken: null });
+  },
+
+  refreshToken: async () => {
+    try {
+      const res = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        set({ accessToken: data.accessToken });
+        return true;
+      } else {
+        await get().logout();
+        return false;
+      }
+    } catch (error) {
+      console.error('Errore durante il refresh del token:', error);
+      await get().logout();
+      return false;
+    }
   },
 
   initialize: () => {
     if (typeof window !== 'undefined') {
-      // Carica l'utente dal localStorage
       const userData = localStorage.getItem('user_data');
       if (userData) {
         try {
           const user = JSON.parse(userData);
           set({ user, isInitialized: true });
+          
+          get().refreshToken();
         } catch (error) {
           console.error('Errore nel parsing dei dati utente:', error);
           localStorage.removeItem('user_data');
@@ -62,39 +85,6 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
       } else {
         set({ user: null, isInitialized: true });
       }
-    }
-  },
-  
-  checkAuth: async () => {
-    try {
-      // Controlla se c'è un token nei cookies
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('user_token='))
-        ?.split('=')[1];
-        
-      if (!token) {
-        set({ user: null });
-        return;
-      }
-
-      // Verifica il token con il server
-      const res = await fetch('/api/auth/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_token: token }),
-      });
-
-      if (res.ok) {
-        const userData = (await res.json()) as { user: User };
-        set({ user: userData.user });
-      } else {
-        // Token non valido, rimuovi tutto
-        get().logout();
-      }
-    } catch (error) {
-      console.error('Errore durante la verifica auth:', error);
-      get().logout();
     }
   },
 }));
