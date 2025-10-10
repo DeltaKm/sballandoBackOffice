@@ -174,7 +174,7 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
             <div className="space-y-3">
               {collaboratorsData.map(({ collaborator, user: collabUser, compatibleEntries, hasCompatibleEntry, totalStock }) => {
                 // Early return if user_id is null
-                if (collaborator.user_id === null) {
+                if (collaborator.user_id === null || collaborator.user_id == event.user_id) {
                   return null;
                 }
 
@@ -183,6 +183,7 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
                 const currentValue = transfers[userId] || '';
                 
                 return (
+                  
                   <div key={userId} className="p-4 bg-white/5 border border-white/10 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -190,8 +191,8 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
                           <div className="flex items-center gap-2">
                             {collabUser?.picture && (
                               <img 
-                                src={collabUser.picture} 
-                                className="w-8 h-8 rounded-full"
+                                src={'https://webservice.sballando.it/storage/' + collabUser.picture} 
+                                className="w-20 h-20 rounded-full"
                               />
                             )}
                             <div>
@@ -205,20 +206,7 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
                           </div>
                         </div>
 
-                        {/* Info ingressi compatibili */}
-                        <div className="mb-3">
-                          {hasCompatibleEntry ? (
-                            <div className="flex items-center gap-2">
-                              <span className="text-green-400 text-sm">✅ Ha ingressi compatibili</span>
-                              <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">
-                                {compatibleEntries.length} tipo{compatibleEntries.length !== 1 ? 'i' : ''} 
-                                {totalStock > 0 && ` • Stock totale: ${totalStock}`}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-yellow-400 text-sm">⚠️ Nessun ingresso compatibile (stesso nome)</span>
-                          )}
-                        </div>
+                        
 
                         {/* Input quantità */}
                         <div className="flex items-center gap-3">

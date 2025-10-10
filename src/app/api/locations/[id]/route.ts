@@ -220,7 +220,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Verifica se il locale esiste e l'autorizzazione
     const existingLocation = await prisma.locations.findUnique({
       where: { id: locationId },
-      select: { id: true, user_id: true, name: true, logo: true }
+      select: { id: true, user_id: true, name: true, logo: true, token: true }
     });
 
     if (!existingLocation) {
@@ -260,11 +260,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         type: logo.type
       });
 
+      // Verifica che il locale abbia un token
+      if (!existingLocation.token) {
+        console.log(`❌ [${requestId}] Location has no token, cannot upload logo`);
+        return NextResponse.json({ 
+          error: "Questo locale non ha un token valido per l'upload. Contatta l'amministratore." 
+        }, { status: 400 });
+      }
+
       const sftpService = getSFTPService();
       
       try {
-        // Upload del nuovo logo
-        const uploadResult = await sftpService.uploadLocationLogo(locationId, logo);
+        // Upload del nuovo logo usando il token
+        const uploadResult = await sftpService.uploadLocationLogo(existingLocation.token, logo);
         
         if (uploadResult.success) {
           console.log(`✅ [${requestId}] Logo uploaded successfully:`, uploadResult.publicUrl);
@@ -274,8 +282,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             try {
               // Estrai il nome del file dal percorso esistente
               const oldFileName = existingLocation.logo.split('/').pop();
-              if (oldFileName) {
-                await sftpService.deleteLocationLogo(locationId, oldFileName);
+              if (oldFileName && oldFileName !== uploadResult.fileName) {
+                await sftpService.deleteLocationLogo(existingLocation.token, oldFileName);
                 console.log(`🗑️ [${requestId}] Old logo deleted:`, oldFileName);
               }
             } catch (deleteError) {
@@ -284,7 +292,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             }
           }
           
-          updateData.logo = uploadResult.publicUrl;
+          // Costruisci il percorso relativo per il database
+          const relativePath = `images/locations/${existingLocation.token}/${uploadResult.fileName}`;
+          updateData.logo = relativePath;
         } else {
           console.error(`❌ [${requestId}] Logo upload failed:`, uploadResult.error);
           return NextResponse.json({ 

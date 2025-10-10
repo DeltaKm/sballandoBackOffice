@@ -1,14 +1,5 @@
 import { create } from "zustand";
-
-interface User {
-  id: number;
-  email: string;
-  name: string;
-  surname: string;
-  role: string;
-  is_super_admin: boolean;
-  token: string;
-}
+import type { User } from "~/types";
 
 interface AuthStore {
   user: User | null;

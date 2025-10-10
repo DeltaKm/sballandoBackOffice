@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import getSFTPService from "~/lib/sftpService.server";
+import crypto from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -290,22 +291,18 @@ export async function POST(request: NextRequest) {
       }, { status: 409 });
     }
 
-    // Upload immagine con SFTP
-    let logoUrl = "";
-    if (logo && logo.size > 0) {
-      console.log(`📷 [${requestId}] Processing logo upload:`, {
-        fileName: logo.name,
-        size: logo.size,
-        type: logo.type
-      });
+    // Genera token unico per il locale
+    const now = new Date();
+    const token = crypto
+      .createHash('md5')
+      .update(Date.now().toString() + Math.random().toString())
+      .digest('hex');
 
-      // Dovremo prima creare il locale per avere l'ID
-      // Quindi spostiamo l'upload dopo la creazione del locale
-    }
+    console.log(`📂 [${requestId}] Generated location token: ${token}`);
 
     // Crea locale nel database usando una transazione
     const result = await prisma.$transaction(async (tx) => {
-      // Prima crea il locale senza logo
+      // Prima crea il locale con il token ma senza logo
       const location_ = await tx.locations.create({
         data: {
           name,
@@ -318,25 +315,31 @@ export async function POST(request: NextRequest) {
           phone,
           email,
           coordinates: coordinates || null, // Campo coordinate
+          token, // Aggiungi il token
           logo: null, // Inizialmente null, lo aggiorneremo dopo l'upload
           user_id: user.id,
+          created_at: now,
+          updated_at: now,
         }
       });
 
       // Se c'è un logo, caricalo via SFTP e aggiorna il record
       if (logo && logo.size > 0) {
-        console.log(`📷 [${requestId}] Uploading logo for location ${location_.id}...`);
+        console.log(`📷 [${requestId}] Uploading logo for location ${location_.id} with token ${token}...`);
         
         const sftpService = getSFTPService();
-        const uploadResult = await sftpService.uploadLocationLogo(location_.id, logo);
+        const uploadResult = await sftpService.uploadLocationLogo(token, logo);
         
         if (uploadResult.success) {
           console.log(`✅ [${requestId}] Logo uploaded successfully:`, uploadResult.publicUrl);
           
-          // Aggiorna il locale con l'URL del logo
+          // Costruisci il percorso relativo per il database
+          const relativePath = `images/locations/${token}/${uploadResult.fileName}`;
+          
+          // Aggiorna il locale con il percorso relativo del logo
           const updatedLocation = await tx.locations.update({
             where: { id: location_.id },
-            data: { logo: uploadResult.publicUrl }
+            data: { logo: relativePath }
           });
           
           return updatedLocation;
@@ -364,7 +367,8 @@ export async function POST(request: NextRequest) {
         phone: result.phone,
         email: result.email,
         coordinates: result.coordinates, // Restituisci coordinate
-        logo: result.logo, // Logo è l'unica immagine
+        token: result.token, // Restituisci il token
+        logo: result.logo, // Path relativo del logo
         created_at: result.created_at
       }
     }, { status: 201 });

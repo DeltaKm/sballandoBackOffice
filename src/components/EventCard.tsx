@@ -1,5 +1,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { getEventCoverUrl } from "~/lib/imageUtils";
 import type { Event } from "~/types";
 
 interface EventCardProps {
@@ -41,10 +42,10 @@ export function EventCard({
       className={`bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-all duration-300 hover:scale-105 cursor-pointer ${className}`}
     >
       {/* Immagine di copertina */}
-      {event.cover && event.token && !imageError ? (
+      {getEventCoverUrl(event) && !imageError ? (
         <div className="relative h-48 w-full">
           <img
-            src={`https://webservice.sballando.it/storage/${event.cover}`}
+            src={getEventCoverUrl(event)!}
             alt={event.title || "Evento"}
             className="w-full h-full object-cover"
             onError={handleImageError}

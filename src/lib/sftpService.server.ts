@@ -160,17 +160,18 @@ class SFTPService {
       // Assicura che la directory esista
       await this.ensureDirectory(eventDirectory);
 
-      // Genera nome file unico
-      const fileName = this.generateUniqueFileName(file.name);
+      // Rinomina sempre il file come "cover" con l'estensione originale
+      const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `cover.${fileExtension}`;
       const remotePath = `${eventDirectory}/${fileName}`;
 
       // Converte File a Buffer
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
-      console.log(`📤 Uploading ${file.name} (${file.size} bytes) to ${remotePath}`);
+      console.log(`📤 Uploading ${file.name} (${file.size} bytes) as ${fileName} to ${remotePath}`);
 
-      // Upload del file
+      // Upload del file (sovrascrive se esiste già)
       await this.client.put(buffer, remotePath);
 
       // Verifica upload
@@ -180,7 +181,7 @@ class SFTPService {
         throw new Error('File upload verification failed');
       }
 
-      console.log(`✅ File uploaded successfully: ${fileName}`);
+      console.log(`✅ File uploaded successfully as: ${fileName}`);
 
       // Genera URL pubblico
       const baseUrl = process.env.UPLOADS_BASE_URL || 'https://webservice.sballando.it/storage';
@@ -295,26 +296,25 @@ class SFTPService {
    * Carica un logo per una location
    */
   public async uploadLocationLogo(
-    locationId: number,
+    locationToken: string, // Cambiato da locationId a locationToken
     file: File,
     options: SFTPUploadOptions = {}
   ): Promise<SFTPUploadResult> {
     try {
       await this.connect();
       
-      const timestamp = Date.now();
-      const randomSuffix = Math.random().toString(36).substring(2, 8);
+      // Rinomina sempre il file come "logo" con l'estensione originale
       const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-      const fileName = `logo_${timestamp}_${randomSuffix}.${fileExtension}`;
+      const fileName = `logo.${fileExtension}`;
       
-      // Directory per le location: images/locations/{locationId}/
-      const remoteDir = `/var/www/html/webservice.sballando.it/storage/app/public/images/locations/${locationId}`;
+      // Directory per le location: images/locations/{locationToken}/
+      const remoteDir = `/var/www/html/webservice.sballando.it/storage/app/public/images/locations/${locationToken}`;
       const remotePath = `${remoteDir}/${fileName}`;
       
       // Crea la directory se non esiste
       await this.ensureDirectory(remoteDir);
       
-      // Upload del file
+      // Upload del file (sovrascrive se esiste già)
       const buffer = Buffer.from(await file.arrayBuffer());
       await this.client.put(buffer, remotePath);
       
@@ -325,10 +325,10 @@ class SFTPService {
       }
       
       // Percorso per l'URL pubblico
-      const publicUrl = `https://webservice.sballando.it/storage/images/locations/${locationId}/${fileName}`;
+      const publicUrl = `https://webservice.sballando.it/storage/images/locations/${locationToken}/${fileName}`;
       
-      console.log(`✅ Location logo uploaded successfully:`, {
-        locationId,
+      console.log(`✅ Location logo uploaded successfully as:`, {
+        locationToken,
         fileName,
         publicUrl,
         size: buffer.length
@@ -362,11 +362,11 @@ class SFTPService {
   /**
    * Elimina un logo di una location
    */
-  public async deleteLocationLogo(locationId: number, fileName: string): Promise<boolean> {
+  public async deleteLocationLogo(locationToken: string, fileName: string): Promise<boolean> {
     try {
       await this.connect();
       
-      const remotePath = `/var/www/html/webservice.sballando.it/storage/app/public/images/locations/${locationId}/${fileName}`;
+      const remotePath = `/var/www/html/webservice.sballando.it/storage/app/public/images/locations/${locationToken}/${fileName}`;
       
       const exists = await this.client.exists(remotePath);
       if (!exists) {
@@ -377,7 +377,7 @@ class SFTPService {
       await this.client.delete(remotePath);
       
       console.log(`✅ Location logo deleted successfully:`, {
-        locationId,
+        locationToken,
         fileName,
         remotePath
       });

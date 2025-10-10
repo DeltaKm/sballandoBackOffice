@@ -286,9 +286,9 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
               <div className="flex flex-col items-center text-center mb-4">
                 {collab.user?.picture ? (
                   <img 
-                    src={collab.user.picture} 
+                    src= {'https://webservice.sballando.it/storage/' + collab.user.picture} 
                     alt={collab.user.name || ''} 
-                    className="w-16 h-16 rounded-full object-cover mb-3"
+                    className="w-40 h-40 rounded-full object-cover mb-3"
                   />
                 ) : (
                   <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-3">
@@ -296,17 +296,17 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
                   </div>
                 )}
                 
-                <h4 className="text-white font-medium text-lg mb-1">
+                <h4 className="text-white font-medium text-xl mb-1">
                   {collab.user?.name} {collab.user?.surname}
                 </h4>
                 
-                <p className="text-white/60 text-sm mb-1">{collab.user?.email}</p>
+                <p className="text-white/60 text-xl mb-1">{collab.user?.email}</p>
                 
                 {collab.user?.nickname && (
-                  <p className="text-white/60 text-xs mb-2">@{collab.user.nickname}</p>
+                  <p className="text-white/60 text-xl mb-2">@{collab.user.nickname}</p>
                 )}
                 
-                <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
+                <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xl">
                   {collab.role}
                 </span>
               </div>

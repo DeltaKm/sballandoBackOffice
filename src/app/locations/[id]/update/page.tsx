@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuthStore } from "~/store/auth";
 import { useAuthRedirect } from "~/lib/useAuth";
+import { getLocationLogoUrl } from "~/lib/imageUtils";
 import { FaSearch, FaTimes, FaMapMarkerAlt, FaPhone, FaEnvelope, FaGlobe, FaInstagram, FaFacebook, FaTwitter } from 'react-icons/fa';
 import { Switch } from '@headlessui/react';
 
@@ -126,7 +127,7 @@ export default function UpdateLocationPage() {
                     twitter: null, // non più supportato
                     is_active: true, // valore di default
                     cover: null,
-                    cover_preview: location.logo || '', // usa logo invece di cover
+                    cover_preview: getLocationLogoUrl(location) || '', // usa logo invece di cover
                     cover_path: location.logo || undefined
                 });
 

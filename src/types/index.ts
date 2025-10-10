@@ -30,11 +30,11 @@ export interface location_ {
   phone?: string;
   email: string;
   logo?: string | null; // Changed from cover to logo
+  token?: string; // Added token field
   stripe_account?: {
     active: boolean;
     id: string;
   };
-  token?: string;
   enable?: number;
   capacity?: number;
   events_count?: number;

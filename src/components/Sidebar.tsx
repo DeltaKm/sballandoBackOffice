@@ -26,6 +26,12 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
+    title: "Eventi Collaboratore",
+    href: "/collaborator-events",
+    icon: "👥",
+    subItems: []
+  },
+  {
     title: "Locali",
     href: "/locations",
     icon: "🏢",
@@ -37,6 +43,12 @@ const menuItems: MenuItem[] = [
     title: "Statistiche",
     href: "/dashboard",
     icon: "📊",
+    subItems: []
+  },
+  {
+    title: "Notifiche",
+    href: "/notifications",
+    icon: "🔔",
     subItems: []
   },
 ];

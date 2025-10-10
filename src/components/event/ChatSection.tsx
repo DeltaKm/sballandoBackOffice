@@ -201,7 +201,7 @@ export function ChatSection({ event, onUpdate }: ChatSectionProps) {
           // Pulisci il reference dopo 3 secondi
           setTimeout(() => {
             lastSentMessageRef.current = "";
-          }, 3000);
+          }, 3003);
           
         } else {
           console.error('Errore invio messaggio:', data.error);

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "~/store/auth";
 import { useAuthRedirect } from "~/lib/useAuth";
 import { Sidebar } from "~/components/Sidebar";
+import { getLocationLogoUrl } from "~/lib/imageUtils";
 import type { location_ } from "~/types";
 
 export default function locationsPage() {
@@ -239,10 +240,10 @@ export default function locationsPage() {
                   className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-all duration-300 hover:scale-105 cursor-pointer"
                 >
                   {/* Immagine di copertina */}
-                  {location_.logo ? (
+                  {getLocationLogoUrl(location_) ? (
                     <div className="relative h-48 w-full">
                       <img
-                        src={location_.logo}
+                        src={getLocationLogoUrl(location_)!}
                         alt={location_.name}
                         className="w-full h-full object-cover"
                       />

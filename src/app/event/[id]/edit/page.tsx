@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuthStore } from "~/store/auth";
+import { getEventCoverUrl } from "~/lib/imageUtils";
 import { FaTimes } from "react-icons/fa";
 import { Switch } from "@headlessui/react";
 
@@ -70,8 +71,7 @@ export default function EditEventPage() {
                 location_id: event.location_id?.toString() || "",
                 is_public: Boolean(event.is_public),
                 cover: null,
-                cover_preview: event.cover ? 
-                    `https://webservice.sballando.it/storage/${event.cover}` : "",
+                cover_preview: getEventCoverUrl(event) || "",
                 music_genres: event.event_music_genres?.map((item: any) => item.music_genre.id) || [],
                 state: event.state as "draft" | "published" || "published",
                 user_id: event.user_id || (typeof user?.id === 'number' ? user.id : 0),

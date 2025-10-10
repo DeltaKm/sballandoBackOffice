@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useAuthRedirect } from "~/lib/useAuth";
+import { getLocationLogoUrl } from "~/lib/imageUtils";
 import Link from "next/link";
 import { EventCard } from "~/components/EventCard";
 import type { location_, Event } from "~/types";
@@ -132,9 +133,9 @@ export default function locationPage() {
         {/* Header locale */}
         <div className="mb-8">
           <div className="flex items-start gap-6 mb-6">
-            {location_.logo && (
+            {getLocationLogoUrl(location_) && (
               <img
-                src={location_.logo}
+                src={getLocationLogoUrl(location_)!}
                 alt={location_.name}
                 className="w-32 h-32 object-cover rounded-lg border border-white/20"
               />

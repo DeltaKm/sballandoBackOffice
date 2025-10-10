@@ -5,113 +5,110 @@ const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   const requestId = Date.now() + '-' + Math.random().toString(36).substring(2);
-  console.log(`🔔 [${requestId}] Starting notification send to event subscribers...`);
+  console.log(`🔔 [${requestId}] Starting notification send to followers...`);
 
   try {
-    const { event_id, title, message, user_token } = await request.json();
+    const { title, message, user_token, notification_type = 'general' } = await request.json();
 
     // Validazione input
-    if (!event_id || !title || !message || !user_token) {
+    if (!title || !message || !user_token) {
       console.log(`❌ [${requestId}] Missing required fields`);
       return NextResponse.json({ 
-        error: "Campi obbligatori mancanti" 
+        error: "Campi obbligatori mancanti (title, message, user_token)" 
       }, { status: 400 });
     }
 
-    // Verifica utente
-    const user = await prisma.users.findFirst({
+    // Verifica utente mittente
+    const sender = await prisma.users.findFirst({
       where: { token: user_token },
-      select: { id: true, role: true, name: true, surname: true }
+      select: { 
+        id: true, 
+        role: true, 
+        name: true, 
+        surname: true,
+        nickname: true
+      }
     });
 
-    if (!user) {
-      console.log(`❌ [${requestId}] User not found`);
+    if (!sender) {
+      console.log(`❌ [${requestId}] Sender not found`);
       return NextResponse.json({ 
         error: "Utente non autorizzato" 
       }, { status: 401 });
     }
 
-    console.log(`✅ [${requestId}] User found:`, { id: user.id, role: user.role });
-
-    // Verifica che l'evento esista e che l'utente sia autorizzato
-    const event = await prisma.events.findUnique({
-      where: { id: parseInt(event_id) },
-      select: { 
-        id: true, 
-        title: true, 
-        user_id: true,
-        location_: {
-          select: {
-            user_id: true
-          }
-        }
+    // Calcola followers count (solo per il logging)
+    let followersCount = 0;
+    try {
+      const followersResult = await prisma.$queryRaw`
+        SELECT COUNT(*) as count
+        FROM followers f
+        JOIN users u ON f.follower_id = u.id
+        WHERE f.followed_id = ${sender.id}
+          AND u.enabled = 1
+      `;
+      
+      if (Array.isArray(followersResult) && followersResult.length > 0) {
+        followersCount = Number((followersResult[0] as any).count);
       }
-    });
-
-    if (!event) {
-      console.log(`❌ [${requestId}] Event not found:`, event_id);
-      return NextResponse.json({ 
-        error: "Evento non trovato" 
-      }, { status: 404 });
+    } catch (followersError) {
+      console.log('Followers table not found, followers count will be 0');
+      followersCount = 0;
     }
 
-    // Verifica autorizzazione: solo il creatore dell'evento, il proprietario del locale o super admin
-    const isAuthorized = 
-      user.id === event.user_id || 
-      user.id === event.location_?.user_id || 
-      user.role === 'SUPERADMIN';
-
-    if (!isAuthorized) {
-      console.log(`❌ [${requestId}] User not authorized:`, { 
-        userId: user.id, 
-        eventCreatorId: event.user_id,
-        locationOwnerId: event.location_?.user_id 
-      });
-      return NextResponse.json({ 
-        error: "Non sei autorizzato ad inviare notifiche per questo evento" 
-      }, { status: 403 });
-    }
-
-    console.log(`✅ [${requestId}] Authorization passed`);
-
-    // Per ora, dato che non esiste una tabella di iscrizioni agli eventi,
-    // invieremo la notifica a tutti gli utenti attivi del sistema
-    // In futuro si potrà creare una tabella event_subscriptions
-    const allActiveUsers = await prisma.users.findMany({
-      where: { 
-        enabled: true // Solo utenti attivi
-      },
-      select: {
-        id: true,
-        name: true,
-        surname: true,
-        email: true,
-        fcm_token: true
-      }
+    console.log(`✅ [${requestId}] Sender found:`, { 
+      id: sender.id, 
+      role: sender.role,
+      name: `${sender.name} ${sender.surname}`,
+      followers_count: followersCount
     });
 
-    console.log(`📊 [${requestId}] Found ${allActiveUsers.length} active users`);
+    // Recupera i followers dell'utente
+    let followers: any[] = [];
+    try {
+      const rawFollowers = await prisma.$queryRaw`
+        SELECT f.follower_id, u.name, u.surname, u.email, u.fcm_token
+        FROM followers f
+        JOIN users u ON f.follower_id = u.id
+        WHERE f.followed_id = ${sender.id}
+          AND u.enabled = 1
+      `;
+      
+      // Converti BigInt a Number per evitare errori con Prisma
+      followers = (rawFollowers as any[]).map(follower => ({
+        ...follower,
+        follower_id: Number(follower.follower_id)
+      }));
+      
+      console.log(`📊 [${requestId}] Found ${followers.length} real followers`);
+    } catch (followersError) {
+      console.log(`❌ [${requestId}] Followers table not found or error accessing it:`, followersError);
+      return NextResponse.json({ 
+        error: "Sistema followers non configurato. Impossibile inviare notifiche ai follower.",
+        details: "La tabella followers non esiste o non è accessibile"
+      }, { status: 500 });
+    }
 
-    if (allActiveUsers.length === 0) {
+    if (followers.length === 0) {
       return NextResponse.json({ 
         success: true,
-        message: "Nessun utente attivo trovato",
-        sent_count: 0
+        message: "Nessun follower trovato. La notifica non è stata inviata a nessuno.",
+        sent_count: 0,
+        recipients_count: 0
       });
     }
 
     // Prepara le notifiche da inserire nel database
-    const notificationsToCreate = allActiveUsers.map(recipient => ({
-      receiver_id: recipient.id,
-      sender_id: user.id, // ✅ CORRETTO: L'utente che invia la notifica
-      event_id: parseInt(event_id),
+    const notificationsToCreate = followers.map((follower: any) => ({
+      receiver_id: follower.follower_id,
+      sender_id: sender.id,
       title: title.trim(),
       message: message.trim(),
       long_message: message.trim(),
-      type: 'event_notification',
+      type: notification_type,
       category: 'acceptances' as const,
       status: 'unread' as const,
-      redirect: 'event' as const,
+      redirect: 'user' as const,
       created_at: new Date(),
       updated_at: new Date()
     }));
@@ -124,30 +121,28 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ [${requestId}] Created ${createdNotifications.count} notifications in database`);
 
-    // ✅ IMPLEMENTAZIONE FCM PER NOTIFICHE PUSH - STESSO SISTEMA DEL JUKEBOX
-    const usersWithFcmToken = allActiveUsers.filter(recipient => recipient.fcm_token);
-    console.log(`📱 [${requestId}] Users with FCM token: ${usersWithFcmToken.length}`);
+    // ✅ IMPLEMENTAZIONE FCM PER NOTIFICHE PUSH
+    const followersWithFcmToken = followers.filter((follower: any) => follower.fcm_token);
+    console.log(`📱 [${requestId}] Followers with FCM token: ${followersWithFcmToken.length}`);
     
     let pushNotificationsSent = 0;
-    
-    if (usersWithFcmToken.length > 0) {
+
+    if (followersWithFcmToken.length > 0) {
       try {
         // Raccogli tutti i token FCM
-        const fcmTokens = usersWithFcmToken
-          .map(recipient => recipient.fcm_token)
-          .filter((token): token is string => typeof token === 'string');
+        const fcmTokens = followersWithFcmToken
+          .map((follower: any) => follower.fcm_token)
+          .filter((token: any): token is string => typeof token === 'string');
 
         if (fcmTokens.length === 0) {
           console.log(`⚠️ [${requestId}] No valid FCM tokens found`);
         } else {
           // Prepara i dati per la notifica (tutti come stringhe)
           const notificationData: Record<string, string> = {
-            event_id: event_id.toString(),
-            type: 'event_notification',
-            redirect: 'event',
-            sender_name: `${user.name} ${user.surname}`,
-            sender_id: user.id.toString(),
-            event_title: event.title || '',
+            type: notification_type,
+            redirect: 'user',
+            sender_name: sender.nickname || `${sender.name} ${sender.surname}`,
+            sender_id: sender.id.toString(),
             title: title.trim(),
             body: message.trim().substring(0, 200) + (message.length > 200 ? '...' : ''),
             timestamp: new Date().toISOString()
@@ -165,7 +160,7 @@ export async function POST(request: NextRequest) {
 
           console.log(`📤 [${requestId}] Sending push notification to ${fcmTokens.length} tokens via external service`);
 
-          // Usa lo stesso servizio FCM del jukebox
+          // Usa lo stesso servizio FCM del sistema esistente
           const pushResponse = await fetch('https://webservice.sballando.it/firebaseMessaging/src/send_notification.php', {
             method: 'POST',
             headers: {
@@ -206,25 +201,24 @@ export async function POST(request: NextRequest) {
 
     // Log dell'operazione per tracciabilità
     console.log(`📢 [${requestId}] Notification sent successfully:`, {
-      event_id: event.id,
-      event_title: event.title,
-      sender: `${user.name} ${user.surname}`,
-      recipients_count: allActiveUsers.length,
+      sender: `${sender.name} ${sender.surname}`,
+      recipients_count: followers.length,
       push_notifications_sent: pushNotificationsSent,
       title: title.trim(),
-      message_preview: message.trim().substring(0, 50) + (message.length > 50 ? '...' : '')
+      message_preview: message.trim().substring(0, 50) + (message.length > 50 ? '...' : ''),
+      notification_type
     });
 
     return NextResponse.json({
       success: true,
-      message: `Notifica inviata con successo a ${allActiveUsers.length} utenti`,
-      sent_count: allActiveUsers.length,
+      message: `Notifica inviata con successo a ${followers.length} follower${followers.length !== 1 ? 's' : ''}`,
+      sent_count: followers.length,
       push_sent_count: pushNotificationsSent,
-      event_title: event.title
+      sender_name: `${sender.name} ${sender.surname}`
     });
 
   } catch (error: any) {
-    console.error(`❌ [${requestId}] Error in send notification API:`, {
+    console.error(`❌ [${requestId}] Error in send notification to followers API:`, {
       message: error.message,
       code: error.code,
       name: error.name,

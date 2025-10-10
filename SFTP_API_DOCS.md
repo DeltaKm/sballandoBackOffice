@@ -125,16 +125,31 @@ const result = await sftpService.uploadEventCover(file, token);
 ```
 /var/www/html/webservice.sballando.it/storage/app/public/
 └── images/
-    └── events/
-        └── {event_token}/
-            ├── cover_1234567890_abc123.jpg
-            └── cover_1234567891_def456.png
+    ├── events/
+    │   └── {event_token}/
+    │       └── cover.{ext}  # Sempre rinominato come "cover"
+    └── locations/
+        └── {location_token}/
+            └── logo.{ext}  # Sempre rinominato come "logo"
 ```
 
 ### Public URLs
 
 ```
-https://webservice.sballando.it/storage/images/events/{event_token}/{filename}
+https://webservice.sballando.it/storage/images/events/{event_token}/cover.{ext}
+https://webservice.sballando.it/storage/images/locations/{location_token}/logo.{ext}
+```
+
+### Database Paths
+
+Nel database vengono salvati i percorsi relativi:
+
+```
+# Eventi
+images/events/{event_token}/cover.{ext}
+
+# Locali  
+images/locations/{location_token}/logo.{ext}
 ```
 
 ## Integration with Event Creation
