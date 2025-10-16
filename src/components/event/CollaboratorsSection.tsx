@@ -18,6 +18,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [selectedRole, setSelectedRole] = useState("");
   const [updatingRoles, setUpdatingRoles] = useState<Record<number, boolean>>({});
+  const [removingCollaborator, setRemovingCollaborator] = useState<Record<number, boolean>>({});
   
   const user = useAuthStore((state) => state.user);
 
@@ -89,6 +90,9 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
       return;
     }
 
+    // Attiva il loader per questo collaboratore
+    setRemovingCollaborator(prev => ({ ...prev, [collaboratorId]: true }));
+
     try {
       const res = await fetch(`/api/events/collaborators/${collaboratorId}`, {
         method: 'DELETE',
@@ -108,6 +112,9 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
     } catch (err) {
       console.error('Error removing collaborator:', err);
       alert('Errore di connessione');
+    } finally {
+      // Disattiva il loader per questo collaboratore
+      setRemovingCollaborator(prev => ({ ...prev, [collaboratorId]: false }));
     }
   };
 
@@ -276,10 +283,19 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
               {/* Bottone Rimuovi in alto a destra */}
               <button
                 onClick={() => handleRemoveCollaborator(collab.id)}
-                className="absolute top-2 right-2 p-1.5 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors z-10"
-                title="Rimuovi collaboratore"
+                disabled={removingCollaborator[collab.id] || false}
+                className={`absolute top-2 right-2 p-1.5 rounded-lg transition-colors z-10 ${
+                  removingCollaborator[collab.id] 
+                    ? 'text-red-300 bg-red-500/10 cursor-not-allowed' 
+                    : 'text-red-400 hover:bg-red-500/20'
+                }`}
+                title={removingCollaborator[collab.id] ? 'Rimozione in corso...' : 'Rimuovi collaboratore'}
               >
-                <span className="text-sm">🗑️</span>
+                {removingCollaborator[collab.id] ? (
+                  <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin"></div>
+                ) : (
+                  <span className="text-sm">🗑️</span>
+                )}
               </button>
 
               {/* Header con foto e info */}

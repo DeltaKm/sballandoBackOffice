@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import crypto from 'crypto';
 import { EventSchema } from "~/schemas/event";
-import { parseISO } from 'date-fns';
+import { adjustEventDates } from "~/lib/timezone";
 import getSFTPService from "~/lib/sftpService.server";
 
 const prisma = new PrismaClient();
@@ -92,16 +92,27 @@ export async function POST(req: Request) {
 
         // ✅ CONTINUA CON LA CREAZIONE DELL'EVENTO...
         const result = await prisma.$transaction(async (tx) => {
-            const startDateTime = parseISO(validatedData.datetime_start);
-            const endDateTime = parseISO(validatedData.datetime_end);
+            // ✅ Usa la stessa utility dell'API di modifica
+            const adjustedData = adjustEventDates(validatedData, 'toDatabase');
+            
+            console.log('🕐 Date adjustment in creation:', {
+                original: { 
+                    start: validatedData.datetime_start, 
+                    end: validatedData.datetime_end 
+                },
+                adjusted: { 
+                    start: adjustedData.datetime_start, 
+                    end: adjustedData.datetime_end 
+                }
+            });
 
             const event = await tx.events.create({
                 data: {
-                    title: validatedData.title,
-                    subtitle: validatedData.subtitle,
-                    description_extended: validatedData.description_extended,
-                    datetime_start: startDateTime,
-                    datetime_end: endDateTime,
+                    title: adjustedData.title,
+                    subtitle: adjustedData.subtitle,
+                    description_extended: adjustedData.description_extended,
+                    datetime_start: adjustedData.datetime_start,
+                    datetime_end: adjustedData.datetime_end,
                     is_public: validatedData.is_public ? 1 : 0,
                     location_id: validatedData.location_id,
                     state: validatedData.state,

@@ -107,7 +107,7 @@ export default function CollaboratorEventsPage() {
       setEvents(data.events || []);
       setStats(data.stats || null);
     } catch (err) {
-      setError("Errore nel caricamento degli eventi collaboratori");
+      setError("Ancora nessun evento dove sei collaboratore, o errore di caricamento.");
       console.error(err);
     } finally {
       setLoading(false);

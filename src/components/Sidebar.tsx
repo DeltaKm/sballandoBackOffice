@@ -39,12 +39,8 @@ const menuItems: MenuItem[] = [
       // Example: { title: "Sub Locale", href: "/locations/sub" }
     ]
   },
-  {
-    title: "Statistiche",
-    href: "/dashboard",
-    icon: "📊",
-    subItems: []
-  },
+  
+
   {
     title: "Notifiche",
     href: "/notifications",

@@ -5,8 +5,7 @@ const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userToken = searchParams.get('user_token');
+    const userToken = request.nextUrl.searchParams.get('user_token');
 
     // Validazione input
     if (!userToken) {
@@ -32,39 +31,28 @@ export async function GET(request: NextRequest) {
       }, { status: 401 });
     }
 
-    // Calcola followers e following counts
+    // Calcola followers e following counts (versione semplificata)
     let followersCount = 0;
     let followingCount = 0;
 
     try {
-      // Prova a ottenere i followers reali dalla tabella followers
-      const followersResult = await prisma.$queryRaw`
-        SELECT COUNT(*) as count
-        FROM followers f
-        JOIN users u ON f.follower_id = u.id
-        WHERE f.followed_id = ${user.id}
-          AND u.enabled = 1
-      `;
-      
-      if (Array.isArray(followersResult) && followersResult.length > 0) {
-        followersCount = Number((followersResult[0] as any).count);
-      }
+      // Prova a usare query Prisma standard invece di raw SQL
+      const followersResult = await prisma.followers.count({
+        where: {
+          followed_id: user.id
+        }
+      });
+      followersCount = followersResult;
 
-      // Prova a ottenere i following dalla tabella followers
-      const followingResult = await prisma.$queryRaw`
-        SELECT COUNT(*) as count
-        FROM followers f
-        JOIN users u ON f.followed_id = u.id
-        WHERE f.follower_id = ${user.id}
-          AND u.enabled = 1
-      `;
-      
-      if (Array.isArray(followingResult) && followingResult.length > 0) {
-        followingCount = Number((followingResult[0] as any).count);
-      }
+      const followingResult = await prisma.followers.count({
+        where: {
+          follower_id: user.id
+        }
+      });
+      followingCount = followingResult;
     } catch (followersError) {
-      console.log('Followers table not found or error accessing it');
-      // Non facciamo fallback - se non c'è la tabella followers, il count rimane 0
+      console.log('Followers table not found or error accessing it:', followersError);
+      // Se non c'è la tabella followers, il count rimane 0
       followersCount = 0;
       followingCount = 0;
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useAuthRedirect } from "~/lib/useAuth";
 import { getLocationLogoUrl } from "~/lib/imageUtils";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import type { location_, Event } from "~/types";
 
 export default function locationPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
   const auth = useAuthRedirect();
   const user = auth.user;
@@ -17,6 +18,7 @@ export default function locationPage() {
   const [location_, setlocation] = useState<location_ & { events: Event[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -57,6 +59,54 @@ export default function locationPage() {
       setLoading(false);
     }
   }, [id, auth.isAuthenticated, auth.isInitialized, user?.token]);
+
+  const handleDeleteLocation = async () => {
+    if (!location_ || !user?.token) return;
+
+    // Doppia conferma per sicurezza
+    const confirmed = confirm(
+      `⚠️ ATTENZIONE: Vuoi davvero eliminare il locale "${location_.name}"?\n\n` +
+      `Questa azione è IRREVERSIBILE e eliminerà:\n` +
+      `• Il locale e tutti i suoi dati\n` +
+      `• Tutte le informazioni associate\n\n` +
+      `Digita "ELIMINA" per confermare:`
+    );
+
+    if (!confirmed) return;
+
+    const confirmation = prompt('Digita "ELIMINA" per confermare la cancellazione:');
+    if (confirmation !== 'ELIMINA') {
+      alert('Cancellazione annullata. Il testo non corrisponde.');
+      return;
+    }
+
+    setDeleting(true);
+
+    try {
+      const res = await fetch(`/api/locations/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_token: user.token }),
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        alert(`✅ Locale "${result.deletedLocation.name}" eliminato con successo!`);
+        router.push('/locations');
+      } else {
+        const error = await res.json();
+        alert(`❌ Errore: ${error.error}`);
+        if (error.details) {
+          alert(`Dettagli: ${error.details}`);
+        }
+      }
+    } catch (err) {
+      console.error('Error deleting location:', err);
+      alert('❌ Errore di connessione durante l\'eliminazione');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   // Se non è ancora inizializzato, mostra loading
   if (auth.isLoading) {
@@ -152,7 +202,7 @@ export default function locationPage() {
           </div>
 
           {/* Statistiche */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
             <div className="p-4 bg-white/5 border border-white/10 rounded-lg text-center">
               <div className="text-2xl font-bold text-[#FC0045]">{location_.events.length}</div>
               <div className="text-white/60 text-sm">Eventi Totali</div>
@@ -165,6 +215,84 @@ export default function locationPage() {
               <div className="text-2xl font-bold text-orange-400">{pastEvents.length}</div>
               <div className="text-white/60 text-sm">Eventi Passati</div>
             </div>
+          </div>
+
+          {/* Bottoni di azione */}
+          <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+            {/* Debug info - RIMUOVERE IN PRODUZIONE */}
+            <div className="w-full mb-4 p-3 bg-yellow-500/20 border border-yellow-400/30 rounded-lg text-yellow-300 text-sm">
+              <strong>Debug Info:</strong> User role: {user?.role || 'undefined'} | 
+              Is SUPERADMIN: {user?.role === 'SUPERADMIN' ? 'YES' : 'NO'} | 
+              User email: {user?.email || 'undefined'}
+            </div>
+
+            {/* Pulsante Modifica (sempre visibile) */}
+            <Link
+              href={`/locations/${id}/update`}
+              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+            >
+              <span>✏️</span>
+              Modifica Locale
+            </Link>
+
+            {/* Pulsante Elimina (solo per SUPERADMIN) */}
+            {user?.role === 'SUPERADMIN' && (
+              <button
+                onClick={handleDeleteLocation}
+                disabled={deleting}
+                className={`px-6 py-3 rounded-lg transition-colors flex items-center gap-2 ${
+                  deleting
+                    ? 'bg-red-500/30 text-red-300 cursor-not-allowed'
+                    : 'bg-red-500 text-white hover:bg-red-600'
+                }`}
+                title={deleting ? 'Eliminazione in corso...' : 'Elimina locale (ATTENZIONE: azione irreversibile!)'}
+              >
+                {deleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-red-300/30 border-t-red-300 rounded-full animate-spin"></div>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <span>🗑️</span>
+                    Elimina Locale
+                  </>
+                )}
+              </button>
+            )}
+
+            {/* Pulsante Elimina SEMPRE VISIBILE per debug - RIMUOVERE IN PRODUZIONE */}
+            <button
+              onClick={handleDeleteLocation}
+              disabled={deleting}
+              className={`px-6 py-3 rounded-lg transition-colors flex items-center gap-2 ${
+                deleting
+                  ? 'bg-orange-500/30 text-orange-300 cursor-not-allowed'
+                  : 'bg-orange-500 text-white hover:bg-orange-600'
+              }`}
+              title="DEBUG: Elimina locale (sempre visibile)"
+            >
+              {deleting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-orange-300/30 border-t-orange-300 rounded-full animate-spin"></div>
+                  Eliminando...
+                </>
+              ) : (
+                <>
+                  <span>🔧</span>
+                  DEBUG Elimina
+                </>
+              )}
+            </button>
+
+            {/* Link torna indietro */}
+            <Link
+              href="/locations"
+              className="px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors flex items-center gap-2"
+            >
+              <span>←</span>
+              Torna ai Locali
+            </Link>
           </div>
         </div>
 

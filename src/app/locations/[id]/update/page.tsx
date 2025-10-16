@@ -322,30 +322,7 @@ export default function UpdateLocationPage() {
                                     />
                                 </div>
 
-                                {/* Stato Attivo */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Stato
-                                    </label>
-                                    <div className="flex items-center space-x-3">
-                                        <Switch
-                                            checked={formData.is_active}
-                                            onChange={(checked) => setFormData({...formData, is_active: checked})}
-                                            className={`${
-                                                formData.is_active ? 'bg-green-600' : 'bg-gray-200'
-                                            } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-                                        >
-                                            <span
-                                                className={`${
-                                                    formData.is_active ? 'translate-x-6' : 'translate-x-1'
-                                                } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                                            />
-                                        </Switch>
-                                        <span className={`text-sm ${formData.is_active ? 'text-green-600' : 'text-gray-500'}`}>
-                                            {formData.is_active ? 'Attivo' : 'Inattivo'}
-                                        </span>
-                                    </div>
-                                </div>
+                               
                             </div>
 
                             {/* Descrizione */}

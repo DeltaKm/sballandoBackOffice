@@ -54,7 +54,7 @@ export default function EventsPage() {
       const data = await res.json();
       setEvents(data);
     } catch (err) {
-      setError("Errore nel caricamento degli eventi");
+      setError("Ancora nessun evento dove sei collaboratore, o errore di caricamento.");
       console.error(err);
     } finally {
       setLoading(false);

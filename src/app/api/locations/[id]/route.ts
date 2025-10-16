@@ -389,3 +389,134 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     await prisma.$disconnect();
   }
 }
+
+// ✅ METODO DELETE PER ELIMINARE UN LOCALE
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  let requestId = '';
+
+  try {
+    const body = await request.json();
+    const { user_token } = body;
+    const resolvedParams = await params;
+    const locationId = parseInt(resolvedParams.id);
+
+    // Genera un ID unico per la richiesta
+    requestId = `DEL-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    console.log(`🗑️ [${requestId}] DELETE Location API called:`, { 
+      locationId, 
+      hasToken: !!user_token 
+    });
+
+    if (!user_token || !locationId) {
+      console.log(`❌ [${requestId}] Missing parameters`);
+      return NextResponse.json({ error: "Token utente o ID locale mancante" }, { status: 400 });
+    }
+
+    // Verifica che l'utente sia autenticato
+    const user = await prisma.users.findFirst({
+      where: { token: user_token },
+      select: {
+        id: true,
+        email: true,
+        role: true
+      }
+    });
+
+    if (!user) {
+      console.log(`❌ [${requestId}] Invalid user token`);
+      return NextResponse.json({ error: "Token utente non valido" }, { status: 401 });
+    }
+
+    console.log(`🔐 [${requestId}] User authenticated:`, user.email, 'Role:', user.role);
+
+    // Solo i SUPERADMIN possono eliminare i locali
+    if (user.role !== 'SUPERADMIN') {
+      console.log(`⛔ [${requestId}] Unauthorized: user is not SUPERADMIN`);
+      return NextResponse.json({ 
+        error: "Solo i SUPERADMIN possono eliminare i locali" 
+      }, { status: 403 });
+    }
+
+    // Verifica che il locale esista
+    const existingLocation = await prisma.locations.findUnique({
+      where: { id: locationId },
+      include: {
+        events: {
+          select: {
+            id: true,
+            title: true,
+            datetime_start: true
+          }
+        }
+      }
+    });
+
+    if (!existingLocation) {
+      console.log(`❌ [${requestId}] Location not found`);
+      return NextResponse.json({ error: "Locale non trovato" }, { status: 404 });
+    }
+
+    console.log(`📍 [${requestId}] Location found:`, existingLocation.name);
+
+    // Verifica se ci sono eventi associati
+    if (existingLocation.events.length > 0) {
+      console.log(`⚠️ [${requestId}] Location has ${existingLocation.events.length} associated events`);
+      return NextResponse.json({ 
+        error: `Impossibile eliminare il locale. Ci sono ${existingLocation.events.length} eventi associati.`,
+        details: "Elimina prima tutti gli eventi associati a questo locale."
+      }, { status: 409 });
+    }
+
+    // Elimina il locale in transazione
+    const result = await prisma.$transaction(async (tx) => {
+      console.log(`🗑️ [${requestId}] Starting location deletion transaction`);
+
+      // Elimina il locale
+      const deletedLocation = await tx.locations.delete({
+        where: { id: locationId }
+      });
+
+      console.log(`✅ [${requestId}] Location deleted successfully`);
+      return deletedLocation;
+    });
+
+    console.log(`🎉 [${requestId}] Location deletion completed:`, {
+      deletedLocationId: result.id,
+      deletedLocationName: result.name
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Locale eliminato con successo",
+      deletedLocation: {
+        id: result.id,
+        name: result.name
+      }
+    }, { status: 200 });
+
+  } catch (error) {
+    console.error(`❌ [${requestId}] Error deleting location:`, error);
+    
+    // Gestione errori specifici di Prisma
+    if (error instanceof Error && 'code' in error) {
+      if (error.code === 'P2003') {
+        return NextResponse.json({ 
+          error: "Impossibile eliminare il locale perché è referenziato da altri record"
+        }, { status: 409 });
+      }
+    }
+
+    return NextResponse.json({ 
+      error: "Errore nell'eliminazione del locale",
+      requestId: requestId
+    }, { status: 500 });
+
+  } finally {
+    console.log(`🔚 [${requestId}] Disconnecting Prisma...`);
+    await prisma.$disconnect();
+  }
+}

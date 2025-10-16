@@ -17,9 +17,17 @@ export default function locationsPage() {
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [toggleLoading, setToggleLoading] = useState<number | null>(null);
+  const [deletingLocation, setDeletingLocation] = useState<number | null>(null);
 
   // Verifica se l'utente è super admin
   const isSuperAdmin = user?.role === 'SUPERADMIN';
+
+  // DEBUG - rimuovere in produzione
+  console.log('🔍 DEBUG Locations Page:', {
+    userRole: user?.role,
+    isSuperAdmin,
+    userEmail: user?.email
+  });
 
   // Filtra i locali in base alla ricerca (sempre chiamato)
   const filteredlocations = useMemo(() => {
@@ -73,6 +81,57 @@ export default function locationsPage() {
       alert('Errore nel cambio di stato del locale');
     } finally {
       setToggleLoading(null);
+    }
+  };
+
+  // Funzione per eliminare un locale
+  const handleDeleteLocation = async (location_: location_) => {
+    if (!user?.token || !isSuperAdmin) return;
+
+    // Doppia conferma per sicurezza
+    const confirmed = confirm(
+      `⚠️ ATTENZIONE: Vuoi davvero eliminare il locale "${location_.name}"?\n\n` +
+      `Questa azione è IRREVERSIBILE e eliminerà:\n` +
+      `• Il locale e tutti i suoi dati\n` +
+      `• Tutte le informazioni associate\n\n` +
+      `Clicca OK per continuare...`
+    );
+
+    if (!confirmed) return;
+
+    const confirmation = prompt('Per confermare, digita il nome del locale:');
+    if (confirmation !== location_.name) {
+      alert('Cancellazione annullata. Il nome non corrisponde.');
+      return;
+    }
+
+    setDeletingLocation(location_.id);
+
+    try {
+      const res = await fetch(`/api/locations/${location_.id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_token: user.token }),
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        alert(`✅ Locale "${result.deletedLocation.name}" eliminato con successo!`);
+        
+        // Rimuovi il locale dalla lista locale
+        setlocations(prev => prev.filter(loc => loc.id !== location_.id));
+      } else {
+        const error = await res.json();
+        alert(`❌ Errore: ${error.error}`);
+        if (error.details) {
+          alert(`Dettagli: ${error.details}`);
+        }
+      }
+    } catch (err) {
+      console.error('Error deleting location:', err);
+      alert('❌ Errore di connessione durante l\'eliminazione');
+    } finally {
+      setDeletingLocation(null);
     }
   };
 
@@ -167,6 +226,14 @@ export default function locationsPage() {
 
         {/* Search Bar */}
         <div className="max-w-7xl mx-auto p-6 pb-0">
+          {/* DEBUG INFO - RIMUOVERE IN PRODUZIONE */}
+          <div className="mb-4 p-3 bg-yellow-500/20 border border-yellow-400/30 rounded-lg text-yellow-300 text-sm">
+            <strong>🔍 DEBUG INFO:</strong> User role: {user?.role || 'undefined'} | 
+            Is SUPERADMIN: {isSuperAdmin ? 'YES' : 'NO'} | 
+            Email: {user?.email || 'undefined'} | 
+            Should show delete button: {isSuperAdmin ? 'YES' : 'NO'}
+          </div>
+
           <div className="relative mb-6">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <span className="text-white/60">🔍</span>
@@ -354,6 +421,7 @@ export default function locationsPage() {
                       {/* Pulsanti Super Admin */}
                       {isSuperAdmin && (
                         <div className="flex gap-2">
+                          {/* Pulsante Attiva/Disattiva */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -374,7 +442,7 @@ export default function locationsPage() {
                             ) : location_.enable ? (
                               <>
                                 <span>❌</span>
-                                <span className="text-xs">Disattiva</span>
+                                <span className="text-xs">Disattiva2</span>
                               </>
                             ) : (
                               <>
@@ -383,8 +451,37 @@ export default function locationsPage() {
                               </>
                             )}
                           </button>
+
+                          {/* Pulsante Elimina */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteLocation(location_);
+                            }}
+                            disabled={deletingLocation === location_.id}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 border ${
+                              deletingLocation === location_.id
+                                ? 'bg-red-500/10 text-red-300 border-red-500/20 cursor-not-allowed'
+                                : 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border-red-500/40'
+                            }`}
+                            title="Elimina locale (ATTENZIONE: azione irreversibile!)"
+                          >
+                            {deletingLocation === location_.id ? (
+                              <>
+                                <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></div>
+                                <span className="text-xs">...</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>🗑️</span>
+                                <span className="text-xs">Elimina</span>
+                              </>
+                            )}
+                          </button>
                         </div>
                       )}
+
+
 
                       {/* Pulsante Modifica sempre presente */}
                       <button

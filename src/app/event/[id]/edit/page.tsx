@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuthStore } from "~/store/auth";
 import { getEventCoverUrl } from "~/lib/imageUtils";
+import { dateToLocalInput, localInputToDate } from "~/lib/timezone";
 import { FaTimes } from "react-icons/fa";
 import { Switch } from "@headlessui/react";
+import ErrorModal from "~/components/ErrorModal";
 
 interface EventFormData {
     title: string;
@@ -45,6 +47,8 @@ export default function EditEventPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
+    const [errorDetails, setErrorDetails] = useState<string[]>([]);
+    const [showErrorModal, setShowErrorModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [allMusicGenres, setAllMusicGenres] = useState<Array<{ id: number; label: string }>>([]);
     const [filteredGenres, setFilteredGenres] = useState<Array<{ id: number; label: string }>>([]);
@@ -65,9 +69,9 @@ export default function EditEventPage() {
                 subtitle: event.subtitle || "",
                 description_extended: event.description_extended || null,
                 datetime_start: event.datetime_start ? 
-                    new Date(event.datetime_start).toISOString().slice(0, 16) : "",
+                    dateToLocalInput(event.datetime_start) : "",
                 datetime_end: event.datetime_end ? 
-                    new Date(event.datetime_end).toISOString().slice(0, 16) : "",
+                    dateToLocalInput(event.datetime_end) : "",
                 location_id: event.location_id?.toString() || "",
                 is_public: Boolean(event.is_public),
                 cover: null,
@@ -169,6 +173,8 @@ export default function EditEventPage() {
         e.preventDefault();
         setSaving(true);
         setError("");
+        setErrorDetails([]);
+        setShowErrorModal(false);
 
         try {
             const formDataToSend = new FormData();
@@ -181,8 +187,20 @@ export default function EditEventPage() {
                     // Non inviare cover_preview
                     return;
                 } else if (value !== null && value !== undefined) {
-                    formDataToSend.append(key, value.toString());
+                    // Usa le nuove utility per le date
+                    if (key === 'datetime_start' || key === 'datetime_end') {
+                        formDataToSend.append(key, localInputToDate(value.toString()));
+                    } else {
+                        formDataToSend.append(key, value.toString());
+                    }
                 }
+            });
+
+            console.log('🚀 Sending data to server:', {
+                datetime_start: formDataToSend.get('datetime_start'),
+                datetime_end: formDataToSend.get('datetime_end'),
+                title: formDataToSend.get('title'),
+                location_id: formDataToSend.get('location_id')
             });
 
             const res = await fetch(`/api/events/${params.id}/edit`, {
@@ -191,11 +209,36 @@ export default function EditEventPage() {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Errore durante la modifica dell\'evento');
+            
+            if (!res.ok) {
+                console.error('❌ Server error:', data);
+                
+                // Gestione dettagliata degli errori
+                let errorMessage = data.error || 'Errore durante la modifica dell\'evento';
+                let details: string[] = [];
+                
+                if (data.details && Array.isArray(data.details)) {
+                    details = data.details.map((detail: any) => 
+                        typeof detail === 'string' ? detail : detail.message || 'Errore sconosciuto'
+                    );
+                } else if (data.details && typeof data.details === 'string') {
+                    details = [data.details];
+                }
+                
+                setError(errorMessage);
+                setErrorDetails(details);
+                setShowErrorModal(true);
+                return;
+            }
 
+            console.log('✅ Event updated successfully:', data);
             router.push(`/event/${params.id}`);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Errore durante la modifica dell\'evento');
+            console.error('❌ Network/unexpected error:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Errore di rete durante la modifica dell\'evento';
+            setError(errorMessage);
+            setErrorDetails(['Verifica la connessione internet e riprova']);
+            setShowErrorModal(true);
         } finally {
             setSaving(false);
         }
@@ -472,7 +515,7 @@ export default function EditEventPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+                            {/* <div className="bg-white/5 p-4 rounded-lg border border-white/10">
                                 <label className="block text-sm font-medium text-white/80 mb-4">
                                     Visibilità evento
                                 </label>
@@ -496,7 +539,7 @@ export default function EditEventPage() {
                                         />
                                     </Switch>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
 
                         {/* Submit Button */}
@@ -510,6 +553,15 @@ export default function EditEventPage() {
                     </form>
                 </div>
             </div>
+
+            {/* Error Modal */}
+            <ErrorModal
+                isOpen={showErrorModal}
+                onClose={() => setShowErrorModal(false)}
+                title="Errore nella modifica dell'evento"
+                message={error}
+                details={errorDetails.length > 0 ? errorDetails : undefined}
+            />
         </div>
     );
 }

@@ -52,3 +52,35 @@ export function adjustEventDates<T extends { datetime_start?: any; datetime_end?
 ): T {
   return adjustDatesInObject(eventData, ['datetime_start', 'datetime_end'], direction);
 }
+
+/**
+ * Converte una data dal database al formato datetime-local per input HTML
+ * Questa funzione gestisce correttamente il timezone locale
+ */
+export function dateToLocalInput(dateString: string | Date): string {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  
+  // Sottrai l'offset per compensare la conversione automatica in UTC del browser
+  const adjustedDate = adjustDateForFrontend(date);
+  
+  // Formato per input datetime-local: YYYY-MM-DDTHH:mm
+  const year = adjustedDate.getFullYear();
+  const month = String(adjustedDate.getMonth() + 1).padStart(2, '0');
+  const day = String(adjustedDate.getDate()).padStart(2, '0');
+  const hours = String(adjustedDate.getHours()).padStart(2, '0');
+  const minutes = String(adjustedDate.getMinutes()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+/**
+ * Converte una stringa dall'input datetime-local al formato Date per l'invio al server
+ */
+export function localInputToDate(inputValue: string): string {
+  if (!inputValue) return '';
+  
+  // L'input datetime-local è già in formato locale, lo passiamo direttamente
+  return inputValue;
+}

@@ -34,7 +34,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (shouldRedirect ?? (user && !checking)) {
-      router.push('/dashboard');
+      router.push('/event');
     }
   }, [shouldRedirect, user, checking, router]);
 
