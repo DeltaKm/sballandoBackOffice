@@ -148,10 +148,34 @@ export default function EditEventPage() {
 
     // Gestione ricerca generi musicali
     useEffect(() => {
+        const query = searchQuery.toLowerCase().trim();
         const filtered = allMusicGenres.filter(genre =>
-            genre.label.toLowerCase().includes(searchQuery.toLowerCase().trim())
+            genre.label.toLowerCase().includes(query)
         );
-        setFilteredGenres(filtered);
+        
+        // Ordina i risultati per rilevanza:
+        // 1. Corrispondenza esatta
+        // 2. Inizia con il termine cercato
+        // 3. Contiene il termine
+        const sortedFiltered = filtered.sort((a, b) => {
+            const aLower = a.label.toLowerCase();
+            const bLower = b.label.toLowerCase();
+            
+            // Corrispondenza esatta ha priorità massima
+            if (aLower === query && bLower !== query) return -1;
+            if (bLower === query && aLower !== query) return 1;
+            
+            // Inizia con il termine ha priorità alta
+            const aStarts = aLower.startsWith(query);
+            const bStarts = bLower.startsWith(query);
+            if (aStarts && !bStarts) return -1;
+            if (bStarts && !aStarts) return 1;
+            
+            // Altrimenti ordina alfabeticamente
+            return aLower.localeCompare(bLower);
+        });
+        
+        setFilteredGenres(sortedFiltered);
     }, [searchQuery, allMusicGenres]);
 
     // Gestione upload immagine di copertina

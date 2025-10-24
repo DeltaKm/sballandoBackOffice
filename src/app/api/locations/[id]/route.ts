@@ -119,7 +119,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     console.log(`✅ [${requestId}] location_ data retrieved:`, { 
       locationId: location_.id, 
-      eventsCount: location_.events?.length || 0 
+      eventsCount: location_.events?.length || 0,
+      link_instagram: location_.link_instagram,
+      link_facebook: location_.link_facebook,
+      link_tiktok: location_.link_tiktok
     });
 
     return NextResponse.json(location_, { status: 200 });
@@ -196,6 +199,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const email = formData.get('email') as string;
     const description = formData.get('description') as string;
     const logo = formData.get('logo') as File | null;
+    const link_instagram = formData.get('link_instagram') as string | null;
+    const link_facebook = formData.get('link_facebook') as string | null;
+    const link_tiktok = formData.get('link_tiktok') as string | null;
 
     if (!user_token) {
       console.log(`❌ [${requestId}] Missing user token`);
@@ -249,6 +255,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       phone,
       email,
       description,
+      link_instagram,
+      link_facebook,
+      link_tiktok,
       updated_at: new Date()
     };
 

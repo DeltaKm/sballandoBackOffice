@@ -136,6 +136,32 @@ export async function POST(req: Request) {
                 });
             }
 
+            // Recupera i dettagli dei generi musicali per costruire il JSON
+            const musicGenresData = await tx.music_genres.findMany({
+                where: {
+                    id: {
+                        in: validatedData.music_genres
+                    }
+                },
+                select: {
+                    id: true,
+                    label: true
+                }
+            });
+
+            // Costruisci il JSON array dei generi
+            const musicGenresJson = JSON.stringify(musicGenresData);
+
+            // Aggiorna l'evento con il campo music_genres JSON
+            await tx.events.update({
+                where: { id: event.id },
+                data: {
+                    music_genres: musicGenresJson
+                }
+            });
+
+            console.log(`🎵 Updated music_genres field with JSON:`, musicGenresJson);
+
             return { event };
         });
 

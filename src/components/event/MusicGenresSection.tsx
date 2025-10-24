@@ -49,12 +49,36 @@ export function MusicGenresSection({ event, onUpdate }: MusicGenresSectionProps)
     
     // Filtra i generi non ancora selezionati che corrispondono alla ricerca
     const selectedGenreIds = event.event_music_genres?.map(emg => emg.music_genre_id) || [];
+    const query = searchQuery.toLowerCase().trim();
+    
     const availableGenres = allGenres.filter(genre => 
       !selectedGenreIds.includes(genre.id) && 
-      genre.label.toLowerCase().includes(searchQuery.toLowerCase())
+      genre.label.toLowerCase().includes(query)
     );
     
-    setSearchResults(availableGenres);
+    // Ordina i risultati per rilevanza:
+    // 1. Corrispondenza esatta
+    // 2. Inizia con il termine cercato
+    // 3. Contiene il termine
+    const sortedResults = availableGenres.sort((a, b) => {
+      const aLower = a.label.toLowerCase();
+      const bLower = b.label.toLowerCase();
+      
+      // Corrispondenza esatta ha priorità massima
+      if (aLower === query && bLower !== query) return -1;
+      if (bLower === query && aLower !== query) return 1;
+      
+      // Inizia con il termine ha priorità alta
+      const aStarts = aLower.startsWith(query);
+      const bStarts = bLower.startsWith(query);
+      if (aStarts && !bStarts) return -1;
+      if (bStarts && !aStarts) return 1;
+      
+      // Altrimenti ordina alfabeticamente
+      return aLower.localeCompare(bLower);
+    });
+    
+    setSearchResults(sortedResults);
     setSearchLoading(false);
   };
 

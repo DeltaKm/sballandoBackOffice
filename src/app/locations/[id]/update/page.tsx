@@ -41,6 +41,9 @@ interface Location {
     phone: string | null;
     email: string | null;
     logo: string | null; // invece di cover
+    link_instagram: string | null;
+    link_facebook: string | null;
+    link_tiktok: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -109,6 +112,13 @@ export default function UpdateLocationPage() {
 
                 const location: Location = await response.json();
 
+                console.log('📊 Dati locale caricati:', {
+                    name: location.name,
+                    link_instagram: location.link_instagram,
+                    link_facebook: location.link_facebook,
+                    link_tiktok: location.link_tiktok
+                });
+
                 setFormData({
                     name: location.name || "",
                     description: location.description || null,
@@ -122,9 +132,9 @@ export default function UpdateLocationPage() {
                     phone: location.phone || null,
                     email: location.email || null,
                     website: null, // non più supportato
-                    instagram: null, // non più supportato
-                    facebook: null, // non più supportato
-                    twitter: null, // non più supportato
+                    instagram: location.link_instagram || null,
+                    facebook: location.link_facebook || null,
+                    twitter: location.link_tiktok || null, // TikTok mappato su twitter nel form
                     is_active: true, // valore di default
                     cover: null,
                     cover_preview: getLocationLogoUrl(location) || '', // usa logo invece di cover
@@ -194,6 +204,9 @@ export default function UpdateLocationPage() {
             submitFormData.append('postal_code', formData.postal_code);
             submitFormData.append('phone', formData.phone || '');
             submitFormData.append('email', formData.email || '');
+            submitFormData.append('link_instagram', formData.instagram || '');
+            submitFormData.append('link_facebook', formData.facebook || '');
+            submitFormData.append('link_tiktok', formData.twitter || ''); // twitter -> tiktok nel DB
             
             // Se c'è un'immagine, aggiungila come 'logo' invece di 'cover'
             if (formData.cover) {
@@ -493,6 +506,51 @@ export default function UpdateLocationPage() {
                                     />
                                 </div>
 
+                                {/* Instagram */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <FaInstagram className="inline mr-2" />
+                                        Instagram
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.instagram || ''}
+                                        onChange={(e) => setFormData({...formData, instagram: e.target.value || null})}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="https://instagram.com/locale"
+                                    />
+                                </div>
+
+                                {/* Facebook */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <FaFacebook className="inline mr-2" />
+                                        Facebook
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.facebook || ''}
+                                        onChange={(e) => setFormData({...formData, facebook: e.target.value || null})}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="https://facebook.com/locale"
+                                    />
+                                </div>
+
+                                {/* TikTok */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <FaTwitter className="inline mr-2" />
+                                        TikTok
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.twitter || ''}
+                                        onChange={(e) => setFormData({...formData, twitter: e.target.value || null})}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="https://tiktok.com/@locale"
+                                    />
+                                </div>
+
                                 {/* Website */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -505,60 +563,6 @@ export default function UpdateLocationPage() {
                                         onChange={(e) => setFormData({...formData, website: e.target.value || null})}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         placeholder="https://www.locale.it"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* ✅ SOCIAL MEDIA */}
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
-                                📱 Social Media
-                            </h3>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {/* Instagram */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        <FaInstagram className="inline mr-2 text-pink-500" />
-                                        Instagram
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.instagram || ''}
-                                        onChange={(e) => setFormData({...formData, instagram: e.target.value || null})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="@locale_instagram"
-                                    />
-                                </div>
-
-                                {/* Facebook */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        <FaFacebook className="inline mr-2 text-blue-600" />
-                                        Facebook
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.facebook || ''}
-                                        onChange={(e) => setFormData({...formData, facebook: e.target.value || null})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="LocaleFacebook"
-                                    />
-                                </div>
-
-                                {/* Twitter */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        <FaTwitter className="inline mr-2 text-blue-400" />
-                                        Twitter
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.twitter || ''}
-                                        onChange={(e) => setFormData({...formData, twitter: e.target.value || null})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="@locale_twitter"
                                     />
                                 </div>
                             </div>

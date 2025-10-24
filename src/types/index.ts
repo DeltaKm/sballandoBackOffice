@@ -30,6 +30,9 @@ export interface location_ {
   phone?: string;
   email: string;
   logo?: string | null; // Changed from cover to logo
+  link_instagram?: string | null; // Social media link
+  link_facebook?: string | null; // Social media link
+  link_tiktok?: string | null; // Social media link
   token?: string; // Added token field
   stripe_account?: {
     active: boolean;
