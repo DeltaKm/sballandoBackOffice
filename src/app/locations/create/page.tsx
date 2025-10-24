@@ -59,6 +59,37 @@ export default function CreatelocationPage() {
     const [loadingProvince, setLoadingProvince] = useState(false);
     const [loadingComuni, setLoadingComuni] = useState(false);
 
+    // Funzione per espandere range di CAP (es. "08013-08019" -> ["08013", "08014", ..., "08019"])
+    const expandCapRange = (capString: string): string[] => {
+        if (!capString) return [];
+        
+        // Se contiene un trattino, è un range
+        if (capString.includes('-')) {
+            const parts = capString.split('-').map(s => s.trim());
+            const start = parts[0];
+            const end = parts[1];
+            
+            if (!start || !end) return [capString];
+            
+            const startNum = parseInt(start, 10);
+            const endNum = parseInt(end, 10);
+            
+            if (isNaN(startNum) || isNaN(endNum) || startNum > endNum) {
+                return [capString]; // Se non è valido, ritorna il valore originale
+            }
+            
+            const caps: string[] = [];
+            for (let i = startNum; i <= endNum; i++) {
+                // Mantieni la lunghezza del CAP con zeri iniziali
+                caps.push(i.toString().padStart(5, '0'));
+            }
+            return caps;
+        }
+        
+        // Se non è un range, ritorna il CAP singolo
+        return [capString];
+    };
+
     useEffect(() => {
         if (!user) {
             router.push("/");
@@ -211,19 +242,41 @@ export default function CreatelocationPage() {
         setSelectedComune(comune);
         
         const comuneSelezionato = comuni.find(c => c.nome === comune);
-        const cap = comuneSelezionato ? comuneSelezionato.cap : "";
+        const capString = comuneSelezionato ? comuneSelezionato.cap : "";
         
-        setSelectedCap(cap);
+        // Espandi il range di CAP se necessario
+        const capsDisponibili = expandCapRange(capString);
+        setCaps(capsDisponibili);
         
-        setFormData({
-            ...formData,
-            comune: comune,
-            cap: cap,
-        });
+        // Se c'è un solo CAP, impostalo automaticamente
+        // Se ci sono più CAP, lascia che l'utente scelga
+        if (capsDisponibili.length === 1) {
+            setSelectedCap(capsDisponibili[0] || "");
+            setFormData({
+                ...formData,
+                comune: comune,
+                cap: capsDisponibili[0] || "",
+            });
+        } else {
+            setSelectedCap(""); // Resetta la selezione per mostrare la select
+            setFormData({
+                ...formData,
+                comune: comune,
+                cap: "", // Non impostare il CAP finché l'utente non sceglie
+            });
+        }
         
         if (fieldErrors.comune) {
             setFieldErrors(prev => ({ ...prev, comune: "" }));
         }
+    };
+
+    const handleCapChange = (cap: string) => {
+        setSelectedCap(cap);
+        setFormData({
+            ...formData,
+            cap: cap,
+        });
     };
 
     const handleInputChange = (field: string, value: string) => {
@@ -496,15 +549,38 @@ export default function CreatelocationPage() {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        CAP
+                                        CAP {caps.length > 1 && <span className="text-[#FC0045]">*</span>}
                                     </label>
-                                    <input
-                                        type="text"
-                                        value={selectedCap}
-                                        readOnly
-                                        className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2.5 text-gray-400 text-sm cursor-not-allowed"
-                                        placeholder="Seleziona prima una città"
-                                    />
+                                    {caps.length > 1 ? (
+                                        // Mostra select se ci sono più CAP disponibili
+                                        <select
+                                            value={selectedCap}
+                                            onChange={(e) => handleCapChange(e.target.value)}
+                                            className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FC0045] focus:border-transparent"
+                                            required
+                                        >
+                                            <option value="" className="bg-gray-800">Seleziona un CAP</option>
+                                            {caps.map((cap) => (
+                                                <option key={cap} value={cap} className="bg-gray-800">
+                                                    {cap}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        // Mostra input read-only se c'è un solo CAP o nessun comune selezionato
+                                        <input
+                                            type="text"
+                                            value={selectedCap}
+                                            readOnly
+                                            className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2.5 text-gray-400 text-sm cursor-not-allowed"
+                                            placeholder={selectedComune ? "CAP unico" : "Seleziona prima una città"}
+                                        />
+                                    )}
+                                    {caps.length > 1 && !selectedCap && (
+                                        <p className="mt-1 text-xs text-yellow-400">
+                                            ⚠️ Questo comune ha più CAP. Seleziona quello corretto.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
