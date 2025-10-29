@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
             cover: true
           }
         },
-        sender: {
+        users_messages_sender_idTousers: {
           select: {
             id: true,
             name: true,
@@ -170,12 +170,12 @@ export async function POST(request: NextRequest) {
       message: msg.message,
       created_at: msg.created_at!.toISOString(),
       sender: {
-        id: msg.sender!.id,
-        name: msg.sender!.name,
-        surname: msg.sender!.surname,
-        nickname: msg.sender!.nickname,
-        email: msg.sender!.email,
-        picture: msg.sender!.picture
+        id: msg.users_messages_sender_idTousers!.id,
+        name: msg.users_messages_sender_idTousers!.name,
+        surname: msg.users_messages_sender_idTousers!.surname,
+        nickname: msg.users_messages_sender_idTousers!.nickname,
+        email: msg.users_messages_sender_idTousers!.email,
+        picture: msg.users_messages_sender_idTousers!.picture
       },
       // Se il messaggio ha dati Spotify, includili
       spotify_playlist: msg.spotify_playlist ? {

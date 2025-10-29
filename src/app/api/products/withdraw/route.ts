@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Verifica prodotto originale
     const originalProduct = await prisma.products.findUnique({
       where: { id: parseInt(product_id) },
-      include: { event: true }
+      include: { events: true }
     });
 
     if (!originalProduct) {
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('🛍️ Prodotto originale trovato:', originalProduct.label, 'Evento:', originalProduct.event!.title);
+    console.log('🛍️ Prodotto originale trovato:', originalProduct.label, 'Evento:', originalProduct.events!.title);
 
     // Verifica autorizzazione
     if (originalProduct.user_id !== user.id && user.role !== 'SUPERADMIN') {
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
         },
         collaborators: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
         },
         event_music_genres: {
           include: {
-            music_genre: {
+            music_genres: {
               select: {
                 id: true,
                 label: true
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
             }
           }
         },
-        location_: true
+        locations: true
       }
     });
 

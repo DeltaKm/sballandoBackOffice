@@ -118,16 +118,16 @@ export async function POST(request: NextRequest) {
         entry_types: true,
         event_music_genres: {
           include: {
-            music_genre: true,
+            music_genres: true,
           },
         },
         collaborators: {
           include: {
-            user: true, // include l'utente per ogni collaboratore
+            users: true, // include l'utente per ogni collaboratore
           },
         },
         products: true,
-        location_: true,
+        locations: true,
       },
     });
 

@@ -45,7 +45,7 @@ export async function DELETE(request: NextRequest) {
     const productToDelete = await prisma.products.findUnique({
       where: { id: parseInt(product_id) },
       include: {
-        event: {
+        events: {
           select: {
             id: true,
             title: true,
@@ -62,11 +62,11 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    console.log('🛍️ Prodotto trovato:', productToDelete.label, 'Evento:', productToDelete.event!.title);
+    console.log('🛍️ Prodotto trovato:', productToDelete.label, 'Evento:', productToDelete.events!.title);
 
     // Verifica autorizzazione: deve essere il proprietario del prodotto, proprietario dell'evento o SUPERADMIN
     const isProductOwner = productToDelete.user_id === requestingUser.id;
-    const isEventOwner = productToDelete.event!.user_id === requestingUser.id;
+    const isEventOwner = productToDelete.events!.user_id === requestingUser.id;
     const isSuperAdmin = requestingUser.role === 'SUPERADMIN';
 
     console.log('🔐 Verifica autorizzazione:', {
@@ -93,7 +93,7 @@ export async function DELETE(request: NextRequest) {
 
     // Recupera l'evento aggiornato con tutti i prodotti rimanenti
     const updatedEvent = await prisma.events.findUnique({
-      where: { id: productToDelete.event!.id },
+      where: { id: productToDelete.events!.id },
       include: {
         products: {
           orderBy: {
@@ -102,7 +102,7 @@ export async function DELETE(request: NextRequest) {
         },
         collaborators: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -118,7 +118,7 @@ export async function DELETE(request: NextRequest) {
         entry_types: true,
         event_music_genres: {
           include: {
-            music_genre: {
+            music_genres: {
               select: {
                 id: true,
                 label: true
@@ -126,7 +126,7 @@ export async function DELETE(request: NextRequest) {
             }
           }
         },
-        location_: true
+        locations: true
       }
     });
 

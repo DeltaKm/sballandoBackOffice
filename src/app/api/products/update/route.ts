@@ -42,7 +42,7 @@ export async function PATCH(request: NextRequest) {
     // Verifica prodotto
     const existingProduct = await prisma.products.findUnique({
       where: { id: parseInt(product_id) },
-      include: { event: true },
+      include: { events: true },
     });
 
     if (!existingProduct) {
@@ -88,7 +88,7 @@ export async function PATCH(request: NextRequest) {
           products: { orderBy: { created_at: "desc" } },
           collaborators: {
             include: {
-              user: {
+              users: {
                 select: {
                   id: true,
                   name: true,
@@ -103,9 +103,9 @@ export async function PATCH(request: NextRequest) {
           },
           entry_types: { orderBy: { created_at: "desc" } },
           event_music_genres: {
-            include: { music_genre: { select: { id: true, label: true } } },
+            include: { music_genres: { select: { id: true, label: true } } },
           },
-          location_: true,
+          locations: true,
         },
       });
 
@@ -266,7 +266,7 @@ const result = await prisma.$transaction(async (tx) => {
         products: { orderBy: { created_at: "desc" } },
         collaborators: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -281,9 +281,9 @@ const result = await prisma.$transaction(async (tx) => {
         },
         entry_types: { orderBy: { created_at: "desc" } },
         event_music_genres: {
-          include: { music_genre: { select: { id: true, label: true } } },
+          include: { music_genres: { select: { id: true, label: true } } },
         },
-        location_: true,
+        locations: true,
       },
     });
 

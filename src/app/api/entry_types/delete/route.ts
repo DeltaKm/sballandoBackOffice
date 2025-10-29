@@ -46,7 +46,7 @@ export async function DELETE(request: NextRequest) {
     const entryType = await prisma.entry_types.findUnique({
       where: { id: parseInt(entry_type_id) },
       include: {
-        event: true
+        events: true
       }
     });
 
@@ -62,12 +62,12 @@ export async function DELETE(request: NextRequest) {
     const isSuperAdmin = user.role === 'SUPERADMIN';
     
     // Verifica se è proprietario dell'evento
-    const isEventOwner = entryType.event!.user_id === user.id;
+    const isEventOwner = entryType.events!.user_id === user.id;
     
     // Verifica se è collaboratore dell'evento
     const isCollaborator = await prisma.collaborators.findFirst({
       where: {
-        event_id: entryType.event!.id,
+        event_id: entryType.events!.id,
         user_id: user.id
       }
     });
@@ -97,13 +97,13 @@ export async function DELETE(request: NextRequest) {
 
     // Recupera l'evento aggiornato
     const updatedEvent = await prisma.events.findUnique({
-      where: { id: entryType.event!.id },
+      where: { id: entryType.events!.id },
       include: {
         entry_types: true,
-        location_: true,
+        locations: true,
         collaborators: {
           include: {
-            user: true
+            users: true
           }
         },
         event_music_genres: true,

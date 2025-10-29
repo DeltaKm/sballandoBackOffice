@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
     
     const entryType = await prisma.entry_types.create({
       data: {
-        event: {
+        events: {
           connect: { id: parseInt(event_id) }
         },
         user_id: user.id,
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
       where: { id: parseInt(event_id) },
       include: {
         entry_types: true, // Rimuovi l'include di products se non esiste la relazione
-        location_: true,
+        locations: true,
         collaborators: true,
         event_music_genres: true,
         products: true // I prodotti sono collegati direttamente all'evento

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Verifica entry type originale
     const originalEntry = await prisma.entry_types.findUnique({
       where: { id: parseInt(entry_type_id) },
-      include: { event: true }
+      include: { events: true }
     });
 
     if (!originalEntry) {
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('🎫 Ingresso originale trovato:', originalEntry.label, 'Evento:', originalEntry.event!.title);
+    console.log('🎫 Ingresso originale trovato:', originalEntry.label, 'Evento:', originalEntry.events!.title);
 
     // Verifica autorizzazione (deve essere il proprietario dell'ingresso originale o SUPERADMIN)
     if (originalEntry.user_id !== user.id && user.role !== 'SUPERADMIN') {
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       },
       select: {
         user_id: true,
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -165,8 +165,8 @@ export async function POST(request: NextRequest) {
 
     // Mappa collaboratori per ID per facile accesso (FIX: gestisci user_id nullable)
     const collaboratorsMap = collaborators.reduce((acc, collab) => {
-      if (collab.user_id && collab.user) {
-        acc[collab.user_id] = collab.user;
+      if (collab.user_id && collab.users) {
+        acc[collab.user_id] = collab.users;
       }
       return acc;
     }, {} as Record<number, any>);
@@ -238,7 +238,7 @@ export async function POST(request: NextRequest) {
         },
         collaborators: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -258,7 +258,7 @@ export async function POST(request: NextRequest) {
         },
         event_music_genres: {
           include: {
-            music_genre: {
+            music_genres: {
               select: {
                 id: true,
                 label: true
@@ -266,7 +266,7 @@ export async function POST(request: NextRequest) {
             }
           }
         },
-        location_: true
+        locations: true
       }
     });
 

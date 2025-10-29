@@ -85,7 +85,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             },
             collaborators: {
               include: {
-                user: {
+                users: {
                   select: {
                     id: true,
                     name: true,
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             },
             event_music_genres: {
               include: {
-                music_genre: {
+                music_genres: {
                   select: { id: true, label: true }
                 }
               }
@@ -333,7 +333,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             },
             collaborators: {
               include: {
-                user: {
+                users: {
                   select: {
                     id: true,
                     name: true,
@@ -348,7 +348,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             },
             event_music_genres: {
               include: {
-                music_genre: {
+                music_genres: {
                   select: { id: true, label: true }
                 }
               }

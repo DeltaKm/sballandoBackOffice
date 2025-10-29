@@ -68,7 +68,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const event = await prisma.events.findUnique({
       where: { id: parseInt(eventId) },
       include: {
-        location_: {
+        locations: {
           select: {
             id: true,
             name: true,
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         },
         event_music_genres: {
           include: {
-            music_genre: {
+            music_genres: {
               select: {
                 id: true,
                 label: true

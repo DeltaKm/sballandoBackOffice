@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         id: true, 
         title: true, 
         user_id: true,
-        location_: {
+        locations: {
           select: {
             user_id: true
           }
@@ -58,14 +58,14 @@ export async function POST(request: NextRequest) {
     // Verifica autorizzazione: solo il creatore dell'evento, il proprietario del locale o super admin
     const isAuthorized = 
       user.id === event.user_id || 
-      user.id === event.location_?.user_id || 
+      user.id === event.locations?.user_id || 
       user.role === 'SUPERADMIN';
 
     if (!isAuthorized) {
       console.log(`❌ [${requestId}] User not authorized:`, { 
         userId: user.id, 
         eventCreatorId: event.user_id,
-        locationOwnerId: event.location_?.user_id 
+        locationOwnerId: event.locations?.user_id 
       });
       return NextResponse.json({ 
         error: "Non sei autorizzato ad inviare notifiche per questo evento" 

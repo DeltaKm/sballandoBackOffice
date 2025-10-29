@@ -45,14 +45,14 @@ export async function DELETE(
     const collaborator = await prisma.collaborators.findUnique({
       where: { id: parseInt(collaboratorId) },
       include: {
-        event: {
+        events: {
           select: {
             id: true,
             title: true,
             user_id: true
           }
         },
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -70,10 +70,10 @@ export async function DELETE(
       );
     }
 
-    console.log('👤 Collaboratore trovato:', collaborator.user?.email, 'per evento:', collaborator.event.title);
+    console.log('👤 Collaboratore trovato:', collaborator.users?.email, 'per evento:', collaborator.events.title);
 
     // Verifica autorizzazione: deve essere il proprietario dell'evento o SUPERADMIN
-    const isEventOwner = collaborator.event.user_id === requestingUser.id;
+    const isEventOwner = collaborator.events.user_id === requestingUser.id;
     const isSuperAdmin = requestingUser.role === 'SUPERADMIN';
 
     if (!isEventOwner && !isSuperAdmin) {
@@ -87,8 +87,8 @@ export async function DELETE(
 
     // Esegui la rimozione in transazione per garantire consistenza
     const result = await prisma.$transaction(async (tx) => {
-      const eventId = collaborator.event.id;
-      const userId = collaborator.user?.id;
+      const eventId = collaborator.events.id;
+      const userId = collaborator.users?.id;
 
       if (!userId) {
         throw new Error("ID utente del collaboratore non trovato");
@@ -129,11 +129,11 @@ export async function DELETE(
 
     // Recupera l'evento aggiornato con tutti i collaboratori rimanenti
     const updatedEvent = await prisma.events.findUnique({
-      where: { id: collaborator.event.id },
+      where: { id: collaborator.event_id },
       include: {
         collaborators: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -150,19 +150,13 @@ export async function DELETE(
         entry_types: true,
         event_music_genres: {
           include: {
-            music_genre: true
+            music_genres: true
           }
         },
-        location_: true
+        locations: true
       }
     });
 
-    console.log('🎉 Collaboratore rimosso con successo!', {
-      removedUser: collaborator.user?.email,
-      deletedProducts: result.deletedProducts,
-      deletedEntries: result.deletedEntries,
-      remainingCollaborators: updatedEvent?.collaborators?.length || 0
-    });
 
     return NextResponse.json(updatedEvent, { status: 200 });
 

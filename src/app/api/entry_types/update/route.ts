@@ -53,7 +53,7 @@ export async function PUT(request: NextRequest) {
 
     const existingEntry = await prisma.entry_types.findUnique({
       where: { id: parseInt(entry_type_id) },
-      include: { event: true },
+      include: { events: true },
     });
 
     if (!existingEntry) {
@@ -249,7 +249,7 @@ export async function PUT(request: NextRequest) {
         products: { orderBy: { created_at: "desc" } },
         collaborators: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -263,9 +263,9 @@ export async function PUT(request: NextRequest) {
           }
         },
         event_music_genres: {
-          include: { music_genre: { select: { id: true, label: true } } }
+          include: { music_genres: { select: { id: true, label: true } } }
         },
-        location_: true
+        locations: true
       }
     });
 
