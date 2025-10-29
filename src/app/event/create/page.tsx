@@ -28,6 +28,8 @@ interface EventFormData {
     state: "draft" | "published";
     user_id: number;
     cover_path?: string;
+    dress_code?: string;
+    age_recommended?: string;
 }
 
 export default function CreateEventPage() {
@@ -48,6 +50,8 @@ export default function CreateEventPage() {
         music_genres: [],
         state: "published",
         user_id: typeof user?.id === "number" ? user.id : 0, // Assicura che sia sempre un numero
+        dress_code: "",
+        age_recommended: "",
     }));
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -218,6 +222,14 @@ export default function CreateEventPage() {
             formDataToSend.append('state', formData.state);
             formDataToSend.append('user_id', String(formData.user_id));
 
+            // Aggiungi dress_code e age_recommended se presenti
+            if (formData.dress_code) {
+                formDataToSend.append('dress_code', formData.dress_code);
+            }
+            if (formData.age_recommended) {
+                formDataToSend.append('age_recommended', formData.age_recommended);
+            }
+
 
             if (formData.cover) {
                 formDataToSend.append('cover', formData.cover);
@@ -344,6 +356,36 @@ export default function CreateEventPage() {
                                     onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
                                     className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#FC0045]/50"
                                     placeholder="Inserisci un sottotitolo"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label htmlFor="dress_code" className="block text-sm font-medium text-white/80 mb-2">
+                                    👔 Dress Code
+                                </label>
+                                <input
+                                    type="text"
+                                    id="dress_code"
+                                    value={formData.dress_code || ''}
+                                    onChange={(e) => setFormData({ ...formData, dress_code: e.target.value })}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#FC0045]/50"
+                                    placeholder="Es: Elegante, Casual, Black Tie"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="age_recommended" className="block text-sm font-medium text-white/80 mb-2">
+                                    🔞 Età Consigliata
+                                </label>
+                                <input
+                                    type="text"
+                                    id="age_recommended"
+                                    value={formData.age_recommended || ''}
+                                    onChange={(e) => setFormData({ ...formData, age_recommended: e.target.value })}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#FC0045]/50"
+                                    placeholder="Es: 18+, 21+, Tutti"
                                 />
                             </div>
                         </div>

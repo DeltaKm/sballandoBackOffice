@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { EventSchema } from "~/schemas/event";
 import { adjustEventDates } from "~/lib/timezone";
 import getSFTPService from "~/lib/sftpService.server";
-
-const prisma = new PrismaClient();
+import { db } from "~/server/db";
 
 export async function POST(
   req: Request,
@@ -12,13 +10,20 @@ export async function POST(
 ) {
   const { id } = await params;
 
+  console.log('🔄 Edit event API called for ID:', id);
+
   try {
     const formData = await req.formData();
+    
+    console.log('📦 FormData received, keys:', Array.from(formData.keys()));
+    
     const coverFile = formData.get('cover') as File;
 
     // Parse music_genres from string to array
     const musicGenresString = formData.get('music_genres') as string;
     const musicGenres = JSON.parse(musicGenresString);
+
+    console.log('🎵 Music genres parsed:', musicGenres);
 
     // Prepare data for validation
     const dataToValidate = {
@@ -33,6 +38,27 @@ export async function POST(
         state: formData.get('state') as 'draft' | 'published',
         user_id: parseInt(formData.get('user_id') as string),
     };
+
+    console.log('✅ Data prepared for validation:', {
+        title: dataToValidate.title,
+        location_id: dataToValidate.location_id,
+        state: dataToValidate.state,
+    });
+
+    // Campi opzionali
+    const dress_code_raw = formData.get('dress_code') as string | null;
+    const age_recommended_raw = formData.get('age_recommended') as string | null;
+    
+    // Converti stringhe vuote in null
+    const dress_code = dress_code_raw && dress_code_raw.trim() !== '' ? dress_code_raw.trim() : null;
+    const age_recommended = age_recommended_raw && age_recommended_raw.trim() !== '' ? age_recommended_raw.trim() : null;
+
+    console.log('📝 Optional fields received:', {
+        dress_code,
+        age_recommended,
+        dress_code_length: dress_code?.length,
+        age_recommended_length: age_recommended?.length
+    });
 
     // Validate using Zod
     const validationResult = EventSchema.safeParse(dataToValidate);
@@ -51,7 +77,7 @@ export async function POST(
     const validatedData = validationResult.data;
 
     // Get existing event to get the token
-    const existingEvent = await prisma.events.findUnique({
+    const existingEvent = await db.events.findUnique({
         where: { id: parseInt(id) },
         select: { token: true }
     });
@@ -101,36 +127,45 @@ export async function POST(
     }
 
     // Update event and music genre relations in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-        // ✅ Usa la utility globale
-        const adjustedData = adjustEventDates(validatedData, 'toDatabase');
-        
-        console.log('🕐 Date adjustment:', {
-            original: { 
-                start: validatedData.datetime_start, 
-                end: validatedData.datetime_end 
-            },
-            adjusted: { 
-                start: adjustedData.datetime_start, 
-                end: adjustedData.datetime_end 
-            }
+    const result = await db.$transaction(async (tx) => {
+        console.log('🕐 Date values received:', {
+            datetime_start: validatedData.datetime_start, 
+            datetime_end: validatedData.datetime_end
+        });
+
+        // Converte le stringhe datetime-local in Date objects
+        // Le stringhe datetime-local sono nel formato: "2024-10-24T20:00"
+        // Dobbiamo interpretarle come ora locale italiana e salvarle nel DB
+        const startDate = new Date(validatedData.datetime_start);
+        const endDate = new Date(validatedData.datetime_end);
+
+        console.log('🕐 Date objects created:', {
+            datetime_start: startDate.toISOString(), 
+            datetime_end: endDate.toISOString()
         });
 
         // Update the event
         const event = await tx.events.update({
             where: { id: parseInt(id) },
             data: {
-                title: adjustedData.title,
-                subtitle: adjustedData.subtitle,
-                description_extended: adjustedData.description_extended,
-                datetime_start: adjustedData.datetime_start,
-                datetime_end: adjustedData.datetime_end,
-                is_public: adjustedData.is_public ? 1 : 0,
-                location_id: adjustedData.location_id,
-                state: adjustedData.state,
+                title: validatedData.title,
+                subtitle: validatedData.subtitle,
+                description_extended: validatedData.description_extended,
+                datetime_start: startDate,
+                datetime_end: endDate,
+                is_public: validatedData.is_public ? 1 : 0,
+                state: validatedData.state,
+                ...(dress_code !== null && { dress_code }),
+                ...(age_recommended !== null && { age_recommended }),
                 ...(coverData && { cover: coverData.relativePath }),
                 updated_at: new Date(),
             },
+        });
+
+        console.log('✅ Event updated with:', {
+            id: event.id,
+            dress_code: event.dress_code,
+            age_recommended: event.age_recommended
         });
 
         // Delete existing music genre relations
@@ -187,9 +222,18 @@ export async function POST(
     });
 
   } catch (error) {
-    console.error('Error updating event:', error);
+    console.error('❌ Error updating event:', error);
+    console.error('❌ Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+    });
+    
     return NextResponse.json(
-        { error: 'Errore interno del server' },
+        { 
+          error: 'Errore interno del server',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        },
         { status: 500 }
     );
   }

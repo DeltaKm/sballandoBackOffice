@@ -300,10 +300,10 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
 
               {/* Header con foto e info */}
               <div className="flex flex-col items-center text-center mb-4">
-                {collab.user?.picture ? (
+                {collab.users?.picture ? (
                   <img 
-                    src= {'https://webservice.sballando.it/storage/' + collab.user.picture} 
-                    alt={collab.user.name || ''} 
+                    src= {'https://webservice.sballando.it/storage/' + collab.users.picture} 
+                    alt={collab.users.name || ''} 
                     className="w-40 h-40 rounded-full object-cover mb-3"
                   />
                 ) : (
@@ -313,13 +313,13 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
                 )}
                 
                 <h4 className="text-white font-medium text-xl mb-1">
-                  {collab.user?.name} {collab.user?.surname}
+                  {collab.users?.name} {collab.users?.surname}
                 </h4>
                 
-                <p className="text-white/60 text-xl mb-1">{collab.user?.email}</p>
+                <p className="text-white/60 text-xl mb-1">{collab.users?.email}</p>
                 
-                {collab.user?.nickname && (
-                  <p className="text-white/60 text-xl mb-2">@{collab.user.nickname}</p>
+                {collab.users?.nickname && (
+                  <p className="text-white/60 text-xl mb-2">@{collab.users.nickname}</p>
                 )}
                 
                 <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xl">

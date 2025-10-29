@@ -58,7 +58,8 @@ export interface EventMusicGenre {
   music_genre_id: number;
   created_at: string;
   updated_at: string;
-  music_genre: MusicGenre;
+  music_genre?: MusicGenre; // Vecchio nome per retrocompatibilità
+  music_genres?: MusicGenre; // Nuovo nome corretto dalla relazione Prisma
 }
 
 export interface Product {
@@ -111,7 +112,8 @@ export interface Collaborator {
   label: string;
   user_id: number | null;
   role?: string;
-  user?: User | null;
+  user?: User | null;         // Vecchio nome per retrocompatibilità
+  users?: User | null;        // Nuovo nome dalla relazione Prisma
 }
 
 export interface Event {
@@ -136,12 +138,15 @@ export interface Event {
   event_music_genres: EventMusicGenre[];
   music_genres: MusicGenre[];
   location_?: location_;
+  locations?: location_; // Alias per compatibilità con il nome della relazione Prisma
   
   description_extended?: string;
   state?: "draft" | "published";
   subscribers?: number;
   cover: string | null;
   token: string;
+  dress_code?: string | null;
+  age_recommended?: string | null;
 }
 
 // Tipi per i form

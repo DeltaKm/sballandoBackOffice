@@ -69,7 +69,11 @@ export async function POST(request: NextRequest) {
     // Verifica che l'evento esista
     const eventExists = await prisma.events.findUnique({
       where: { id: parseInt(event_id) },
-      select: { id: true, user_id: true }
+      select: { 
+        id: true, 
+        user_id: true,
+        location_id: true 
+      }
     });
 
     console.log('🎪 Evento trovato:', eventExists ? 'Sì' : 'No', eventExists?.id);
@@ -79,6 +83,33 @@ export async function POST(request: NextRequest) {
         { error: 'Evento non trovato' }, 
         { status: 404 }
       );
+    }
+
+    // Validazione prezzo e verifica Stripe
+    const parsedPrice = price ? parseFloat(price) : 0;
+    if (parsedPrice > 0 && eventExists.location_id) {
+      const location = await prisma.locations.findUnique({
+        where: { id: eventExists.location_id },
+        select: { 
+          stripe_account: true,
+          name: true 
+        }
+      });
+
+      const stripeAccount = location?.stripe_account as any;
+      const isStripeActive = stripeAccount?.active === true;
+
+      if (!isStripeActive) {
+        return NextResponse.json(
+          { 
+            error: "Non puoi creare ingressi a pagamento senza attivare Stripe",
+            message: "Per vendere biglietti a pagamento, il locale deve prima attivare i pagamenti con Stripe. Vai nella pagina del locale e attiva Stripe nella sezione Pagamenti."
+          },
+          { status: 403 }
+        );
+      }
+
+      console.log('✅ Stripe attivo per il locale:', location?.name);
     }
 
     // Verifica che l'utente abbia accesso all'evento

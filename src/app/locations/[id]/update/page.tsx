@@ -74,7 +74,7 @@ export default function UpdateLocationPage() {
         is_active: true,
         cover: null,
         cover_preview: '',
-        cover_path: undefined
+        cover_path: undefined,
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -138,7 +138,7 @@ export default function UpdateLocationPage() {
                     is_active: true, // valore di default
                     cover: null,
                     cover_preview: getLocationLogoUrl(location) || '', // usa logo invece di cover
-                    cover_path: location.logo || undefined
+                    cover_path: location.logo || undefined,
                 });
 
             } catch (err) {
@@ -551,7 +551,7 @@ export default function UpdateLocationPage() {
                                     />
                                 </div>
 
-                                {/* Website */}
+                                {/* Website
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         <FaGlobe className="inline mr-2" />
@@ -564,7 +564,7 @@ export default function UpdateLocationPage() {
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         placeholder="https://www.locale.it"
                                     />
-                                </div>
+                                </div> */}
                             </div>
                         </div>
 

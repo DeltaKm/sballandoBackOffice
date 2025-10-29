@@ -22,6 +22,8 @@ interface EventFormData {
     music_genres: number[];
     state: "draft" | "published";
     user_id: number;
+    dress_code?: string;
+    age_recommended?: string;
 }
 
 export default function EditEventPage() {
@@ -42,6 +44,8 @@ export default function EditEventPage() {
         music_genres: [],
         state: "published",
         user_id: typeof user?.id === 'number' ? user.id : 0,
+        dress_code: "",
+        age_recommended: "",
     }));
 
     const [loading, setLoading] = useState(true);
@@ -76,9 +80,11 @@ export default function EditEventPage() {
                 is_public: Boolean(event.is_public),
                 cover: null,
                 cover_preview: getEventCoverUrl(event) || "",
-                music_genres: event.event_music_genres?.map((item: any) => item.music_genre.id) || [],
+                music_genres: event.event_music_genres?.map((item: any) => item.music_genres.id) || [],
                 state: event.state as "draft" | "published" || "published",
                 user_id: event.user_id || (typeof user?.id === 'number' ? user.id : 0),
+                dress_code: event.dress_code || "",
+                age_recommended: event.age_recommended || "",
             });
             
         } catch (err) {
@@ -210,13 +216,10 @@ export default function EditEventPage() {
                 } else if (key === 'cover_preview') {
                     // Non inviare cover_preview
                     return;
-                } else if (value !== null && value !== undefined) {
-                    // Usa le nuove utility per le date
-                    if (key === 'datetime_start' || key === 'datetime_end') {
-                        formDataToSend.append(key, localInputToDate(value.toString()));
-                    } else {
-                        formDataToSend.append(key, value.toString());
-                    }
+                } else if (value !== null && value !== undefined && value !== "") {
+                    // Per le date datetime-local, invia direttamente il valore
+                    // Il formato "YYYY-MM-DDTHH:mm" verrà gestito correttamente dal server
+                    formDataToSend.append(key, value.toString());
                 }
             });
 
@@ -224,7 +227,9 @@ export default function EditEventPage() {
                 datetime_start: formDataToSend.get('datetime_start'),
                 datetime_end: formDataToSend.get('datetime_end'),
                 title: formDataToSend.get('title'),
-                location_id: formDataToSend.get('location_id')
+                location_id: formDataToSend.get('location_id'),
+                dress_code: formDataToSend.get('dress_code'),
+                age_recommended: formDataToSend.get('age_recommended')
             });
 
             const res = await fetch(`/api/events/${params.id}/edit`, {
@@ -370,6 +375,34 @@ export default function EditEventPage() {
                                 value={formData.subtitle}
                                 onChange={(e) => setFormData({...formData, subtitle: e.target.value})}
                                 className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white"
+                            />
+                        </div>
+
+                        {/* Dress Code */}
+                        <div>
+                            <label className="block text-sm font-medium text-white/80 mb-2">
+                                👔 Dress Code
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.dress_code}
+                                onChange={(e) => setFormData({...formData, dress_code: e.target.value})}
+                                placeholder="Es: Elegante, Casual, Black Tie"
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/30"
+                            />
+                        </div>
+
+                        {/* Età Consigliata */}
+                        <div>
+                            <label className="block text-sm font-medium text-white/80 mb-2">
+                                🔞 Età Consigliata
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.age_recommended}
+                                onChange={(e) => setFormData({...formData, age_recommended: e.target.value})}
+                                placeholder="Es: 18+, 21+, Tutti"
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/30"
                             />
                         </div>
 

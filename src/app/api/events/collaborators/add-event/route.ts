@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
         // Il ruolo viene preso dalla tabella users
       },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
       include: {
         collaborators: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -170,10 +170,10 @@ export async function POST(request: NextRequest) {
         entry_types: true,
         event_music_genres: {
           include: {
-            music_genre: true
+            music_genres: true
           }
         },
-        location_: true
+        locations: true
       }
     });
 

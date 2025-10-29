@@ -19,6 +19,8 @@ export default function locationPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -105,6 +107,45 @@ export default function locationPage() {
       alert('❌ Errore di connessione durante l\'eliminazione');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleActivatePayment = async () => {
+    if (!location_ || !user?.token) return;
+    
+    setIsPaymentLoading(true);
+    setShowConfirmModal(false);
+
+    try {
+      const res = await fetch('/api/payments/createMerchantLink', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          user_token: user.token,
+          location_id: location_.id 
+        }),
+      });
+
+      const data = await res.json();
+      console.log('Merchant link response:', data);
+
+      if (res.ok && data.link_stripe_created) {
+        // Redirect to Stripe onboarding
+        window.location.href = data.link_stripe_created;
+      } else {
+        alert(`❌ Errore: ${data.error || 'Impossibile creare il link Stripe'}`);
+      }
+    } catch (err) {
+      console.error('Error creating merchant link:', err);
+      alert('❌ Errore di connessione durante l\'attivazione dei pagamenti');
+    } finally {
+      setIsPaymentLoading(false);
+    }
+  };
+
+  const handleGoToStripeAccount = () => {
+    if (location_?.stripe_account?.id) {
+      window.open(`https://dashboard.stripe.com/connect/accounts/${location_.stripe_account.id}`, '_blank');
     }
   };
 
@@ -217,6 +258,96 @@ export default function locationPage() {
             </div>
           </div>
 
+          {/* Sezione Pagamenti Stripe */}
+          <div className="mb-6 p-6 bg-white/5 border border-white/10 rounded-lg">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              💳 Gestione Pagamenti
+            </h3>
+            
+            {location_.stripe_account?.active ? (
+              // Stato Attivo
+              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-2xl">✅</span>
+                  <div>
+                    <div className="text-green-400 font-semibold text-lg">Pagamenti Attivi</div>
+                    <div className="text-white/60 text-sm">Account Stripe connesso e attivo</div>
+                  </div>
+                </div>
+                
+                {location_.stripe_account?.id && (
+                  <div className="mb-4 p-3 bg-white/5 rounded">
+                    <div className="text-white/60 text-xs mb-1">Account ID</div>
+                    <div className="text-white font-mono text-sm">{location_.stripe_account.id}</div>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleGoToStripeAccount}
+                  className="w-full px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
+                >
+                  <span>🔗</span>
+                  Vai al Dashboard Stripe
+                </button>
+              </div>
+            ) : (
+              // Stato Inattivo
+              <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-2xl">⚠️</span>
+                  <div>
+                    <div className="text-orange-400 font-semibold text-lg">Pagamenti Non Attivi</div>
+                    <div className="text-white/60 text-sm">Abilita i pagamenti per vendere biglietti</div>
+                  </div>
+                </div>
+
+                <div className="mb-4 p-4 bg-white/5 rounded-lg">
+                  <div className="text-white/80 font-medium mb-3">Vantaggi dell'attivazione:</div>
+                  <ul className="space-y-2 text-white/70 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5">🎫</span>
+                      <span>Vendere biglietti direttamente dall'app Sballando</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5">🔒</span>
+                      <span>Pagamenti sicuri gestiti da Stripe, leader mondiale nei pagamenti online</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5">📊</span>
+                      <span>Dashboard completa per gestire i tuoi ricavi e transazioni</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5">💰</span>
+                      <span>Accredito diretto sul tuo conto corrente</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <button
+                  onClick={() => setShowConfirmModal(true)}
+                  disabled={isPaymentLoading}
+                  className={`w-full px-4 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium ${
+                    isPaymentLoading
+                      ? 'bg-orange-500/30 text-orange-300 cursor-not-allowed'
+                      : 'bg-orange-500 hover:bg-orange-600 text-white'
+                  }`}
+                >
+                  {isPaymentLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-orange-300/30 border-t-orange-300 rounded-full animate-spin"></div>
+                      Attivazione in corso...
+                    </>
+                  ) : (
+                    <>
+                      <span>🚀</span>
+                      Attiva Pagamenti con Stripe
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Bottoni di azione */}
           <div className="flex flex-wrap gap-3 justify-center md:justify-start">
             {/* Debug info - RIMUOVERE IN PRODUZIONE */}
@@ -262,28 +393,7 @@ export default function locationPage() {
             )}
 
             {/* Pulsante Elimina SEMPRE VISIBILE per debug - RIMUOVERE IN PRODUZIONE */}
-            <button
-              onClick={handleDeleteLocation}
-              disabled={deleting}
-              className={`px-6 py-3 rounded-lg transition-colors flex items-center gap-2 ${
-                deleting
-                  ? 'bg-orange-500/30 text-orange-300 cursor-not-allowed'
-                  : 'bg-orange-500 text-white hover:bg-orange-600'
-              }`}
-              title="DEBUG: Elimina locale (sempre visibile)"
-            >
-              {deleting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-orange-300/30 border-t-orange-300 rounded-full animate-spin"></div>
-                  Eliminando...
-                </>
-              ) : (
-                <>
-                  <span>🔧</span>
-                  DEBUG Elimina
-                </>
-              )}
-            </button>
+            
 
             {/* Link torna indietro */}
             <Link
@@ -348,6 +458,57 @@ export default function locationPage() {
           )}
         </div>
       </div>
+
+      {/* Modale Conferma Attivazione Pagamenti */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-white/20 rounded-lg max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-white mb-4">
+              🚀 Attivazione Pagamenti
+            </h3>
+            
+            <div className="text-white/80 mb-6 space-y-3 text-sm">
+              <p>
+                Per abilitare la vendita dei biglietti nel tuo locale, è necessario attivare i pagamenti.
+              </p>
+              <p>
+                Verrai reindirizzato su <strong className="text-blue-400">Stripe</strong>, una piattaforma esterna sicura, 
+                per completare la registrazione del tuo account.
+              </p>
+              <p>
+                Una volta attivato, potrai creare ingressi e vendere i tuoi biglietti direttamente dall'app Sballando.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors font-medium"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={handleActivatePayment}
+                disabled={isPaymentLoading}
+                className={`flex-1 px-4 py-3 rounded-lg transition-colors font-medium ${
+                  isPaymentLoading
+                    ? 'bg-blue-500/30 text-blue-300 cursor-not-allowed'
+                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                }`}
+              >
+                {isPaymentLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-blue-300/30 border-t-blue-300 rounded-full animate-spin"></div>
+                    Caricamento...
+                  </div>
+                ) : (
+                  'Attiva Pagamenti'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

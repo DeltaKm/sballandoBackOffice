@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
         },
         collaborators: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
         entry_types: true,
         event_music_genres: {
           include: {
-            music_genre: {
+            music_genres: {
               select: {
                 id: true,
                 label: true
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
             }
           }
         },
-        location_: true
+        locations: true
       }
     });
 

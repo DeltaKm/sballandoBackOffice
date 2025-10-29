@@ -211,7 +211,10 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
         handleFormSuccess(updatedEvent);
       } else {
         const errorData = await res.json();
-        alert(`Errore durante l'aggiunta: ${errorData.error || 'Errore sconosciuto'}`);
+        const errorMessage = errorData.message 
+          ? `${errorData.error}\n\n${errorData.message}` 
+          : errorData.error || 'Errore sconosciuto';
+        alert(`❌ ${errorMessage}`);
       }
     } catch (err) {
       console.error('Error adding product:', err);

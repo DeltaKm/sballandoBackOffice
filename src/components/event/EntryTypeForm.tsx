@@ -438,10 +438,16 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
         
         const errorMessage = errorData.error || "Errore durante la creazione";
         
-        if (errorMessage.includes("label") || errorMessage.includes("nome")) {
+        // Se c'è un messaggio dettagliato, mostralo
+        if (errorData.message) {
+          alert(`❌ ${errorMessage}\n\n${errorData.message}`);
+        } else if (errorMessage.includes("label") || errorMessage.includes("nome")) {
           setErrors({ label: errorMessage });
-        } else if (errorMessage.includes("prezzo") || errorMessage.includes("price")) {
+        } else if (errorMessage.includes("prezzo") || errorMessage.includes("price") || errorMessage.includes("Stripe")) {
           setErrors({ price: errorMessage });
+          if (errorData.message) {
+            alert(`❌ ${errorMessage}\n\n${errorData.message}`);
+          }
         } else if (errorMessage.includes("quantità") || errorMessage.includes("quantity")) {
           setErrors({ quantity: errorMessage });
         } else if (errorMessage.includes("genere") || errorMessage.includes("gender")) {

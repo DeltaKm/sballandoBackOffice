@@ -118,6 +118,8 @@ export async function POST(req: Request) {
                     state: validatedData.state,
                     user_id: validatedData.user_id,
                     cover: coverData?.relativePath || null,
+                    dress_code: formData.get('dress_code') as string || null,
+                    age_recommended: formData.get('age_recommended') as string || null,
                     created_at: now,
                     updated_at: now,
                     token,

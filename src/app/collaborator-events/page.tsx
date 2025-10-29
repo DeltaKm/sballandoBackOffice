@@ -69,7 +69,7 @@ export default function CollaboratorEventsPage() {
       filtered = filtered.filter(event => 
         event.title?.toLowerCase().includes(query) ||
         event.subtitle?.toLowerCase().includes(query) ||
-        event.location_?.name?.toLowerCase().includes(query) ||
+        event.locations?.name?.toLowerCase().includes(query) ||
         event.description_extended?.toLowerCase().includes(query) ||
         event.collaborator_role?.toLowerCase().includes(query) ||
         event.collaborator_label?.toLowerCase().includes(query)

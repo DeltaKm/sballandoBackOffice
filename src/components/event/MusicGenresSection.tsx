@@ -121,7 +121,7 @@ export function MusicGenresSection({ event, onUpdate }: MusicGenresSectionProps)
   };
 
   const selectedGenres = event.event_music_genres || [];
-  const validSelectedGenres = selectedGenres.filter((emg) => emg.music_genre);
+  const validSelectedGenres = selectedGenres.filter((emg) => emg.music_genres);
 
   return (
     <div className="pt-6 border-t border-white/10">
@@ -153,7 +153,7 @@ export function MusicGenresSection({ event, onUpdate }: MusicGenresSectionProps)
                 className="flex items-center justify-between p-3 bg-[#FC0045]/10 border border-[#FC0045]/30 rounded-lg"
               >
                 <span className="text-[#FC0045] font-medium text-sm">
-                  {emg.music_genre.label}
+                  {emg.music_genres?.label}
                 </span>
                 <button
                   onClick={() => handleToggleGenre(emg.music_genre_id, true)}

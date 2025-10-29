@@ -11,6 +11,8 @@ interface Event {
   created_at: string;
   updated_at: string | null;
   description_extended?: string;
+  dress_code?: string | null;
+  age_recommended?: string | null;
 }
 
 // ✅ Utility per aggiustare le date per il frontend
@@ -48,6 +50,20 @@ export function EventInfo({ event }: { event: Event }) {
               icon="📍" 
               label="Location" 
               value={`${event.location_.name}${event.location_.address ? ` - ${event.location_.address}` : ''}`} 
+            />
+          )}
+          {event.dress_code && (
+            <InfoItem 
+              icon="👔" 
+              label="Dress Code" 
+              value={event.dress_code} 
+            />
+          )}
+          {event.age_recommended && (
+            <InfoItem 
+              icon="🔞" 
+              label="Età Consigliata" 
+              value={event.age_recommended} 
             />
           )}
         </div>

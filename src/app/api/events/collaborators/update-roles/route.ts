@@ -52,7 +52,7 @@ export async function PATCH(request: NextRequest) {
     const collaborator = await prisma.collaborators.findUnique({
       where: { id: parseInt(collaborator_id) },
       include: {
-        event: {
+        events: {
           select: {
             id: true,
             title: true,
@@ -69,10 +69,10 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    console.log('👤 Collaboratore trovato per evento:', collaborator.event.title);
+    console.log('👤 Collaboratore trovato per evento:', collaborator.events.title);
 
     // Verifica autorizzazione: deve essere il proprietario dell'evento o SUPERADMIN
-    const isEventOwner = collaborator.event.user_id === requestingUser.id;
+    const isEventOwner = collaborator.events.user_id === requestingUser.id;
     const isSuperAdmin = requestingUser.role === 'SUPERADMIN';
 
     if (!isEventOwner && !isSuperAdmin) {
@@ -111,11 +111,11 @@ export async function PATCH(request: NextRequest) {
 
     // Recupera l'evento aggiornato con tutte le relazioni
     const updatedEvent = await prisma.events.findUnique({
-      where: { id: collaborator.event.id },
+      where: { id: collaborator.events.id },
       include: {
         collaborators: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -140,7 +140,7 @@ export async function PATCH(request: NextRequest) {
         },
         event_music_genres: {
           include: {
-            music_genre: {
+            music_genres: {
               select: {
                 id: true,
                 label: true
@@ -148,7 +148,7 @@ export async function PATCH(request: NextRequest) {
             }
           }
         },
-        location_: true
+        locations: true
       }
     });
 

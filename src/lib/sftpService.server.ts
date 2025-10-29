@@ -392,7 +392,7 @@ class SFTPService {
   }
 
   /**
-   * Ottiene lo status del servizio
+   * Restituisce lo stato attuale della connessione
    */
   public getStatus(): { 
     status: SFTPServiceStatus; 
@@ -409,6 +409,90 @@ class SFTPService {
         // Non esporre la password
       }
     };
+  }
+
+  /**
+   * Elimina una foto dalla galleria di un evento
+   */
+  public async deleteEventGalleryPhoto(eventToken: string, fileName: string): Promise<boolean> {
+    try {
+      await this.connect();
+
+      if (!this.client) {
+        throw new Error('SFTP client connection failed');
+      }
+
+      const remotePath = `/var/www/html/webservice.sballando.it/storage/app/public/images/events/${eventToken}/gallery/${fileName}`;
+      
+      await this.client.delete(remotePath);
+      console.log(`🗑️ Event gallery photo deleted: ${fileName}`);
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to delete event gallery photo:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Carica una foto nella galleria di un evento
+   */
+  public async uploadEventGalleryPhoto(file: File, eventToken: string): Promise<SFTPUploadResult> {
+    try {
+      await this.connect();
+
+      if (!this.client) {
+        throw new Error('SFTP client connection failed');
+      }
+
+      // Definisce il percorso remoto
+      const baseUploadPath = process.env.SFTP_UPLOAD_PATH || '/var/www/html/webservice.sballando.it/storage/app/public';
+      const galleryDirectory = `${baseUploadPath}/images/events/${eventToken}/gallery`;
+      
+      // Assicura che la directory gallery esista
+      await this.ensureDirectory(galleryDirectory);
+
+      // Genera un nome file univoco con timestamp
+      const timestamp = Date.now();
+      const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `photo_${timestamp}.${fileExtension}`;
+      const remotePath = `${galleryDirectory}/${fileName}`;
+
+      // Converte File a Buffer
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      console.log(`📤 Uploading gallery photo ${file.name} (${file.size} bytes) as ${fileName}`);
+
+      // Upload del file
+      await this.client.put(buffer, remotePath);
+
+      // Verifica upload
+      const uploadedFile = await this.client.stat(remotePath);
+      
+      if (!uploadedFile) {
+        throw new Error('File upload verification failed');
+      }
+
+      console.log(`✅ Gallery photo uploaded successfully: ${fileName}`);
+
+      // Genera URL pubblico
+      const baseUrl = process.env.UPLOADS_BASE_URL || 'https://webservice.sballando.it/storage';
+      const publicUrl = `${baseUrl}/images/events/${eventToken}/gallery/${fileName}`;
+
+      return {
+        success: true,
+        remotePath,
+        fileName,
+        fileSize: file.size,
+        publicUrl,
+        uploadedAt: new Date()
+      };
+
+    } catch (error) {
+      console.error('❌ SFTP gallery photo upload failed:', error);
+      throw error;
+    }
   }
 
   /**

@@ -1,30 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db } from "~/server/db";
 
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
+  
+  console.log('🔍 GET event API called for ID:', id);
+  
   try {
-    const event = await prisma.events.findUnique({
+    const event = await db.events.findUnique({
       where: { id: Number(id) },
       include: {
         entry_types: true,
         event_music_genres: {
           include: {
-            music_genre: true,
+            music_genres: true,
           },
         },
         collaborators: {
           include: {
-            user: true,
+            users: true,
           },
         },
         products: true,
-        location_: true,
+        locations: true,
       },
     });
 
@@ -32,12 +33,24 @@ export async function GET(
       return NextResponse.json({ message: "Evento non trovato" }, { status: 404 });
     }
 
+    console.log('✅ Event found:', {
+      id: event.id,
+      title: event.title,
+      dress_code: event.dress_code,
+      age_recommended: event.age_recommended
+    });
+
     return NextResponse.json(event);
   } catch (err) {
-    console.error(err);
-    return NextResponse.json({ message: "Errore server" }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
+    console.error('❌ Error fetching event:', err);
+    console.error('Error details:', {
+      message: err instanceof Error ? err.message : 'Unknown error',
+      stack: err instanceof Error ? err.stack : undefined,
+    });
+    return NextResponse.json({ 
+      message: "Errore server",
+      details: err instanceof Error ? err.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
@@ -52,7 +65,7 @@ export async function DELETE(
     console.log(`🗑️ Attempting to delete event with ID: ${id}`);
 
     // ✅ VERIFICA CHE L'EVENTO ESISTA
-    const existingEvent = await prisma.events.findUnique({
+    const existingEvent = await db.events.findUnique({
       where: { id: Number(id) },
       include: {
         entry_types: true,
@@ -75,7 +88,7 @@ export async function DELETE(
     console.log(`📋 Found event to delete: "${existingEvent.title}"`);
 
     // ✅ ELIMINA IN TRANSAZIONE (per garantire consistenza)
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await db.$transaction(async (tx) => {
       // 1. Elimina le relazioni con i generi musicali
       if (existingEvent.event_music_genres.length > 0) {
         await tx.event_music_genres.deleteMany({
@@ -185,9 +198,6 @@ export async function DELETE(
       error: "Errore interno durante l'eliminazione dell'evento",
       details: error instanceof Error ? error.message : "Errore sconosciuto"
     }, { status: 500 });
-
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -204,7 +214,7 @@ export async function PUT(
     console.log(`📝 Updating event ID: ${id}`);
 
     // Verifica che l'evento esista
-    const existingEvent = await prisma.events.findUnique({
+    const existingEvent = await db.events.findUnique({
       where: { id: Number(id) }
     });
 
@@ -219,7 +229,7 @@ export async function PUT(
     }
 
     // Aggiorna l'evento
-    const updatedEvent = await prisma.events.update({
+    const updatedEvent = await db.events.update({
       where: { id: Number(id) },
       data: {
         ...body,
@@ -229,16 +239,16 @@ export async function PUT(
         entry_types: true,
         event_music_genres: {
           include: {
-            music_genre: true,
+            music_genres: true,
           },
         },
         collaborators: {
           include: {
-            user: true,
+            users: true,
           },
         },
         products: true,
-        location_: true,
+        locations: true,
       }
     });
 
@@ -256,8 +266,5 @@ export async function PUT(
       error: "Errore durante l'aggiornamento dell'evento",
       details: error instanceof Error ? error.message : "Errore sconosciuto"
     }, { status: 500 });
-
-  } finally {
-    await prisma.$disconnect();
   }
 }

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db } from "~/server/db";
 
 export async function POST(request: NextRequest) {
   const requestId = Date.now() + '-' + Math.random().toString(36).substring(2);
@@ -19,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica utente
-    const user = await prisma.users.findFirst({
+    const user = await db.users.findFirst({
       where: { token: user_token },
       select: { id: true, role: true, name: true, surname: true, email: true }
     });
@@ -34,7 +32,7 @@ export async function POST(request: NextRequest) {
     console.log(`✅ [${requestId}] User found:`, { id: user.id, role: user.role });
 
     // Recupera tutti gli eventi dove l'utente è collaboratore
-    const collaboratorEvents = await prisma.events.findMany({
+    const collaboratorEvents = await db.events.findMany({
       where: {
         collaborators: {
           some: {
@@ -43,7 +41,7 @@ export async function POST(request: NextRequest) {
         }
       },
       include: {
-        location_: {
+        locations: {
           select: {
             id: true,
             name: true,
@@ -62,7 +60,17 @@ export async function POST(request: NextRequest) {
             role: true,
             guest_enabled: true,
             vidimate_enabled_product: true,
-            vidimate_enabled_entry: true
+            vidimate_enabled_entry: true,
+            users: {
+              select: {
+                id: true,
+                name: true,
+                surname: true,
+                email: true,
+                picture: true,
+                nickname: true
+              }
+            }
           }
         },
         products: {
@@ -84,7 +92,7 @@ export async function POST(request: NextRequest) {
         },
         event_music_genres: {
           include: {
-            music_genre: {
+            music_genres: {
               select: {
                 id: true,
                 label: true
@@ -177,8 +185,5 @@ export async function POST(request: NextRequest) {
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     }, { status: 500 });
 
-  } finally {
-    console.log(`🔚 [${requestId}] Disconnecting Prisma...`);
-    await prisma.$disconnect();
   }
 }

@@ -11,7 +11,7 @@ model Post {
   id        String   @id
   name      String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime
 }
 
 model blocked_users {
@@ -33,8 +33,8 @@ model collaborators {
   guest_enabled            Boolean?            @default(false)
   created_at               DateTime?           @db.Timestamp(0)
   updated_at               DateTime?           @db.Timestamp(0)
-  event                    events              @relation(fields: [event_id], references: [id])
-  user                     users               @relation(fields: [user_id], references: [id])
+  events                   events              @relation(fields: [event_id], references: [id])
+  users                    users               @relation(fields: [user_id], references: [id])
 
   @@index([event_id])
   @@index([user_id])
@@ -90,12 +90,26 @@ model entry_types {
   stripe_payment_intent_id String?                   @db.VarChar(50)
   pending_time             Int?
   transfer_qnt             Int?
-  event                    events?                   @relation(fields: [event_id], references: [id])
+  events                   events?                   @relation(fields: [event_id], references: [id])
 
   @@index([burned], map: "burned")
   @@index([event_id], map: "event_id")
   @@index([old_user_id], map: "old_user_id")
   @@index([user_id], map: "user_id")
+}
+
+model event_music_genres {
+  id             Int          @id @default(autoincrement()) @db.UnsignedInt
+  event_id       Int
+  music_genre_id Int          @db.UnsignedInt
+  created_at     DateTime     @default(now()) @db.Timestamp(0)
+  updated_at     DateTime     @db.Timestamp(0)
+  events         events       @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  music_genres   music_genres @relation(fields: [music_genre_id], references: [id], onDelete: Cascade)
+
+  @@unique([event_id, music_genre_id])
+  @@index([event_id])
+  @@index([music_genre_id])
 }
 
 model event_user_favorites {
@@ -131,10 +145,12 @@ model events {
   spotify_token_expires_at String?              @db.VarChar(5345)
   spotify_playlist_id      String?              @db.VarChar(255)
   qr_enter                 String?              @db.VarChar(255)
+  age_recommended          String?              @db.VarChar(50)
+  dress_code               String?              @db.VarChar(255)
   collaborators            collaborators[]
   entry_types              entry_types[]
   event_music_genres       event_music_genres[]
-  location_                locations            @relation(fields: [location_id], references: [id])
+  locations                locations            @relation(fields: [location_id], references: [id])
   messages                 messages[]
   products                 products[]
 
@@ -243,27 +259,27 @@ model locations {
 }
 
 model messages {
-  id                  Int               @id @default(autoincrement())
-  sender_id           Int?              @db.UnsignedInt
-  receiver_id         Int?              @db.UnsignedInt
-  event_id            Int?
-  message             String?           @db.Text
-  product_id          Int?
-  created_at          DateTime?         @db.Timestamp(0)
-  updated_at          DateTime?         @db.Timestamp(0)
-  picture             String?           @db.Text
-  read                Int?              @default(0) @db.TinyInt
-  spotify_playlist_id Int?              @db.UnsignedInt
-  event               events?           @relation(fields: [event_id], references: [id])
-  receiver            users?            @relation("MessageReceiver", fields: [receiver_id], references: [id])
-  sender              users?            @relation("MessageSender", fields: [sender_id], references: [id])
-  spotify_playlist    spotify_playlist? @relation(fields: [spotify_playlist_id], references: [id])
+  id                                Int               @id @default(autoincrement())
+  sender_id                         Int?              @db.UnsignedInt
+  receiver_id                       Int?              @db.UnsignedInt
+  event_id                          Int?
+  message                           String?           @db.Text
+  product_id                        Int?
+  created_at                        DateTime?         @db.Timestamp(0)
+  updated_at                        DateTime?         @db.Timestamp(0)
+  picture                           String?           @db.Text
+  read                              Int?              @default(0) @db.TinyInt
+  spotify_playlist_id               Int?              @db.UnsignedInt
+  events                            events?           @relation(fields: [event_id], references: [id])
+  users_messages_receiver_idTousers users?            @relation("messages_receiver_idTousers", fields: [receiver_id], references: [id])
+  users_messages_sender_idTousers   users?            @relation("messages_sender_idTousers", fields: [sender_id], references: [id])
+  spotify_playlist                  spotify_playlist? @relation(fields: [spotify_playlist_id], references: [id])
 
   @@index([event_id], map: "event_id")
+  @@index([spotify_playlist_id], map: "messages_spotify_playlist_id_fkey")
   @@index([product_id], map: "product_id")
   @@index([receiver_id], map: "receiver_id")
   @@index([sender_id], map: "sender_id")
-  @@index([spotify_playlist_id], map: "messages_spotify_playlist_id_fkey")
 }
 
 model migrations {
@@ -356,7 +372,7 @@ model products {
   entry_type_id            Int?
   game                     products_game?
   transfer_qnt             Int?
-  event                    events?        @relation(fields: [event_id], references: [id])
+  events                   events?        @relation(fields: [event_id], references: [id])
 
   @@index([entry_type_id], map: "entry_type_id")
   @@index([event_id], map: "event_id")
@@ -392,6 +408,20 @@ model user_blocks {
   sender_id    Int?
   receviver_id Int?
   event_id     Int?
+}
+
+model user_music_genres {
+  id             Int          @id @default(autoincrement()) @db.UnsignedInt
+  user_id        Int          @db.UnsignedInt
+  music_genre_id Int          @db.UnsignedInt
+  created_at     DateTime     @default(now()) @db.Timestamp(0)
+  updated_at     DateTime     @db.Timestamp(0)
+  music_genres   music_genres @relation(fields: [music_genre_id], references: [id], onDelete: Cascade)
+  users          users        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, music_genre_id])
+  @@index([music_genre_id])
+  @@index([user_id])
 }
 
 model users {
@@ -431,43 +461,16 @@ model users {
   link_instagram                                 String?             @db.VarChar(500)
   link_tiktok                                    String?             @db.VarChar(500)
   role                                           users_role          @default(USER)
+  google_id                                      String?             @db.Text
   collaborators                                  collaborators[]
   followers_followers_follower_idTousers         followers[]         @relation("followers_follower_idTousers")
   followers_followers_followed_idTousers         followers[]         @relation("followers_followed_idTousers")
   locations                                      locations[]
-  messages_received                              messages[]          @relation("MessageReceiver")
-  messages_sent                                  messages[]          @relation("MessageSender")
+  messages_messages_receiver_idTousers           messages[]          @relation("messages_receiver_idTousers")
+  messages_messages_sender_idTousers             messages[]          @relation("messages_sender_idTousers")
   notifications_notifications_receiver_idTousers notifications[]     @relation("notifications_receiver_idTousers")
   notifications_notifications_sender_idTousers   notifications[]     @relation("notifications_sender_idTousers")
   user_music_genres                              user_music_genres[]
-}
-
-model user_music_genres {
-  id             Int          @id @default(autoincrement()) @db.UnsignedInt
-  user_id        Int          @db.UnsignedInt
-  music_genre_id Int          @db.UnsignedInt
-  created_at     DateTime     @default(now()) @db.Timestamp(0)
-  updated_at     DateTime     @updatedAt @db.Timestamp(0)
-  music_genre    music_genres @relation(fields: [music_genre_id], references: [id], onDelete: Cascade)
-  user           users        @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  @@unique([user_id, music_genre_id])
-  @@index([user_id])
-  @@index([music_genre_id])
-}
-
-model event_music_genres {
-  id             Int          @id @default(autoincrement()) @db.UnsignedInt
-  event_id       Int
-  music_genre_id Int          @db.UnsignedInt
-  created_at     DateTime     @default(now()) @db.Timestamp(0)
-  updated_at     DateTime     @updatedAt @db.Timestamp(0)
-  event          events       @relation(fields: [event_id], references: [id], onDelete: Cascade)
-  music_genre    music_genres @relation(fields: [music_genre_id], references: [id], onDelete: Cascade)
-
-  @@unique([event_id, music_genre_id])
-  @@index([event_id])
-  @@index([music_genre_id])
 }
 
 enum collaborators_role {

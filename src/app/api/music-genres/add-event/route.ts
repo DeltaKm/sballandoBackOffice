@@ -130,13 +130,16 @@ export async function POST(request: NextRequest) {
     console.log('🚀 Aggiunta genere musicale all\'evento...');
 
     // Aggiungi il genere musicale all'evento
+    const now = new Date();
     const newEventGenre = await prisma.event_music_genres.create({
       data: {
         event_id: parseInt(event_id),
-        music_genre_id: parseInt(music_genre_id)
+        music_genre_id: parseInt(music_genre_id),
+        created_at: now,
+        updated_at: now
       },
       include: {
-        music_genre: {
+        music_genres: {
           select: {
             id: true,
             label: true
@@ -153,7 +156,7 @@ export async function POST(request: NextRequest) {
       include: {
         event_music_genres: {
           include: {
-            music_genre: {
+            music_genres: {
               select: {
                 id: true,
                 label: true
@@ -163,7 +166,7 @@ export async function POST(request: NextRequest) {
         },
         collaborators: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -178,11 +181,11 @@ export async function POST(request: NextRequest) {
         },
         entry_types: true,
         products: true,
-        location_: true
+        locations: true
       }
     });
 
-    console.log('✅ Evento aggiornato recuperato con', updatedEvent?.event_music_genres?.length, 'generi musicali');
+    console.log('✅ Evento aggiornato recuperato');
 
     return NextResponse.json(updatedEvent, { status: 201 });
 
@@ -310,7 +313,7 @@ export async function DELETE(request: NextRequest) {
       include: {
         event_music_genres: {
           include: {
-            music_genre: {
+            music_genres: {
               select: {
                 id: true,
                 label: true
@@ -320,7 +323,7 @@ export async function DELETE(request: NextRequest) {
         },
         collaborators: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -335,7 +338,7 @@ export async function DELETE(request: NextRequest) {
         },
         entry_types: true,
         products: true,
-        location_: true
+        locations: true
       }
     });
 
