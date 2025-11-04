@@ -198,13 +198,25 @@ export async function POST(request: NextRequest) {
     const updatedEvent = await prisma.events.findUnique({
       where: { id: parseInt(event_id) },
       include: {
-        entry_types: true, // Rimuovi l'include di products se non esiste la relazione
+        entry_types: true,
         locations: true,
         collaborators: true,
         event_music_genres: true,
         products: true // I prodotti sono collegati direttamente all'evento
       }
     });
+
+    // Aggiungi manualmente i prodotti a ciascun entry_type
+    if (updatedEvent && updatedEvent.entry_types && updatedEvent.entry_types.length > 0) {
+      for (const entryType of updatedEvent.entry_types) {
+        const associatedProducts = await prisma.products.findMany({
+          where: {
+            entry_type_id: entryType.id,
+          },
+        });
+        (entryType as any).products = associatedProducts;
+      }
+    }
 
     console.log('🔄 Evento aggiornato recuperato');
 

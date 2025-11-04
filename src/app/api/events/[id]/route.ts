@@ -24,7 +24,30 @@ export async function GET(
             users: true,
           },
         },
-        products: true,
+        products: {
+          select: {
+            id: true,
+            event_id: true,
+            user_id: true,
+            old_user_id: true,
+            category: true,
+            label: true,
+            description: true,
+            stock: true,
+            created_qnt: true,
+            created_at: true,
+            requested_date: true,
+            updated_at: true,
+            burned: true,
+            check_unused: true,
+            price: true,
+            stripe_payment_intent_id: true,
+            paid: true,
+            entry_type_id: true,
+            game: true,
+            transfer_qnt: true,
+          },
+        },
         locations: true,
       },
     });
@@ -32,6 +55,30 @@ export async function GET(
     if (!event) {
       return NextResponse.json({ message: "Evento non trovato" }, { status: 404 });
     }
+
+    // Aggiungi manualmente i prodotti a ciascun entry_type
+    if (event.entry_types && event.entry_types.length > 0) {
+      for (const entryType of event.entry_types) {
+        const associatedProducts = await db.products.findMany({
+          where: {
+            entry_type_id: entryType.id,
+          },
+        });
+        (entryType as any).products = associatedProducts;
+      }
+    }
+
+    // Debug: controlla i prodotti e il campo entry_type_id
+    console.log('🔍 Products debug:', {
+      totalProducts: event.products?.length || 0,
+      productsWithEntryType: event.products?.filter(p => p.entry_type_id !== null).length || 0,
+      productsWithoutEntryType: event.products?.filter(p => p.entry_type_id === null).length || 0,
+      sampleProducts: event.products?.slice(0, 3).map(p => ({
+        id: p.id,
+        label: p.label,
+        entry_type_id: p.entry_type_id
+      }))
+    });
 
     console.log('✅ Event found:', {
       id: event.id,

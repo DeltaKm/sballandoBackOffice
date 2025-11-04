@@ -111,6 +111,18 @@ export async function DELETE(request: NextRequest) {
       }
     });
 
+    // Aggiungi manualmente i prodotti a ciascun entry_type
+    if (updatedEvent && updatedEvent.entry_types && updatedEvent.entry_types.length > 0) {
+      for (const entryType of updatedEvent.entry_types) {
+        const associatedProducts = await prisma.products.findMany({
+          where: {
+            entry_type_id: entryType.id,
+          },
+        });
+        (entryType as any).products = associatedProducts;
+      }
+    }
+
     return NextResponse.json(updatedEvent, { status: 200 });
 
   } catch (error) {

@@ -90,7 +90,10 @@ model entry_types {
   stripe_payment_intent_id String?                   @db.VarChar(50)
   pending_time             Int?
   transfer_qnt             Int?
+  expired_date             DateTime?                 @db.DateTime(0)
+  start_date               DateTime?                 @db.DateTime(0)
   events                   events?                   @relation(fields: [event_id], references: [id])
+  products                 products[]
 
   @@index([burned], map: "burned")
   @@index([event_id], map: "event_id")
@@ -373,6 +376,7 @@ model products {
   game                     products_game?
   transfer_qnt             Int?
   events                   events?        @relation(fields: [event_id], references: [id])
+  entry_types              entry_types?   @relation(fields: [entry_type_id], references: [id])
 
   @@index([entry_type_id], map: "entry_type_id")
   @@index([event_id], map: "event_id")

@@ -30,7 +30,7 @@ export function TransferProductModal({ show, product, event, onClose, onSuccess 
 
       return {
         collaborator: collab,
-        user: collab.user,
+        user: collab.users,
         compatibleProducts,
         hasCompatibleProduct: compatibleProducts.length > 0,
         totalStock: compatibleProducts.reduce((sum, p) => sum + (p.stock || 0), 0)

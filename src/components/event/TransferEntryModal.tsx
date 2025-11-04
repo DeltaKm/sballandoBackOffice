@@ -30,7 +30,7 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
 
       return {
         collaborator: collab,
-        user: collab.user,
+        user: collab.users,
         compatibleEntries,
         hasCompatibleEntry: compatibleEntries.length > 0,
         totalStock: compatibleEntries.reduce((sum, et) => sum + (et.stock || 0), 0)

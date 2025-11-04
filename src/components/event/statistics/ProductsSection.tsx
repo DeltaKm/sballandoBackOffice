@@ -30,7 +30,7 @@ interface ProductStats {
 
 interface ProductsSectionProps {
   products: Product[];
-  collaborators: Array<{ user_id: number; user?: { name: string; surname: string } }>;
+  collaborators: Array<{ user_id: number; users?: { name: string; surname: string } }>;
   eventUserId: number;
   selectedCollaborator: string;
 }
@@ -50,17 +50,45 @@ export function ProductsSection({
   };
 
   // CORREZIONE: Includi TUTTI i prodotti per calcolare correttamente i ricavi
+  // MA escludi quelli legati a ingressi (entry_type_id)
   const filteredProducts = useMemo(() => {
+    // Prima filtra solo i prodotti NON legati a ingressi
+    // Controllo robusto: se entry_type_id ha un valore valido (> 0), NON è standalone
+    const standaloneProducts = products.filter(p => {
+      const hasEntryType = p.entry_type_id && 
+                          p.entry_type_id !== null && 
+                          p.entry_type_id !== undefined && 
+                          p.entry_type_id !== 0;
+      return !hasEntryType;
+    });
+    
+    console.log('🔍 Statistics ProductsSection - Filtering:', {
+      totalProducts: products.length,
+      standaloneProducts: standaloneProducts.length,
+      filteredOut: products.length - standaloneProducts.length,
+      sampleFiltered: products.filter(p => {
+        const hasEntryType = p.entry_type_id && 
+                            p.entry_type_id !== null && 
+                            p.entry_type_id !== undefined && 
+                            p.entry_type_id !== 0;
+        return hasEntryType;
+      }).slice(0, 3).map(p => ({
+        id: p.id,
+        label: p.label,
+        entry_type_id: p.entry_type_id
+      }))
+    });
+    
     if (selectedCollaborator === 'all' || selectedCollaborator === 'me') {
       // Per "tutti" e "me": mostra solo prodotti di creatore + collaboratori
       const collaboratorIds = [eventUserId, ...(collaborators?.map(c => c.user_id) || [])];
-      return products.filter(p => 
+      return standaloneProducts.filter(p => 
         p.user_id && collaboratorIds.includes(p.user_id)
       );
     } else {
       // Per collaboratore specifico: mostra TUTTI i prodotti che lo riguardano
       const targetUserId = parseInt(selectedCollaborator);
-      return products.filter(p => 
+      return standaloneProducts.filter(p => 
         p.user_id === targetUserId ||  // Prodotti che possiede
         p.old_user_id === targetUserId // Prodotti che ha venduto
       );
@@ -239,7 +267,7 @@ export function ProductsSection({
             uniqueId: `${p.id || p.user_id}-${index}`,
             userId: p.user_id,
             name: isMe ? 'Io (Creatore)' : 
-                  collaborator?.user ? `${collaborator.user.name} ${collaborator.user.surname}` : 
+                  collaborator?.users ? `${collaborator.users.name} ${collaborator.users.surname}` : 
                   `Utente ${p.user_id}`,
             role: isMe ? 'Creatore' : 'Collaboratore',
             received: p.transfer_qnt || 0,
@@ -477,8 +505,8 @@ export function ProductsSection({
     });
 
     if (collaboratorProducts.length === 0) {
-      const collaboratorName = collaborators.find(c => c.user_id === targetUserId)?.user ? 
-        `${collaborators.find(c => c.user_id === targetUserId)!.user!.name} ${collaborators.find(c => c.user_id === targetUserId)!.user!.surname}` :
+      const collaboratorName = collaborators.find(c => c.user_id === targetUserId)?.users ? 
+        `${collaborators.find(c => c.user_id === targetUserId)!.users!.name} ${collaborators.find(c => c.user_id === targetUserId)!.users!.surname}` :
         `Utente ${targetUserId}`;
 
       return (
@@ -589,8 +617,8 @@ export function ProductsSection({
       const userStats = [{
         uniqueId: `collab-${targetUserId}`,
         userId: targetUserId,
-        name: collaborator?.user ? 
-          `${collaborator.user.name} ${collaborator.user.surname}` : 
+        name: collaborator?.users ? 
+          `${collaborator.users.name} ${collaborator.users.surname}` : 
           `Utente ${targetUserId}`,
         role: 'Collaboratore',
         received: collaboratorReceived,

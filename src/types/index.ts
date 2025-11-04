@@ -76,10 +76,11 @@ export interface Product {
   transfer_qnt?: number | null;
   stock?: number | null;
   created_qnt?: number | null;
+  entry_type_id?: number | null;
 }
 
 export interface EntryType {
-  products: never[];
+  products?: Product[];
   gender_min_quantity: number;
   gender_min_type: string;
   gender_min_enabled: boolean;

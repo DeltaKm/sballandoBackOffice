@@ -30,7 +30,7 @@ interface EntryStats {
 
 interface EntriesSectionProps {
   entries: EntryType[];
-  collaborators: Array<{ user_id: number; user?: { name: string; surname: string } }>;
+  collaborators: Array<{ user_id: number; users?: { name: string; surname: string } }>;
   eventUserId: number;
   selectedCollaborator: string;
 }
@@ -239,7 +239,7 @@ export function EntriesSection({
             uniqueId: `${e.id || e.user_id}-${index}`,
             userId: e.user_id,
             name: isMe ? 'Io (Creatore)' : 
-                  collaborator?.user ? `${collaborator.user.name} ${collaborator.user.surname}` : 
+                  collaborator?.users ? `${collaborator.users.name} ${collaborator.users.surname}` : 
                   `Utente ${e.user_id}`,
             role: isMe ? 'Creatore' : 'Collaboratore',
             received: e.transfer_qnt || 0,
@@ -468,8 +468,8 @@ export function EntriesSection({
     console.log(`🎟️ Found ${collaboratorEntries.length} entries for collaborator ${targetUserId}`);
 
     if (collaboratorEntries.length === 0) {
-      const collaboratorName = collaborators.find(c => c.user_id === targetUserId)?.user ? 
-        `${collaborators.find(c => c.user_id === targetUserId)!.user!.name} ${collaborators.find(c => c.user_id === targetUserId)!.user!.surname}` :
+      const collaboratorName = collaborators.find(c => c.user_id === targetUserId)?.users ? 
+        `${collaborators.find(c => c.user_id === targetUserId)!.users!.name} ${collaborators.find(c => c.user_id === targetUserId)!.users!.surname}` :
         `Utente ${targetUserId}`;
 
       return (
@@ -577,8 +577,8 @@ export function EntriesSection({
       const userStats = [{
         uniqueId: `collab-${targetUserId}`,
         userId: targetUserId,
-        name: collaborator?.user ? 
-          `${collaborator.user.name} ${collaborator.user.surname}` : 
+        name: collaborator?.users ? 
+          `${collaborator.users.name} ${collaborator.users.surname}` : 
           `Utente ${targetUserId}`,
         role: 'Collaboratore',
         received: collaboratorReceived,

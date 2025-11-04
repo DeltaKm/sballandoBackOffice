@@ -80,9 +80,37 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
       };
     }
 
+    // Debug: verifica i prodotti ricevuti
+    console.log('🔍 ProductsSection - Products received:', {
+      totalProducts: event.products.length,
+      sampleProducts: event.products.slice(0, 5).map(p => ({
+        id: p.id,
+        label: p.label,
+        entry_type_id: p.entry_type_id,
+        hasEntryTypeId: p.entry_type_id !== null && p.entry_type_id !== undefined
+      })),
+      productsWithEntryType: event.products.filter(p => p.entry_type_id).length,
+      productsWithoutEntryType: event.products.filter(p => !p.entry_type_id).length
+    });
+
     const collaboratorsUserIds = event.collaborators?.map(collab => collab.user_id).filter(Boolean) || [];
     
-    const myProducts = event.products.filter(product => product.user_id === user.id);
+    // Filtra solo i prodotti che NON sono legati a un ingresso
+    // Controllo robusto: entry_type_id deve essere null, undefined, o 0
+    const standaloneProducts = event.products.filter(product => {
+      const hasEntryType = product.entry_type_id && 
+                          product.entry_type_id !== null && 
+                          product.entry_type_id !== undefined && 
+                          product.entry_type_id !== 0;
+      return !hasEntryType;
+    });
+    
+    console.log('🔍 ProductsSection - After filtering:', {
+      standaloneProducts: standaloneProducts.length,
+      filteredOut: event.products.length - standaloneProducts.length
+    });
+    
+    const myProducts = standaloneProducts.filter(product => product.user_id === user.id);
     const myProductsByCategory = myProducts.reduce((acc, product) => {
       const category = product.category || 'Senza Categoria';
       if (!acc[category]) {
@@ -94,7 +122,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
 
     const myCategories = Object.keys(myProductsByCategory);
 
-    const collaboratorsProducts = event.products.filter(product => 
+    const collaboratorsProducts = standaloneProducts.filter(product => 
       product.user_id !== user.id && collaboratorsUserIds.includes(product.user_id)
     );
 
@@ -103,8 +131,8 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
         const collaborator = event.collaborators?.find(collab => collab.user_id === product.user_id);
         acc[product.user_id] = {
           user_id: product.user_id,
-          collaboratorName: collaborator?.user ? 
-            `${collaborator.user.name} ${collaborator.user.surname}` : 
+          collaboratorName: collaborator?.users ? 
+            `${collaborator.users.name} ${collaborator.users.surname}` : 
             `User ${product.user_id}`,
           collaboratorRole: collaborator?.role || 'Collaboratore',
           categoriesData: {}
@@ -294,11 +322,20 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
   const handleWithdrawProduct = async (product: Product) => {
     if (!user?.token) return;
 
-    const collaboratorProducts = event.products?.filter(p => 
+    // Filtra solo prodotti standalone (non legati a ingressi)
+    const standaloneProducts = event.products?.filter(p => {
+      const hasEntryType = p.entry_type_id && 
+                          p.entry_type_id !== null && 
+                          p.entry_type_id !== undefined && 
+                          p.entry_type_id !== 0;
+      return !hasEntryType;
+    }) || [];
+    
+    const collaboratorProducts = standaloneProducts.filter(p => 
       p.user_id !== user.id && 
       p.label.toLowerCase() === product.label.toLowerCase() &&
       p.stock && p.stock > 0
-    ) || [];
+    );
 
     if (collaboratorProducts.length === 0) {
       alert('Nessun prodotto da ritirare dai collaboratori');
@@ -358,11 +395,20 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
   const getWithdrawableCount = (product: Product) => {
     if (!user) return 0;
     
-    const collaboratorProducts = event.products?.filter(p => 
+    // Filtra solo prodotti standalone (non legati a ingressi)
+    const standaloneProducts = event.products?.filter(p => {
+      const hasEntryType = p.entry_type_id && 
+                          p.entry_type_id !== null && 
+                          p.entry_type_id !== undefined && 
+                          p.entry_type_id !== 0;
+      return !hasEntryType;
+    }) || [];
+    
+    const collaboratorProducts = standaloneProducts.filter(p => 
       p.user_id !== user.id && 
       p.label.toLowerCase() === product.label.toLowerCase() &&
       p.stock && p.stock > 0
-    ) || [];
+    );
 
     return collaboratorProducts.reduce((sum, p) => sum + (p.stock || 0), 0);
   };

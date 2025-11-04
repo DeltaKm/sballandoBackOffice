@@ -212,8 +212,8 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
         const collaborator = event.collaborators?.find(collab => collab.user_id === entry.user_id);
         acc[entry.user_id] = {
           user_id: entry.user_id,
-          collaboratorName: collaborator?.user ?
-            `${collaborator.user.name} ${collaborator.user.surname}` :
+          collaboratorName: collaborator?.users ?
+            `${collaborator.users.name} ${collaborator.users.surname}` :
             `User ${entry.user_id}`,
           collaboratorRole: collaborator?.role || 'Collaboratore',
           categoriesData: {}

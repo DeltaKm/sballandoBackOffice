@@ -245,8 +245,34 @@ export async function PUT(request: NextRequest) {
     const updatedEvent = await prisma.events.findUnique({
       where: { id: existingEntry.event_id || 0},
       include: {
-        entry_types: { orderBy: { created_at: "desc" } },
-        products: { orderBy: { created_at: "desc" } },
+        entry_types: { 
+          orderBy: { created_at: "desc" },
+        },
+        products: { 
+          orderBy: { created_at: "desc" },
+          select: {
+            id: true,
+            event_id: true,
+            user_id: true,
+            old_user_id: true,
+            category: true,
+            label: true,
+            description: true,
+            stock: true,
+            created_qnt: true,
+            created_at: true,
+            requested_date: true,
+            updated_at: true,
+            burned: true,
+            check_unused: true,
+            price: true,
+            stripe_payment_intent_id: true,
+            paid: true,
+            entry_type_id: true,
+            game: true,
+            transfer_qnt: true,
+          },
+        },
         collaborators: {
           include: {
             users: {
@@ -268,6 +294,18 @@ export async function PUT(request: NextRequest) {
         locations: true
       }
     });
+
+    // Aggiungi manualmente i prodotti a ciascun entry_type
+    if (updatedEvent && updatedEvent.entry_types && updatedEvent.entry_types.length > 0) {
+      for (const entryType of updatedEvent.entry_types) {
+        const associatedProducts = await prisma.products.findMany({
+          where: {
+            entry_type_id: entryType.id,
+          },
+        });
+        (entryType as any).products = associatedProducts;
+      }
+    }
 
     return NextResponse.json(updatedEvent, { status: 200 });
 
