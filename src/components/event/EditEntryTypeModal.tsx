@@ -146,7 +146,11 @@ export function EditEntryTypeModal({ show, entry, onClose, onSuccess }: EditEntr
         gender_min_enabled: entry.gender_min_enabled || false,
         gender_min_type: entry.gender_min_type || '',
         gender_min_quantity: entry.gender_min_quantity || 1,
-        consumations: entry.products || []
+        consumations: (entry.products || []).map(p => ({
+          label: p.label,
+          description: p.description || '',
+          category: p.category || ''
+        }))
       });
       setErrors({});
       setShowConsumationForm(false);
