@@ -551,7 +551,7 @@ export default function CreateEventPage() {
 
                         <div className="space-y-4">
                             {/* Privacy Setting */}
-                            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
+                            {/* <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
                                 <div>
                                     <h3 className="text-sm font-medium text-white/80">Evento Pubblico</h3>
                                     <p className="text-sm text-white/60">
@@ -570,7 +570,7 @@ export default function CreateEventPage() {
                                             } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
                                     />
                                 </Switch>
-                            </div>
+                            </div> */}
 
                             {/* Publication Status */}
                             <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
