@@ -37,6 +37,7 @@ const entryTypeSchema = z.object({
     .refine((val) => {
       if (!val || val === "") return true;
       const num = parseFloat(val);
+
       return !isNaN(num) && num >= 0;
     }, "Il prezzo deve essere un numero non negativo"),
   
