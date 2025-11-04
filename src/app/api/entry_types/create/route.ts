@@ -153,9 +153,13 @@ export async function POST(request: NextRequest) {
         description: description?.trim() || null,
         category: category?.trim() || null,
         type: type || 'free',
-        price: price ? parseFloat(price) : null,
+        // Se price è 0 o vuoto, salva null
+        price: price && parseFloat(price) > 0 ? parseFloat(price) : null,
         seats: seats ? parseInt(seats) : 1,
-        fairplay_min: fairplay_min ? parseInt(fairplay_min) : 0,
+        // Se fairplay_min è vuoto, salva null (permetti qualsiasi valore numerico inclusi negativi)
+        fairplay_min: fairplay_min !== null && fairplay_min !== undefined && fairplay_min !== '' 
+          ? parseInt(fairplay_min) 
+          : null,
         stock: quantity ? parseInt(quantity) : null,
         created_qnt: quantity ? parseInt(quantity) : null,
       }

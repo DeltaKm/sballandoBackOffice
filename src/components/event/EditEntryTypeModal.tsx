@@ -33,13 +33,7 @@ const entryTypeSchema = z.object({
   price: z
     .string()
     .optional()
-    .or(z.literal(""))
-    .refine((val) => {
-      if (!val || val === "") return true;
-      const num = parseFloat(val);
-
-      return !isNaN(num) && num >= 0;
-    }, "Il prezzo deve essere un numero non negativo"),
+    .or(z.literal("")),
   
   seats: z
     .number()
@@ -53,8 +47,8 @@ const entryTypeSchema = z.object({
     .refine((val) => {
       if (!val || val === "") return true;
       const num = parseInt(val);
-      return !isNaN(num) && num >= 0 && num <= 100;
-    }, "Il fairplay deve essere tra 0 e 100"),
+      return !isNaN(num); // Permette qualsiasi numero, anche negativi
+    }, "Il fairplay deve essere un numero valido"),
   
   gender_min_enabled: z.boolean(),
   
@@ -240,16 +234,33 @@ export function EditEntryTypeModal({ show, entry, onClose, onSuccess }: EditEntr
 
     setLoading(true);
     try {
+      // Calcola il prezzo: se vuoto, "0", 0, o <= 0, usa null
+      let finalPrice = null;
+      if (formData.price && formData.price !== "" && formData.price !== "0") {
+        const parsed = parseFloat(formData.price);
+        if (!isNaN(parsed) && parsed > 0) {
+          finalPrice = parsed;
+        }
+      }
+      
+      console.log("🔥 FRONTEND - formData.price:", formData.price, "finalPrice:", finalPrice);
+      
+      // Se il prezzo è null, forza il tipo a "free"
+      const finalType = finalPrice === null ? "free" : formData.type;
+      
       const payload = {
         entry_type_id: entry.id,
         label: formData.label.trim(),
         description: formData.description || null,
         category: formData.category,
-        type: formData.type,
+        type: finalType,
         quantity: formData.quantity ? parseInt(formData.quantity) : null,
-        price: formData.price ? parseFloat(formData.price) : 0,
+        price: finalPrice,
         seats: formData.seats,
-        fairplay_min: formData.fairplay_min ? parseInt(formData.fairplay_min) : 0,
+        // Se fairplay_min è vuoto, manda null (permetti qualsiasi valore numerico)
+        fairplay_min: formData.fairplay_min !== '' && formData.fairplay_min !== null && formData.fairplay_min !== undefined
+          ? parseInt(formData.fairplay_min) 
+          : null,
         gender_min_enabled: formData.gender_min_enabled,
         gender_min_type: formData.gender_min_type,
         gender_min_quantity: formData.gender_min_quantity,

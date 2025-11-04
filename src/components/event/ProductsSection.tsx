@@ -319,6 +319,13 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
     closeTransferModal();
   };
 
+  const handleDeleteProduct = (productId: number) => {
+    const product = event.products?.find(p => p.id === productId);
+    if (product) {
+      openDeleteModal(productId, product.label);
+    }
+  };
+
   const handleWithdrawProduct = async (product: Product) => {
     if (!user?.token) return;
 
@@ -535,9 +542,11 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                           <p className="text-white/80 text-sm leading-relaxed">{product.description}</p>
                         )}
                       </div>
-                      <div className="text-right ml-4">
-                        <span className="text-[#FC0045] font-bold text-2xl">€{formatPrice(product.price)}</span>
-                      </div>
+                      {product.price && product.price > 0 && (
+                        <div className="text-right ml-4">
+                          <span className="text-[#FC0045] font-bold text-2xl">€{formatPrice(product.price)}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Statistiche */}
@@ -737,7 +746,9 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                                     <p className="text-white/80 text-sm">{product.description}</p>
                                   )}
                                 </div>
-                                <span className="text-[#FC0045] font-bold text-xl">€{formatPrice(product.price)}</span>
+                                {product.price && product.price > 0 && (
+                                  <span className="text-[#FC0045] font-bold text-xl">€{formatPrice(product.price)}</span>
+                                )}
                               </div>
 
                               <div className="bg-green-500/20 rounded-lg p-3">
@@ -751,6 +762,24 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                                     <div className="text-green-400/80 text-xs">Rimasti</div>
                                   </div>
                                 </div>
+                              </div>
+
+                              {/* Pulsanti Azione */}
+                              <div className="mt-3 flex justify-end gap-2">
+                                <button
+                                  onClick={() => handleWithdrawProduct(product as unknown as Product)}
+                                  className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all duration-200 flex items-center gap-2"
+                                >
+                                  <span>↩️</span>
+                                  <span>Ritira</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteProduct(product.id as number)}
+                                  className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-all duration-200 flex items-center gap-2"
+                                >
+                                  <span>🗑️</span>
+                                  <span>Elimina</span>
+                                </button>
                               </div>
                             </div>
                           ))}
@@ -827,7 +856,9 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
               <div className="p-3 bg-white/5 border border-white/10 rounded-lg mb-3">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-white font-medium">"{withdrawModal.product?.label}"</span>
-                  <span className="text-[#FC0045] font-bold">€{formatPrice(withdrawModal.product?.price)}</span>
+                  {withdrawModal.product?.price && withdrawModal.product.price > 0 && (
+                    <span className="text-[#FC0045] font-bold">€{formatPrice(withdrawModal.product.price)}</span>
+                  )}
                 </div>
                 {withdrawModal.product?.description && (
                   <p className="text-white/60 text-sm mb-2">{withdrawModal.product.description}</p>

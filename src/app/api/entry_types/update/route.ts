@@ -12,7 +12,14 @@ export async function PUT(request: NextRequest) {
       description,
       category,
       stock,
+      type,
     } = await request.json();
+
+    // SEMPLICE: se price è 0 o null, diventa null. Punto.
+    const finalPrice = (price === null || price === undefined || price === 0 || price === "0") ? null : price;
+
+    console.log("🔥 PREZZO RICEVUTO:", price, "TIPO:", typeof price);
+    console.log("🔥 PREZZO FINALE:", finalPrice, "TIPO:", typeof finalPrice);
 
     // Validazione dati con errori specifici
     const missingFields = [];
@@ -20,7 +27,7 @@ export async function PUT(request: NextRequest) {
     if (!entry_type_id) missingFields.push('entry_type_id');
     if (!user_token) missingFields.push('user_token');
     if (!label) missingFields.push('label');
-    if (price === undefined || price === null) missingFields.push('price');
+    // price è opzionale, non controllare se è undefined o null
 
     if (missingFields.length > 0) {
       return NextResponse.json({ 
@@ -73,7 +80,7 @@ export async function PUT(request: NextRequest) {
       }, { status: 403 });
     }
 
-    // Verifica modifiche
+    // Verifica modifiche (usa finalPrice già normalizzato sopra)
     const normalizedLabel = (label || '').trim();
     const normalizedExistingLabel = (existingEntry.label || '').trim();
     const normalizedCategory = (category || '').trim();
@@ -81,7 +88,7 @@ export async function PUT(request: NextRequest) {
 
     const isChangingLabel = normalizedLabel !== normalizedExistingLabel;
     const isChangingCategory = normalizedCategory !== normalizedExistingCategory;
-    const isChangingPrice = price !== existingEntry.price;
+    const isChangingPrice = finalPrice !== existingEntry.price;
     const isChangingDescription = (description || '').trim() !== (existingEntry.description || '').trim();
     const isChangingStock = stock !== undefined && stock !== existingEntry.stock;
 
@@ -159,14 +166,7 @@ export async function PUT(request: NextRequest) {
       }, { status: 400 });
     }
     
-    if (typeof price !== 'number' || price < 0) {
-      return NextResponse.json({ 
-        error: "Il prezzo deve essere un numero valido maggiore o uguale a 0",
-        code: "INVALID_PRICE",
-        received_price: price,
-        price_type: typeof price
-      }, { status: 400 });
-    }
+    // finalPrice è già normalizzato sopra, non serve validazione aggiuntiva
     
     if (stock !== null && stock !== undefined && stock !== "" && (isNaN(parseInt(stock)) || parseInt(stock) < 0)) {
       return NextResponse.json({ 
@@ -202,8 +202,15 @@ export async function PUT(request: NextRequest) {
       const updateData: any = { updated_at: new Date() };
       if (!isTransferred) {
         if (isChangingLabel) updateData.label = label.trim();
-        if (isChangingPrice) updateData.price = price;
+        // Usa finalPrice (già convertito a null se è 0)
+        if (isChangingPrice) {
+          updateData.price = finalPrice;
+        }
         if (isChangingCategory) updateData.category = category && category.trim() ? category.trim() : null;
+        // Se il tipo viene passato, aggiornalo (viene automaticamente "free" se price è null)
+        if (type) {
+          updateData.type = type;
+        }
       }
       if (isChangingDescription) {
         updateData.description = description && description.trim() ? description.trim() : null;

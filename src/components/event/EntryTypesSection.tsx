@@ -366,6 +366,13 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
     closeTransferModal();
   };
 
+  const handleDeleteEntry = (entryId: number) => {
+    const entry = event.entry_types?.find(e => e.id === entryId);
+    if (entry) {
+      openDeleteModal(entryId, entry.label);
+    }
+  };
+
   const handleWithdrawEntry = async (entry: EntryType) => {
     if (!user?.token) return;
 
@@ -726,9 +733,11 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                           <p className="text-white/80 text-sm leading-relaxed">{entry.description}</p>
                         )}
                       </div>
-                      <div className="text-right ml-4">
-                        <span className="text-[#FC0045] font-bold text-2xl">€{formatPrice(entry.price)}</span>
-                      </div>
+                      {entry.price && entry.price > 0 && (
+                        <div className="text-right ml-4">
+                          <span className="text-[#FC0045] font-bold text-2xl">€{formatPrice(entry.price)}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="bg-blue-500/20 rounded-xl p-4 mb-4">
@@ -925,7 +934,9 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                                     <p className="text-white/80 text-sm">{entry.description_extended}</p>
                                   )}
                                 </div>
-                                <span className="text-[#FC0045] font-bold text-xl">€{formatPrice(entry.price)}</span>
+                                {entry.price && entry.price > 0 && (
+                                  <span className="text-[#FC0045] font-bold text-xl">€{formatPrice(entry.price)}</span>
+                                )}
                               </div>
 
                               <div className="bg-green-500/20 rounded-lg p-3">
@@ -939,6 +950,24 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                                     <div className="text-green-400/80 text-xs">Restanti</div>
                                   </div>
                                 </div>
+                              </div>
+
+                              {/* Pulsanti Azione */}
+                              <div className="mt-3 flex justify-end gap-2">
+                                <button
+                                  onClick={() => handleWithdrawEntry(entry as unknown as EntryType)}
+                                  className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all duration-200 flex items-center gap-2"
+                                >
+                                  <span>↩️</span>
+                                  <span>Ritira</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteEntry(entry.id as number)}
+                                  className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-all duration-200 flex items-center gap-2"
+                                >
+                                  <span>🗑️</span>
+                                  <span>Elimina</span>
+                                </button>
                               </div>
                             </div>
                           ))}
@@ -1058,7 +1087,9 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                 <div className="p-3 bg-white/5 border border-white/10 rounded-lg mb-3">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-white font-medium">"{withdrawModal.entry?.label}"</span>
-                    <span className="text-[#FC0045] font-bold">€{withdrawModal.entry?.price || '0.00'}</span>
+                    {withdrawModal.entry?.price && withdrawModal.entry.price > 0 && (
+                      <span className="text-[#FC0045] font-bold">€{formatPrice(withdrawModal.entry.price)}</span>
+                    )}
                   </div>
                   {withdrawModal.entry?.description && (
                     <p className="text-white/60 text-sm mb-2">{withdrawModal.entry.description}</p>

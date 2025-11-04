@@ -121,6 +121,22 @@ export async function DELETE(
 
       console.log(`✅ Collaboratore rimosso dall'evento`);
 
+      // Aggiorna il campo collaborators_id nell'evento
+      const remainingCollaborators = await tx.collaborators.findMany({
+        where: { event_id: eventId },
+        select: { user_id: true }
+      });
+
+      const collaboratorsIdArray = remainingCollaborators.map(c => c.user_id.toString());
+      const collaboratorsIdString = collaboratorsIdArray.length > 0 ? JSON.stringify(collaboratorsIdArray) : null;
+
+      console.log('🔄 Aggiornamento campo collaborators_id:', collaboratorsIdString);
+
+      await tx.events.update({
+        where: { id: eventId },
+        data: { collaborators_id: collaboratorsIdString }
+      });
+
       return {
         deletedProducts: deletedProducts.count,
         deletedEntries: deletedEntries.count

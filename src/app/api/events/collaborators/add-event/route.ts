@@ -147,6 +147,24 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Collaboratore creato:', newCollaborator.id);
 
+    // Recupera tutti i collaboratori per questo evento
+    const allCollaborators = await prisma.collaborators.findMany({
+      where: { event_id: parseInt(event_id) },
+      select: { user_id: true }
+    });
+
+    // Crea l'array di ID collaboratori come stringa JSON
+    const collaboratorsIdArray = allCollaborators.map(c => c.user_id.toString());
+    const collaboratorsIdString = JSON.stringify(collaboratorsIdArray);
+
+    console.log('🔄 Aggiornamento campo collaborators_id:', collaboratorsIdString);
+
+    // Aggiorna il campo collaborators_id nell'evento
+    await prisma.events.update({
+      where: { id: parseInt(event_id) },
+      data: { collaborators_id: collaboratorsIdString }
+    });
+
     // Recupera l'evento aggiornato con tutti i collaboratori
     const updatedEvent = await prisma.events.findUnique({
       where: { id: parseInt(event_id) },

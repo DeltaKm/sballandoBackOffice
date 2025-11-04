@@ -32,12 +32,7 @@ const entryTypeSchema = z.object({
   price: z
     .string()
     .optional()
-    .or(z.literal(""))
-    .refine((val) => {
-      if (!val || val === "") return true;
-      const num = parseFloat(val);
-      return !isNaN(num) && num >= 0;
-    }, "Il prezzo deve essere un numero non negativo"),
+    .or(z.literal("")),
   
   seats: z
     .number()
@@ -51,8 +46,8 @@ const entryTypeSchema = z.object({
     .refine((val) => {
       if (!val || val === "") return true;
       const num = parseInt(val);
-      return !isNaN(num) && num >= 0 && num <= 100;
-    }, "Il fairplay deve essere tra 0 e 100"),
+      return !isNaN(num); // Permette qualsiasi numero, anche negativi
+    }, "Il fairplay deve essere un numero valido"),
   
   gender_min_enabled: z.boolean(),
   
@@ -211,14 +206,32 @@ export function NewEntryModal({ show, eventId, onClose, onSuccess }: NewEntryMod
 
     setLoading(true);
     try {
+      // Calcola il prezzo: se vuoto, "0", 0, o <= 0, usa null
+      let finalPrice = null;
+      if (formData.price && formData.price !== "" && formData.price !== "0") {
+        const parsed = parseFloat(formData.price);
+        if (!isNaN(parsed) && parsed > 0) {
+          finalPrice = parsed;
+        }
+      }
+      
+      console.log("🔥 FRONTEND NEW - formData.price:", formData.price, "finalPrice:", finalPrice);
+      
+      // Se il prezzo è null, forza il tipo a "free"
+      const finalType = finalPrice === null ? "free" : formData.type;
+      
       const payload = {
         ...formData,
         label: formData.label.trim(),
         event_id: eventId,
         user_token: user.token,
         quantity: formData.quantity ? parseInt(formData.quantity) : null,
-        price: formData.price ? parseFloat(formData.price) : 0,
-        fairplay_min: formData.fairplay_min ? parseInt(formData.fairplay_min) : 0,
+        price: finalPrice,
+        type: finalType,
+        // Se fairplay_min è vuoto, manda null (permetti qualsiasi valore numerico)
+        fairplay_min: formData.fairplay_min !== '' && formData.fairplay_min !== null && formData.fairplay_min !== undefined
+          ? parseInt(formData.fairplay_min) 
+          : null,
       };
       
       const res = await fetch('/api/entry_types/create', {
