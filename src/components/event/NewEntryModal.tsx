@@ -217,8 +217,8 @@ export function NewEntryModal({ show, eventId, onClose, onSuccess }: NewEntryMod
       
       console.log("🔥 FRONTEND NEW - formData.price:", formData.price, "finalPrice:", finalPrice);
       
-      // Se il prezzo è null, forza il tipo a "free"
-      const finalType = finalPrice === null ? "free" : formData.type;
+      // Usa il tipo selezionato dall'utente
+      const finalType = formData.type;
       
       const payload = {
         ...formData,
