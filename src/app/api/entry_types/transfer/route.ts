@@ -91,9 +91,49 @@ export async function POST(request: NextRequest) {
               stock: (targetEntry.stock || 0) + quantity
             }
           });
+
+          // Aggiorna anche i prodotti associati se esistono
+          const sourceProducts = await tx.products.findMany({
+            where: { entry_type_id: entryType.id }
+          });
+
+          console.log(`📦 Trovati ${sourceProducts.length} prodotti da aggiornare per l'ingresso esistente`);
+
+          for (const product of sourceProducts) {
+            const productQuantity = Math.floor((quantity * (product.stock || 0) / (entryType.stock || 1)));
+            
+            const existingProduct = await tx.products.findFirst({
+              where: {
+                entry_type_id: targetEntry.id,
+                label: product.label
+              }
+            });
+
+            if (existingProduct) {
+              // Aumenta lo stock del prodotto del collaboratore
+              const newCollabStock = (existingProduct.stock || 0) + productQuantity;
+              await tx.products.update({
+                where: { id: existingProduct.id },
+                data: {
+                  stock: newCollabStock
+                }
+              });
+              console.log(`📈 Aumentato stock prodotto collaboratore "${product.label}" da ${existingProduct.stock} a ${newCollabStock}`);
+
+              // Diminuisci lo stock del prodotto del proprietario
+              const newOwnerStock = (product.stock || 0) - productQuantity;
+              await tx.products.update({
+                where: { id: product.id },
+                data: {
+                  stock: newOwnerStock
+                }
+              });
+              console.log(`📉 Diminuito stock prodotto proprietario "${product.label}" da ${product.stock} a ${newOwnerStock}`);
+            }
+          }
         } else {
           // Crea nuovo ingresso per il collaboratore
-          await tx.entry_types.create({
+          const newEntry = await tx.entry_types.create({
             data: {
               event_id: entryType.event_id,
               user_id: collaborator_id,
@@ -107,6 +147,44 @@ export async function POST(request: NextRequest) {
               type: entryType.type
             }
           });
+
+          // Copia anche i prodotti associati
+          const sourceProducts = await tx.products.findMany({
+            where: { entry_type_id: entryType.id }
+          });
+
+          console.log(`🍹 Trovati ${sourceProducts.length} prodotti da copiare per il nuovo ingresso`);
+
+          for (const product of sourceProducts) {
+            const productQuantity = Math.floor((quantity * (product.stock || 0) / (entryType.stock || 1)));
+            
+            // Crea il prodotto per il collaboratore
+            await tx.products.create({
+              data: {
+                label: product.label,
+                description: product.description,
+                category: product.category,
+                price: product.price,
+                stock: productQuantity,
+                entry_type_id: newEntry.id,
+                event_id: product.event_id,
+                user_id: collaborator_id,
+                created_qnt: productQuantity,
+                transfer_qnt: 0
+              }
+            });
+            console.log(`✨ Creato prodotto "${product.label}" per il collaboratore con stock ${productQuantity}`);
+
+            // Diminuisci lo stock del prodotto del proprietario
+            const newOwnerStock = (product.stock || 0) - productQuantity;
+            await tx.products.update({
+              where: { id: product.id },
+              data: {
+                stock: newOwnerStock
+              }
+            });
+            console.log(`📉 Diminuito stock prodotto proprietario "${product.label}" da ${product.stock} a ${newOwnerStock}`);
+          }
         }
       }
     });

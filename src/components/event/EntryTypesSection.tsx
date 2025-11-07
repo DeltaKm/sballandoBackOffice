@@ -656,11 +656,11 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
         </div>
       </div>
 
-      {/* Container principale con layout a due colonne con scroll */}
-      <div className="grid grid-cols-2 gap-6 h-[75vh]">
+      {/* Container principale con layout a schermo intero */}
+      <div className="h-[75vh]">
 
-        {/* COLONNA SINISTRA: I MIEI INGRESSI */}
-        <div className="bg-blue-500/10 border-2 border-blue-500/30 rounded-2xl overflow-hidden flex flex-col">
+        {/* I MIEI INGRESSI - SCHERMO INTERO */}
+        <div className="bg-blue-500/10 border-2 border-blue-500/30 rounded-2xl overflow-hidden flex flex-col h-full">
           <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-blue-500/50 scrollbar-track-transparent">
             {/* Header sezione */}
             <div className="flex items-center gap-4 mb-6">
@@ -754,7 +754,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                     </div>
 
                     <div className="flex justify-end gap-3">
-                      <button
+                      {/* <button
                         onClick={(e) => { e.stopPropagation(); entry.stock && entry.stock > 0 ? openTransferModal(entry) : null; }}
                         disabled={!entry.stock || entry.stock <= 0}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${entry.stock && entry.stock > 0
@@ -768,7 +768,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                         }
                       >
                         🔄 Trasferisci
-                      </button>
+                      </button> */}
 
                       <button
                         onClick={(e) => { e.stopPropagation(); handleWithdrawEntry(entry); }}
@@ -832,179 +832,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
           </div>
         </div>
 
-        {/* COLONNA DESTRA: INGRESSI COLLABORATORI */}
-        <div className="bg-green-500/10 border-2 border-green-500/30 rounded-2xl overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-green-500/50 scrollbar-track-transparent">
-            {/* Header sezione */}
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-14 h-14 bg-green-500/30 rounded-xl flex items-center justify-center">
-                <span className="text-green-400 text-2xl">👥</span>
-              </div>
-              <div className="flex-1">
-                <h4 className="text-green-300 font-bold text-xl">Ingressi Collaboratori</h4>
-                <p className="text-green-400/80 text-base mt-1">Ingressi gestiti dai tuoi collaboratori</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="px-4 py-2 bg-green-500/30 text-green-300 rounded-xl text-base font-semibold">
-                  collaboratori
-                </span>
-              </div>
-            </div>
-
-            {/* Lista collaboratori */}
-            <div className="space-y-6">
-              {(Array.isArray(collaboratorsEntriesByCategory) && collaboratorsEntriesByCategory.length > 0) ? ( collaboratorsEntriesByCategory.map((collaboratorGroup) => {
-                  const collaboratorEntries = getCollaboratorFilteredEntries(collaboratorGroup.user_id);
-                  const totalCollaboratorEntries = Object.values(collaboratorGroup.categoriesData).flat().length;
-                  const collaboratorCategoryList = (collaboratorCategories as Record<number, string[]>)[collaboratorGroup.user_id] || [];
-
-                  return (
-                    <div key={collaboratorGroup.user_id} className="bg-white/15 border border-green-400/40 rounded-xl p-6 shadow-lg">
-                      {/* Header Collaboratore */}
-                      <div className="flex items-center justify-between mb-6 pb-4 border-b border-green-400/30">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-green-500/30 rounded-lg flex items-center justify-center">
-                            <span className="text-green-400 text-xl">👤</span>
-                          </div>
-                          <div>
-                            <h5 className="text-green-300 font-bold text-lg">{collaboratorGroup.collaboratorName}</h5>
-                            <div className="flex items-center gap-3 mt-1">
-                              <span className="px-3 py-1 bg-purple-500/30 text-purple-300 rounded-lg text-sm font-semibold">
-                                {collaboratorGroup.collaboratorRole}
-                              </span>
-                              <span className="px-3 py-1 bg-green-500/30 text-green-300 rounded-lg text-sm font-semibold">
-                                {totalCollaboratorEntries} ingressi
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Tabs Categorie per questo collaboratore */}
-                      {collaboratorCategoryList.length > 0 && (
-                        <div className="mb-6">
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              onClick={() => setCollaboratorActiveCategories(prev => ({
-                                ...prev,
-                                [collaboratorGroup.user_id]: 'all'
-                              }))}
-                              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${(collaboratorActiveCategories[collaboratorGroup.user_id] || 'all') === 'all'
-                                ? 'bg-green-500 text-white shadow-lg'
-                                : 'bg-white/20 text-white/90 hover:bg-white/30'
-                                }`}
-                            >
-                              Tutte ({totalCollaboratorEntries})
-                            </button>
-                            {collaboratorCategoryList.map((category) => (
-                              <button
-                                key={category}
-                                onClick={() => setCollaboratorActiveCategories(prev => ({
-                                  ...prev,
-                                  [collaboratorGroup.user_id]: category
-                                }))}
-                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${collaboratorActiveCategories[collaboratorGroup.user_id] === category
-                                  ? 'bg-green-500 text-white shadow-lg'
-                                  : 'bg-white/20 text-white/90 hover:bg-white/30'
-                                  }`}
-                              >
-                                {category} ({collaboratorGroup.categoriesData[category]?.length || 0})
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Ingressi del collaboratore */}
-                      {collaboratorEntries.length > 0 ? (
-                        <div className="space-y-4">
-                          {collaboratorEntries.map((entry: { id: Key | null | undefined; label: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; category: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; description_extended: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; price: number | null | undefined; transfer_qnt: any; stock: any; }) => (
-                            <div key={entry.id} className="p-4 bg-green-500/10 border border-green-400/30 rounded-lg shadow-md">
-                              <div className="flex justify-between items-start mb-3">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <h6 className="text-white font-bold text-base">{entry.label}</h6>
-                                    {entry.category && (
-                                      <span className="px-2 py-1 bg-green-500/40 text-green-300 rounded text-xs font-semibold">
-                                        {entry.category}
-                                      </span>
-                                    )}
-                                  </div>
-                                  {entry.description_extended && (
-                                    <p className="text-white/80 text-sm">{entry.description_extended}</p>
-                                  )}
-                                </div>
-                                {entry.price && entry.price > 0 && (
-                                  <span className="text-[#FC0045] font-bold text-xl">€{formatPrice(entry.price)}</span>
-                                )}
-                              </div>
-
-                              <div className="bg-green-500/20 rounded-lg p-3">
-                                <div className="grid grid-cols-2 gap-3 text-sm">
-                                  <div className="text-center">
-                                    <div className="text-green-300 font-semibold text-lg">{entry.transfer_qnt || 0}</div>
-                                    <div className="text-green-400/80 text-xs">Assegnati</div>
-                                  </div>
-                                  <div className="text-center">
-                                    <div className="text-green-300 font-semibold text-lg">{entry.stock || '0'}</div>
-                                    <div className="text-green-400/80 text-xs">Restanti</div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Pulsanti Azione */}
-                              <div className="mt-3 flex justify-end gap-2">
-                                <button
-                                  onClick={() => handleWithdrawEntry(entry as unknown as EntryType)}
-                                  className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all duration-200 flex items-center gap-2"
-                                >
-                                  <span>↩️</span>
-                                  <span>Ritira</span>
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteEntry(entry.id as number)}
-                                  className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-all duration-200 flex items-center gap-2"
-                                >
-                                  <span>🗑️</span>
-                                  <span>Elimina</span>
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 border border-dashed border-green-400/40 rounded-lg bg-green-500/10">
-                          <div className="text-green-400/70 mb-3">
-                            <span className="text-3xl">📝</span>
-                          </div>
-                          <p className="text-green-300 text-base font-semibold">
-                            {(collaboratorActiveCategories[collaboratorGroup.user_id] || 'all') === 'all'
-                              ? 'Nessun ingresso per questo collaboratore'
-                              : `Nessun ingresso nella categoria "${collaboratorActiveCategories[collaboratorGroup.user_id]}"`
-                            }
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="text-center py-12 border-2 border-dashed border-green-400/40 rounded-xl bg-green-500/10">
-                  <div className="text-green-400/70 mb-4">
-                    <span className="text-5xl">👥</span>
-                  </div>
-                  <p className="text-green-300 text-lg mb-3 font-semibold">Nessun collaboratore attivo</p>
-                  <p className="text-green-400/80 text-base">
-                    I collaboratori potranno aggiungere i loro ingressi una volta invitati
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-
-        
+      </div>
 
         {/* MODALE DI CONFERMA ELIMINAZIONE */}
         {deleteModal.show && (
@@ -1395,7 +1223,6 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
           onClose={closeNewEntryModal}
           onSuccess={handleFormSuccess}
         />
-      </div>
     </div>
   );
 }

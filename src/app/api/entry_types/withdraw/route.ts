@@ -188,6 +188,7 @@ export async function POST(request: NextRequest) {
     const result = await prisma.$transaction(async (tx) => {
       let totalWithdrawn = 0;
       const deletedEntries = [];
+      const transferredProducts = [];
 
       // Per ogni ingresso dei collaboratori
       for (const collabEntry of collaboratorEntries) {
@@ -195,9 +196,85 @@ export async function POST(request: NextRequest) {
         
         if (stockToWithdraw > 0 && collabEntry.user_id) {
           const collabInfo = collaboratorsMap[collabEntry.user_id];
-          console.log(`🔄 Ritirando ${stockToWithdraw} dal collaboratore ${collabInfo?.email ?? `User ${collabEntry.user_id}`} e cancellando il record`);
+          console.log(`🔄 Ritirando ${stockToWithdraw} dal collaboratore ${collabInfo?.email ?? `User ${collabEntry.user_id}`}`);
+          console.log(`🔍 ID ingresso collaboratore da cercare:`, collabEntry.id);
 
-          // Cancella completamente il record del collaboratore
+          // PRIMA: Trova e gestisci i prodotti associati a questo ingresso
+          const associatedProducts = await tx.products.findMany({
+            where: {
+              entry_type_id: collabEntry.id
+            }
+          });
+
+          console.log(`🍹 Trovati ${associatedProducts.length} prodotti associati all'ingresso del collaboratore`);
+          console.log(`📦 Dettaglio prodotti:`, associatedProducts.map(p => ({ 
+            id: p.id, 
+            label: p.label, 
+            stock: p.stock, 
+            entry_type_id: p.entry_type_id 
+          })));
+
+          // Trasferisci o cancella i prodotti associati
+          for (const product of associatedProducts) {
+            console.log(`🔍 Cercando prodotto "${product.label}" per il proprietario con entry_type_id=${entry_type_id}`);
+            
+            // Cerca se esiste già un prodotto dello stesso tipo per l'ingresso originale
+            const ownerProduct = await tx.products.findFirst({
+              where: {
+                entry_type_id: parseInt(entry_type_id),
+                label: product.label
+              }
+            });
+
+            console.log(`🔎 Prodotto proprietario trovato:`, ownerProduct ? { id: ownerProduct.id, label: ownerProduct.label, stock: ownerProduct.stock } : 'NESSUNO');
+
+            if (ownerProduct) {
+              // Se esiste, aumenta lo stock
+              const newStock = (ownerProduct.stock || 0) + (product.stock || 0);
+              await tx.products.update({
+                where: { id: ownerProduct.id },
+                data: {
+                  stock: newStock
+                }
+              });
+              console.log(`✅ Aggiornato stock prodotto "${product.label}" da ${ownerProduct.stock} a ${newStock}`);
+            } else {
+              // Se non esiste, crea un nuovo prodotto per il proprietario
+              const newProduct = await tx.products.create({
+                data: {
+                  label: product.label,
+                  description: product.description,
+                  category: product.category,
+                  price: product.price,
+                  stock: product.stock,
+                  entry_type_id: parseInt(entry_type_id),
+                  event_id: product.event_id,
+                  user_id: user.id,
+                  created_qnt: product.stock,
+                  transfer_qnt: 0
+                }
+              });
+              console.log(`✅ Creato nuovo prodotto "${product.label}" per il proprietario:`, { 
+                id: newProduct.id, 
+                stock: newProduct.stock, 
+                entry_type_id: newProduct.entry_type_id,
+                user_id: newProduct.user_id
+              });
+            }
+
+            transferredProducts.push({
+              label: product.label,
+              stock: product.stock
+            });
+
+            // Cancella il prodotto del collaboratore
+            await tx.products.delete({
+              where: { id: product.id }
+            });
+            console.log(`🗑️ Eliminato prodotto del collaboratore (ID: ${product.id})`);
+          }
+
+          // POI: Cancella il record dell'ingresso del collaboratore
           await tx.entry_types.delete({
             where: { id: collabEntry.id }
           });
@@ -222,9 +299,10 @@ export async function POST(request: NextRequest) {
       });
 
       console.log(`✅ Ritirato totale di ${totalWithdrawn} ingressi dai collaboratori e cancellati ${deletedEntries.length} record`);
+      console.log(`🍹 Trasferiti ${transferredProducts.length} prodotti al proprietario`);
       console.log('🗑️ Record collaboratori cancellati:', deletedEntries);
       
-      return { totalWithdrawn, deletedEntries };
+      return { totalWithdrawn, deletedEntries, transferredProducts };
     });
 
     // Recupera l'evento aggiornato

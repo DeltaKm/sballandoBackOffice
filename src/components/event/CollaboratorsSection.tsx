@@ -212,17 +212,20 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
                     className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      {searchUser.picture ? (
+                      {searchUser.picture && searchUser.picture.trim() !== '' ? (
                         <img 
                           src={searchUser.picture} 
                           alt={searchUser.name || ''} 
                           className="w-8 h-8 rounded-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
                         />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                          <span className="text-white/60 text-sm">👤</span>
-                        </div>
-                      )}
+                      ) : null}
+                      <div className={`w-8 h-8 rounded-full bg-white/20 flex items-center justify-center ${searchUser.picture && searchUser.picture.trim() !== '' ? 'hidden' : ''}`}>
+                        <span className="text-white/60 text-sm">👤</span>
+                      </div>
                       <div>
                         <p className="text-white text-sm">
                           {searchUser.name} {searchUser.surname}
