@@ -106,6 +106,13 @@ export async function POST(req: Request) {
                 }
             });
 
+            const collaboratorsIdArray = [validatedData.user_id.toString()];
+            const collaboratorsIdJson = JSON.stringify(collaboratorsIdArray);
+            
+            console.log('🎯 Creating event with user_id:', validatedData.user_id);
+            console.log('🎯 Collaborators ID array:', collaboratorsIdArray);
+            console.log('🎯 Collaborators ID JSON:', collaboratorsIdJson);
+
             const event = await tx.events.create({
                 data: {
                     title: adjustedData.title,
@@ -120,11 +127,15 @@ export async function POST(req: Request) {
                     cover: coverData?.relativePath || null,
                     dress_code: formData.get('dress_code') as string || null,
                     age_recommended: formData.get('age_recommended') as string || null,
+                    collaborators_id: collaboratorsIdJson,
                     created_at: now,
                     updated_at: now,
                     token,
                 },
             });
+
+            console.log('✅ Event created with ID:', event.id);
+            console.log('✅ collaborators_id saved:', event.collaborators_id);
 
             // Create music genre relations
             for (const genreId of validatedData.music_genres) {
