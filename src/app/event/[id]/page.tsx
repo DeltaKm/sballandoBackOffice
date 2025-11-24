@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { SidebarNav } from "~/components/SidebarNav";
 import { EventInfoSection } from "~/components/event/EventInfoSection";
+import { GallerySection } from "~/components/event/GallerySection";
+
 import { ProductsSection } from "~/components/event/ProductsSection";
 import { EntryTypesSection } from "~/components/event/EntryTypesSection";
 import { CollaboratorsSection } from "~/components/event/CollaboratorsSection";
@@ -35,6 +37,7 @@ export default function EventDetailPage() {
     { id: 'collaborators', label: 'Collaboratori', icon: '👥', count: event?.collaborators?.length || 0 },
     { id: 'entry_types', label: 'Ingressi', icon: '🎟️', count: event?.entry_types?.length || 0 },
     { id: 'products', label: 'Prodotti', icon: '🛍️', count: event?.products?.length || 0 },
+    { id: 'gallery', label: 'Galleria', icon: '🖼️' }, 
     { id: 'jukebox', label: 'JukeBox', icon: '🎶' },
     { id: 'chat', label: 'Chat', icon: '💬' },
 
@@ -179,6 +182,9 @@ export default function EventDetailPage() {
           )}
           {activeSection === 'payments' && (
             <PaymentsSection event={event} onUpdate={handleEventUpdate} />
+          )}
+          {activeSection === 'gallery' && (
+            <GallerySection event={event} />
           )}
         </div>
       </div>
