@@ -3,6 +3,9 @@ import { db } from "~/server/db";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 
+// Forza la route ad essere dinamica
+export const dynamic = 'force-dynamic';
+
 // Gestione preflight CORS
 export async function OPTIONS(request: NextRequest) {
   return NextResponse.json({}, { 
