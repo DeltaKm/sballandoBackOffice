@@ -86,8 +86,26 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error("Errore in forgot-password:", error);
+    
+    // Log dettagliato per debug
+    const errorMessage = error instanceof Error ? error.message : 'Errore sconosciuto';
+    const errorStack = error instanceof Error ? error.stack : '';
+    
+    console.error("Dettagli errore:", {
+      message: errorMessage,
+      stack: errorStack,
+      env: {
+        SMTP_HOST: process.env.SMTP_HOST ? 'set' : 'missing',
+        SMTP_USER: process.env.SMTP_USER ? 'set' : 'missing',
+        DATABASE_URL: process.env.DATABASE_URL ? 'set' : 'missing',
+      }
+    });
+    
     return NextResponse.json(
-      { error: "Errore interno del server" },
+      { 
+        error: "Errore interno del server",
+        message: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+      },
       { status: 500 }
     );
   }
