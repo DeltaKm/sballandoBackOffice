@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     const resetLink = `${baseUrl}/reset-password/${resetToken}`;
 
     // Invia l'email
-    const userName = user.name || user.email.split("@")[0];
+    const userName = user.name || user.email.split("@")[0] || "Utente";
     const emailHtml = generatePasswordResetEmail(resetLink, userName);
 
     try {
