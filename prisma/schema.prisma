@@ -454,6 +454,7 @@ model users {
   created_at                                     DateTime?           @db.Timestamp(0)
   updated_at                                     DateTime?           @db.Timestamp(0)
   reset_token                                    String?             @db.VarChar(255)
+  reset_token_expiry                             DateTime?           @db.Timestamp(0)
   tags                                           String?             @db.VarChar(255)
   storage_token                                  String?             @db.VarChar(50)
   current_token_jwt                              String?             @db.Text
