@@ -1,0 +1,16 @@
+
+> backoffice_sballando_next@0.1.0 dev
+> next dev -p 3002
+
+  ▲ Next.js 14.2.33
+  - Local:        http://localhost:3002
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · turbo
+
+ ✓ Starting...
+ ✓ Ready in 1154ms
+ ✓ Compiled /api/auth/forgot-password in 251ms (169 modules)
+prisma:query SELECT `sballando.it`.`users`.`id`, `sballando.it`.`users`.`token`, `sballando.it`.`users`.`email`, `sballando.it`.`users`.`nickname`, `sballando.it`.`users`.`name`, `sballando.it`.`users`.`surname`, `sballando.it`.`users`.`email_verified_at`, `sballando.it`.`users`.`password`, `sballando.it`.`users`.`remember_token`, `sballando.it`.`users`.`bio`, `sballando.it`.`users`.`music_genres`, `sballando.it`.`users`.`prefix_phone`, `sballando.it`.`users`.`phone`, `sballando.it`.`users`.`birthday`, `sballando.it`.`users`.`gender`, `sballando.it`.`users`.`last_access`, `sballando.it`.`users`.`visibility`, `sballando.it`.`users`.`enabled`, `sballando.it`.`users`.`country`, `sballando.it`.`users`.`region`, `sballando.it`.`users`.`city`, `sballando.it`.`users`.`address`, `sballando.it`.`users`.`created_at`, `sballando.it`.`users`.`updated_at`, `sballando.it`.`users`.`reset_token`, `sballando.it`.`users`.`reset_token_expiry`, `sballando.it`.`users`.`tags`, `sballando.it`.`users`.`storage_token`, `sballando.it`.`users`.`current_token_jwt`, `sballando.it`.`users`.`picture`, `sballando.it`.`users`.`highlight`, `sballando.it`.`users`.`fairplay`, `sballando.it`.`users`.`fairplay_collaborator`, `sballando.it`.`users`.`fcm_token`, `sballando.it`.`users`.`link_instagram`, `sballando.it`.`users`.`link_tiktok`, `sballando.it`.`users`.`role`, `sballando.it`.`users`.`google_id` FROM `sballando.it`.`users` WHERE `sballando.it`.`users`.`email` = ? LIMIT ? OFFSET ?
+ POST /api/auth/forgot-password 200 in 805ms
+ ✓ Compiled in 51ms (169 modules)

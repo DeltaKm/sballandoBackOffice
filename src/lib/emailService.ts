@@ -7,26 +7,53 @@ interface SendEmailOptions {
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailOptions) {
+  console.log('📧 Configurazione SMTP:', {
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: process.env.SMTP_SECURE,
+    user: process.env.SMTP_USER,
+    from: process.env.SMTP_FROM,
+  });
+
   // Configurazione del trasporto email
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+    secure: process.env.SMTP_SECURE === 'true', // true for 465 (SSL), false for 587 (TLS)
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    tls: {
+      rejectUnauthorized: false, // Per evitare problemi con certificati self-signed
+    },
+    // Opzioni specifiche per Aruba
+    connectionTimeout: 10000, // 10 secondi
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
 
-  // Invia l'email
-  const info = await transporter.sendMail({
-    from: `"${process.env.SMTP_FROM_NAME || 'Sballando Backoffice'}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
-    to,
-    subject,
-    html,
-  });
+  console.log('📧 Tentativo di invio email a:', to);
 
-  return info;
+  try {
+    // Verifica la connessione
+    await transporter.verify();
+    console.log('✅ Connessione SMTP verificata con successo');
+
+    // Invia l'email
+    const info = await transporter.sendMail({
+      from: `"${process.env.SMTP_FROM_NAME || 'Sballando Backoffice'}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+      to,
+      subject,
+      html,
+    });
+
+    console.log('✅ Email inviata con successo:', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('❌ Errore nell\'invio email:', error);
+    throw error;
+  }
 }
 
 export function generatePasswordResetEmail(resetLink: string, userName: string) {
