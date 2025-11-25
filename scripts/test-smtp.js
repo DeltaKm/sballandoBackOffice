@@ -44,7 +44,7 @@ async function testSMTP() {
     console.log('Message ID:', info.messageId);
     console.log('\n✅ Test completato con successo!');
   } catch (error) {
-    console.error('\n❌ Errore durante il test:', error.message);
+    console.error('\n❌ Errore durante il test:', error instanceof Error ? error.message : String(error));
     console.error('\nDettagli completi:', error);
   }
 }
