@@ -3,6 +3,18 @@ import { db } from "~/server/db";
 import crypto from "crypto";
 import { sendEmail, generatePasswordResetEmail } from "~/lib/emailService";
 
+// Gestione preflight CORS
+export async function OPTIONS(request: NextRequest) {
+  return NextResponse.json({}, { 
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    }
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -79,4 +91,12 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Handler per metodi non supportati
+export async function GET(request: NextRequest) {
+  return NextResponse.json(
+    { error: "Metodo non supportato. Usa POST." },
+    { status: 405 }
+  );
 }

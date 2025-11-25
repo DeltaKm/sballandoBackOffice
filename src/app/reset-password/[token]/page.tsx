@@ -38,7 +38,20 @@ export default function ResetPasswordPage() {
         body: JSON.stringify({ token, password }),
       });
 
+      console.log("Response status:", res.status);
+      console.log("Response headers:", res.headers);
+
+      // Verifica se la risposta ha contenuto
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        toast.error("Errore nel server. Riprova più tardi.");
+        return;
+      }
+
       const data = await res.json();
+      console.log("Response data:", data);
 
       if (!res.ok) {
         toast.error(data.error || "Errore durante il reset della password");
@@ -49,8 +62,8 @@ export default function ResetPasswordPage() {
         }, 2000);
       }
     } catch (err) {
+      console.error("Fetch error:", err);
       toast.error("Errore di connessione al server");
-      console.error(err);
     } finally {
       setLoading(false);
     }
