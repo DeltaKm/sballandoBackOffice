@@ -6,8 +6,12 @@ import bcrypt from "bcrypt";
 // Forza la route ad essere dinamica
 export const dynamic = 'force-dynamic';
 
+// Configurazione runtime per Vercel
+export const runtime = 'nodejs';
+
 // Gestione preflight CORS
 export async function OPTIONS(request: NextRequest) {
+  console.log("📝 [Reset Password] OPTIONS request ricevuta");
   return NextResponse.json({}, { 
     status: 200,
     headers: {
@@ -19,6 +23,10 @@ export async function OPTIONS(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  console.log("📝 [Reset Password] POST request ricevuta");
+  console.log("📝 [Reset Password] URL:", request.url);
+  console.log("📝 [Reset Password] Method:", request.method);
+  
   try {
     console.log("📝 [Reset Password] Inizio richiesta");
     
@@ -108,8 +116,14 @@ export async function POST(request: NextRequest) {
 
 // Handler per metodi non supportati
 export async function GET(request: NextRequest) {
+  console.log("⚠️ [Reset Password] GET request ricevuta (non supportato)");
   return NextResponse.json(
     { error: "Metodo non supportato. Usa POST." },
-    { status: 405 }
+    { 
+      status: 405,
+      headers: {
+        'Allow': 'POST, OPTIONS'
+      }
+    }
   );
 }

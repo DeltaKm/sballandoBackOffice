@@ -16,13 +16,19 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    console.log("🚀 [Client] Form submit iniziato");
+    console.log("🚀 [Client] Token:", token);
+    console.log("🚀 [Client] Password length:", password.length);
+
     // Validazione
     if (password !== confirmPassword) {
+      console.log("❌ [Client] Password non corrispondono");
       toast.error("Le password non corrispondono");
       return;
     }
 
     if (password.length < 8) {
+      console.log("❌ [Client] Password troppo corta");
       toast.error("La password deve essere di almeno 8 caratteri");
       return;
     }
@@ -30,6 +36,8 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
+      console.log("📤 [Client] Invio richiesta POST a /api/auth/reset-password");
+      
       const res = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: {
@@ -38,31 +46,35 @@ export default function ResetPasswordPage() {
         body: JSON.stringify({ token, password }),
       });
 
-      console.log("Response status:", res.status);
-      console.log("Response headers:", res.headers);
+      console.log("📨 [Client] Response status:", res.status);
+      console.log("📨 [Client] Response headers:", Object.fromEntries(res.headers.entries()));
 
       // Verifica se la risposta ha contenuto
       const contentType = res.headers.get("content-type");
+      console.log("📨 [Client] Content-Type:", contentType);
+      
       if (!contentType || !contentType.includes("application/json")) {
         const text = await res.text();
-        console.error("Non-JSON response:", text);
+        console.error("❌ [Client] Non-JSON response:", text);
         toast.error("Errore nel server. Riprova più tardi.");
         return;
       }
 
       const data = await res.json();
-      console.log("Response data:", data);
+      console.log("📨 [Client] Response data:", data);
 
       if (!res.ok) {
+        console.error("❌ [Client] Request failed:", data.error);
         toast.error(data.error || "Errore durante il reset della password");
       } else {
+        console.log("✅ [Client] Password reset successful!");
         toast.success("Password reimpostata con successo!");
         setTimeout(() => {
           router.push("/");
         }, 2000);
       }
     } catch (err) {
-      console.error("Fetch error:", err);
+      console.error("❌ [Client] Fetch error:", err);
       toast.error("Errore di connessione al server");
     } finally {
       setLoading(false);
