@@ -20,10 +20,16 @@ export async function OPTIONS(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("📝 [Reset Password] Inizio richiesta");
+    
     const body = await request.json();
     const { token, password } = body;
 
+    console.log("📝 [Reset Password] Token ricevuto:", token ? "presente" : "mancante");
+    console.log("📝 [Reset Password] Password ricevuta:", password ? "presente" : "mancante");
+
     if (!token || !password) {
+      console.log("❌ [Reset Password] Token o password mancanti");
       return NextResponse.json(
         { error: "Token e password sono richiesti" },
         { status: 400 }
@@ -32,6 +38,7 @@ export async function POST(request: NextRequest) {
 
     // Valida la password
     if (password.length < 8) {
+      console.log("❌ [Reset Password] Password troppo corta");
       return NextResponse.json(
         { error: "La password deve essere di almeno 8 caratteri" },
         { status: 400 }
@@ -39,12 +46,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash del token ricevuto
+    console.log("🔐 [Reset Password] Hash del token...");
     const resetTokenHash = crypto
       .createHash("sha256")
       .update(token)
       .digest("hex");
+    
+    console.log("🔍 [Reset Password] Hash calcolato:", resetTokenHash.substring(0, 10) + "...");
 
     // Cerca l'utente con questo token e verifica che non sia scaduto
+    console.log("🔍 [Reset Password] Ricerca utente nel database...");
     const user = await db.users.findFirst({
       where: {
         reset_token: resetTokenHash,
@@ -55,14 +66,20 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
+      console.log("❌ [Reset Password] Utente non trovato o token scaduto");
       return NextResponse.json(
         { error: "Token non valido o scaduto. Richiedi un nuovo link di reset." },
         { status: 400 }
       );
     }
 
+    console.log("✅ [Reset Password] Utente trovato:", user.email);
+    console.log("🔐 [Reset Password] Hashing nuova password...");
+
     // Hash della nuova password
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    console.log("💾 [Reset Password] Aggiornamento database...");
 
     // Aggiorna la password e rimuovi il token di reset
     await db.users.update({
@@ -74,11 +91,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log("✅ [Reset Password] Password reimpostata con successo per:", user.email);
+
     return NextResponse.json({
       message: "Password reimpostata con successo. Ora puoi effettuare il login.",
     });
   } catch (error) {
-    console.error("Errore in reset-password:", error);
+    console.error("❌ [Reset Password] ERRORE:", error);
+    console.error("❌ [Reset Password] Stack:", error instanceof Error ? error.stack : "N/A");
     return NextResponse.json(
       { error: "Errore interno del server" },
       { status: 500 }
