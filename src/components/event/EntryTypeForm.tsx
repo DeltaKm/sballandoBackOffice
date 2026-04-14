@@ -1,6 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import type { IconType } from "react-icons";
+import {
+  FaTicketAlt,
+  FaCrown,
+  FaStar,
+  FaGlassCheers,
+  FaUserGraduate,
+  FaClipboardList,
+  FaBolt,
+  FaTimes,
+  FaPlus,
+} from "react-icons/fa";
 import { useAuthStore } from "~/store/auth";
 import { z } from "zod";
 
@@ -98,17 +110,25 @@ const entryTypeSchema = z.object({
 
 type EntryTypeFormData = z.infer<typeof entryTypeSchema>;
 
+type QuickTemplate = {
+  id: string;
+  name: string;
+  icon: IconType;
+  color: string;
+  data: EntryTypeFormData;
+};
+
 interface EntryTypeFormProps {
   eventId: number;
   onSuccess: (updatedEvent: any) => void;
   onCancel: () => void;
 }
 
-const QUICK_TEMPLATES = [
+const QUICK_TEMPLATES: QuickTemplate[] = [
   {
     id: 'pista',
-    name: '🕺 Ingresso Pista',
-    icon: '🎪',
+    name: 'Ingresso Pista',
+    icon: FaTicketAlt,
     color: 'from-purple-500 to-pink-500',
     data: {
       label: "Ingresso Pista",
@@ -129,8 +149,8 @@ const QUICK_TEMPLATES = [
   },
   {
     id: 'vip',
-    name: '✨ Tavolo VIP',
-    icon: '👑',
+    name: 'Tavolo VIP',
+    icon: FaCrown,
     color: 'from-yellow-500 to-orange-500',
     data: {
       label: "Tavolo VIP",
@@ -152,8 +172,8 @@ const QUICK_TEMPLATES = [
   },
   {
     id: 'privee',
-    name: '🌟 Privée',
-    icon: '🏆',
+    name: 'Privée',
+    icon: FaStar,
     color: 'from-red-500 to-purple-600',
     data: {
       label: "Privée Exclusive",
@@ -176,8 +196,8 @@ const QUICK_TEMPLATES = [
   },
   {
     id: 'aperitivo',
-    name: '🍸 Aperitivo',
-    icon: '🥂',
+    name: 'Aperitivo',
+    icon: FaGlassCheers,
     color: 'from-blue-500 to-teal-500',
     data: {
       label: "Aperitivo Pre-Serata",
@@ -199,8 +219,8 @@ const QUICK_TEMPLATES = [
   },
   {
     id: 'student',
-    name: '🎓 Studenti',
-    icon: '📚',
+    name: 'Studenti',
+    icon: FaUserGraduate,
     color: 'from-green-500 to-blue-500',
     data: {
       label: "Ingresso Studenti",
@@ -221,8 +241,8 @@ const QUICK_TEMPLATES = [
   },
   {
     id: 'liste',
-    name: '📝 Lista',
-    icon: '📋',
+    name: 'Lista',
+    icon: FaClipboardList,
     color: 'from-indigo-500 to-purple-500',
     data: {
       label: "Ingresso in Lista",
@@ -271,7 +291,7 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
   const [showTemplates, setShowTemplates] = useState(true);
 
   const applyTemplate = (template: typeof QUICK_TEMPLATES[0]) => {
-    console.log('🎯 Applying template:', template.name);
+    console.log('Applying template:', template.name);
     setFormData(template.data);
     setErrors({});
     setShowTemplates(false);
@@ -286,7 +306,7 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
   };
 
   const validateForm = () => {
-    console.log('🔍 Validating form data:', formData);
+    console.log('Validating form data:', formData);
     
     // Preparazione dati per validazione
     const dataToValidate = {
@@ -294,15 +314,15 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
       label: formData.label.trim()
     };
     
-    console.log('🔍 Data to validate:', dataToValidate);
+    console.log('Data to validate:', dataToValidate);
     
     try {
       const result = entryTypeSchema.parse(dataToValidate);
-      console.log('✅ Validation passed:', result);
+      console.log('Validation passed:', result);
       setErrors({});
       return true;
     } catch (error) {
-      console.log('❌ Validation failed:', error);
+      console.log('Validation failed:', error);
       
       if (error instanceof z.ZodError) {
         const newErrors: Record<string, string> = {};
@@ -310,11 +330,11 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
         error.errors.forEach((err) => {
           const path = err.path.join('.');
           newErrors[path] = err.message;
-          console.log(`❌ Error on field ${path}: ${err.message}`);
+          console.log(`Error on field ${path}: ${err.message}`);
         });
         
         setErrors(newErrors);
-        console.log('🔥 Setting errors:', newErrors);
+        console.log('Setting errors:', newErrors);
       }
       return false;
     }
@@ -362,34 +382,34 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('🚀 Form submitted');
-    console.log('📝 Raw form data:', formData);
-    console.log('📝 Label value:', `"${formData.label}"`);
-    console.log('📝 Label length:', formData.label.length);
+    console.log('Form submitted');
+    console.log('Raw form data:', formData);
+    console.log('Label value:', `"${formData.label}"`);
+    console.log('Label length:', formData.label.length);
     
     setErrors({});
 
     if (!formData.label || formData.label.trim() === "") {
-      console.log('❌ Quick check: Label is empty');
+      console.log('Quick check: Label is empty');
       setErrors({ label: "Il nome dell'ingresso è obbligatorio" });
       return;
     }
 
     const isValid = validateForm();
-    console.log('🔍 Validation result:', isValid);
+    console.log('Validation result:', isValid);
     
     if (!isValid) {
-      console.log('❌ Form validation failed, stopping submission');
+      console.log('Form validation failed, stopping submission');
       return;
     }
 
     if (!user || !user.token) {
-      console.log('❌ User not logged in');
+      console.log('User not logged in');
       setErrors({ general: "Devi essere loggato per creare un ingresso" });
       return;
     }
 
-    console.log('✅ All checks passed, proceeding with API call');
+    console.log('All checks passed, proceeding with API call');
     
     setLoading(true);
     try {
@@ -403,7 +423,7 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
         fairplay_min: formData.fairplay_min ? parseInt(formData.fairplay_min) : 0,
       };
       
-      console.log('📤 Sending payload:', payload);
+      console.log('Sending payload:', payload);
       
       const res = await fetch('/api/entry_types/create', {
         method: 'POST',
@@ -414,7 +434,7 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
       
       if (res.ok) {
         const updatedEvent = await res.json();
-        console.log('✅ Success:', updatedEvent);
+        console.log('Success:', updatedEvent);
         onSuccess(updatedEvent);
         
         setFormData({
@@ -434,19 +454,19 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
         setErrors({});
       } else {
         const errorData = await res.json();
-        console.error('❌ API Error:', errorData);
+        console.error('API Error:', errorData);
         
         const errorMessage = errorData.error || "Errore durante la creazione";
         
         // Se c'è un messaggio dettagliato, mostralo
         if (errorData.message) {
-          alert(`❌ ${errorMessage}\n\n${errorData.message}`);
+          alert(`${errorMessage}\n\n${errorData.message}`);
         } else if (errorMessage.includes("label") || errorMessage.includes("nome")) {
           setErrors({ label: errorMessage });
         } else if (errorMessage.includes("prezzo") || errorMessage.includes("price") || errorMessage.includes("Stripe")) {
           setErrors({ price: errorMessage });
           if (errorData.message) {
-            alert(`❌ ${errorMessage}\n\n${errorData.message}`);
+            alert(`${errorMessage}\n\n${errorData.message}`);
           }
         } else if (errorMessage.includes("quantità") || errorMessage.includes("quantity")) {
           setErrors({ quantity: errorMessage });
@@ -459,7 +479,7 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
         }
       }
     } catch (err) {
-      console.error('❌ Network error:', err);
+      console.error('Network error:', err);
       setErrors({ general: "Errore durante la connessione al server" });
     } finally {
       setLoading(false);
@@ -482,7 +502,8 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
           <div className="flex items-center justify-between mb-4">
             <div>
               <h4 className="text-xl font-bold text-white flex items-center gap-2">
-                ⚡ Compilazione Veloce
+                <FaBolt />
+                <span>Compilazione Veloce</span>
               </h4>
               <p className="text-white/60 text-sm mt-1">
                 Scegli un template predefinito e personalizzalo secondo le tue esigenze
@@ -493,7 +514,7 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
               className="text-white/60 hover:text-white transition-colors"
               title="Nascondi template"
             >
-              ✕
+              <FaTimes />
             </button>
           </div>
 
@@ -506,7 +527,7 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
               >
                 <div className="relative bg-gray-900/80 backdrop-blur rounded-md p-4 h-full">
                   <div className="flex items-center gap-3 mb-3">
-                    <span className="text-3xl">{template.icon}</span>
+                    <template.icon className="text-3xl" />
                     <div className="text-left">
                       <h5 className="font-semibold text-white text-sm leading-tight">
                         {template.name}
@@ -563,7 +584,8 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
             onClick={() => setShowTemplates(true)}
             className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white transition-colors"
           >
-            ⚡ Mostra Template Veloci
+            <FaBolt />
+            <span>Mostra Template Veloci</span>
           </button>
         </div>
       )}
@@ -581,7 +603,8 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
         {!showTemplates && formData.label && (
           <div className="p-3 bg-blue-500/20 border border-blue-500/30 rounded-lg">
             <p className="text-blue-300 text-sm flex items-center gap-2">
-              ⚡ Template applicato: <strong>{formData.label}</strong>
+              <FaBolt />
+              <span>Template applicato: <strong>{formData.label}</strong></span>
               <button
                 type="button"
                 onClick={() => {
@@ -855,9 +878,10 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
               type="button"
               onClick={() => setShowConsumationForm(true)}
               disabled={formData.consumations.length >= 10}
-              className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1"
             >
-              ➕ Aggiungi Consumazione
+              <FaPlus />
+              <span>Aggiungi Consumazione</span>
             </button>
           </div>
 

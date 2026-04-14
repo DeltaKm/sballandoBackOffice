@@ -4,7 +4,28 @@ import { useState, useEffect } from "react";
 import { useAuthRedirect } from "~/lib/useAuth";
 import { useRouter, useParams } from "next/navigation";
 import { Sidebar } from "~/components/Sidebar";
-import { getImageUrl, getEventCoverUrl } from "~/lib/imageUtils";
+import { getEventCoverUrl } from "~/lib/imageUtils";
+import {
+  FaSearch,
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaEuroSign,
+  FaBolt,
+  FaTicketAlt,
+  FaShoppingBag,
+  FaMask,
+  FaUser,
+  FaChartBar,
+  FaEnvelope,
+  FaClipboardList,
+  FaMoneyBillWave,
+  FaTag,
+  FaBox,
+  FaMobileAlt,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaHourglassHalf,
+} from 'react-icons/fa';
 import type { Event, Product, EntryType } from "~/types";
 
 interface CollaboratorEventDetail extends Event {
@@ -71,8 +92,8 @@ export default function CollaboratorEventDetailPage() {
     try {
       setLoading(true);
       setError(""); // Reset error
-      console.log('🔍 Fetching event detail for ID:', eventId);
-      console.log('🔑 Using token:', auth.user.token.substring(0, 8) + '...');
+      console.log('Fetching event detail for ID:', eventId);
+      console.log('Using token:', auth.user.token.substring(0, 8) + '...');
       
       const res = await fetch(`/api/events/collaborator-events/${eventId}`, {
         method: "POST",
@@ -82,21 +103,21 @@ export default function CollaboratorEventDetailPage() {
         body: JSON.stringify({ user_token: auth.user.token }),
       });
 
-      console.log('📡 Response status:', res.status);
-      console.log('📡 Response headers:', Object.fromEntries(res.headers.entries()));
+      console.log('Response status:', res.status);
+      console.log('Response headers:', Object.fromEntries(res.headers.entries()));
 
       if (!res.ok) {
         const errorData = await res.json();
-        console.error('❌ API Error:', errorData);
+        console.error('API Error:', errorData);
         throw new Error(errorData.error || `HTTP ${res.status}: ${res.statusText}`);
       }
 
       const data = await res.json();
-      console.log('✅ Event data received:', data);
+      console.log('Event data received:', data);
       setEvent(data);
     } catch (err: any) {
       const errorMessage = err.message || "Errore nel caricamento dell'evento";
-      console.error('❌ Fetch error:', err);
+      console.error('Fetch error:', err);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -140,7 +161,7 @@ export default function CollaboratorEventDetailPage() {
         <Sidebar />
         <div className="flex-1 ml-64 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-6xl mb-4">❌</div>
+            <FaTimesCircle className="text-6xl mb-4 mx-auto text-red-300" />
             <h2 className="text-white text-2xl font-bold mb-2">Errore</h2>
             <p className="text-white/60 mb-6">{error}</p>
             <div className="flex gap-3 justify-center">
@@ -169,7 +190,7 @@ export default function CollaboratorEventDetailPage() {
         <Sidebar />
         <div className="flex-1 ml-64 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-6xl mb-4">🔍</div>
+            <FaSearch className="text-6xl mb-4 mx-auto text-white/60" />
             <h2 className="text-white text-2xl font-bold mb-2">Evento non trovato</h2>
             <p className="text-white/60 mb-6">
               L'evento richiesto non esiste o non hai i permessi per visualizzarlo.
@@ -232,18 +253,18 @@ export default function CollaboratorEventDetailPage() {
             <div className="flex items-center gap-6 text-white/80 text-sm">
               {event.datetime_start && (
                 <div className="flex items-center gap-2">
-                  <span>📅</span>
+                  <FaCalendarAlt />
                   <span>{formatDate(event.datetime_start)}</span>
                 </div>
               )}
               {event.location_?.name && (
                 <div className="flex items-center gap-2">
-                  <span>📍</span>
+                  <FaMapMarkerAlt />
                   <span>{event.location_.name}</span>
                 </div>
               )}
               <div className="flex items-center gap-2">
-                <span>💰</span>
+                <FaEuroSign />
                 <span>€{formatPrice(event.statistics.total_revenue)} ricavi totali</span>
               </div>
             </div>
@@ -266,7 +287,8 @@ export default function CollaboratorEventDetailPage() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="bg-gray-500/10 border border-gray-500/30 rounded-lg p-4">
             <h3 className="text-gray-200 font-semibold mb-3 flex items-center gap-2">
-              ⚡ Azioni Rapide
+              <FaBolt />
+              <span>Azioni Rapide</span>
             </h3>
             <div className="flex flex-wrap gap-3">
               {event.collaborator.permissions.vidimate_enabled_entry && (
@@ -274,7 +296,8 @@ export default function CollaboratorEventDetailPage() {
                   onClick={() => setActiveTab('entries')}
                   className="px-4 py-2 bg-blue-500/20 text-blue-300 rounded-lg hover:bg-blue-500/30 transition-colors flex items-center gap-2 text-sm"
                 >
-                  🎫 Gestisci Ingressi ({event.assigned_entry_types.length})
+                  <FaTicketAlt />
+                  <span>Gestisci Ingressi ({event.assigned_entry_types.length})</span>
                 </button>
               )}
               {event.collaborator.permissions.vidimate_enabled_product && (
@@ -282,7 +305,8 @@ export default function CollaboratorEventDetailPage() {
                   onClick={() => setActiveTab('products')}
                   className="px-4 py-2 bg-green-500/20 text-green-300 rounded-lg hover:bg-green-500/30 transition-colors flex items-center gap-2 text-sm"
                 >
-                  🛍️ Gestisci Prodotti ({event.assigned_products.length})
+                  <FaShoppingBag />
+                  <span>Gestisci Prodotti ({event.assigned_products.length})</span>
                 </button>
               )}
               {event.collaborator.permissions.guest_enabled && (
@@ -290,7 +314,8 @@ export default function CollaboratorEventDetailPage() {
                   onClick={() => setActiveTab('invitations')}
                   className="px-4 py-2 bg-purple-500/20 text-purple-300 rounded-lg hover:bg-purple-500/30 transition-colors flex items-center gap-2 text-sm"
                 >
-                  🎭 Gestisci Ospiti ({event.invited_users.length})
+                  <FaMask />
+                  <span>Gestisci Ospiti ({event.invited_users.length})</span>
                 </button>
               )}
               <button 
@@ -305,23 +330,26 @@ export default function CollaboratorEventDetailPage() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
             <div className="flex items-center gap-3">
-              <span className="text-blue-400 text-2xl">👤</span>
+              <FaUser className="text-blue-400 text-2xl" />
               <div className="flex-1">
                 <h3 className="text-blue-300 font-semibold mb-1">Le tue responsabilità</h3>
                 <div className="flex items-center gap-3 text-sm">
                   {event.collaborator.permissions.guest_enabled && (
-                    <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-lg">
-                      🎭 Gestione Ospiti
+                    <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-lg inline-flex items-center gap-2">
+                      <FaMask />
+                      <span>Gestione Ospiti</span>
                     </span>
                   )}
                   {event.collaborator.permissions.vidimate_enabled_entry && (
-                    <span className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-lg">
-                      🎫 Vidimazione Ingressi
+                    <span className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-lg inline-flex items-center gap-2">
+                      <FaTicketAlt />
+                      <span>Vidimazione Ingressi</span>
                     </span>
                   )}
                   {event.collaborator.permissions.vidimate_enabled_product && (
-                    <span className="px-3 py-1 bg-green-500/20 text-green-300 rounded-lg">
-                      🛍️ Vidimazione Prodotti
+                    <span className="px-3 py-1 bg-green-500/20 text-green-300 rounded-lg inline-flex items-center gap-2">
+                      <FaShoppingBag />
+                      <span>Vidimazione Prodotti</span>
                     </span>
                   )}
                   {!event.collaborator.permissions.guest_enabled && 
@@ -373,10 +401,10 @@ export default function CollaboratorEventDetailPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex border-b border-white/10 mb-6">
             {[
-              { key: 'overview', label: 'Panoramica', icon: '📊' },
-              { key: 'products', label: 'Prodotti', icon: '🛍️', count: event.assigned_products.length },
-              { key: 'entries', label: 'Ingressi', icon: '🎫', count: event.assigned_entry_types.length },
-              { key: 'invitations', label: 'Inviti', icon: '📧', count: event.invited_users.length }
+              { key: 'overview', label: 'Panoramica', icon: FaChartBar },
+              { key: 'products', label: 'Prodotti', icon: FaShoppingBag, count: event.assigned_products.length },
+              { key: 'entries', label: 'Ingressi', icon: FaTicketAlt, count: event.assigned_entry_types.length },
+              { key: 'invitations', label: 'Inviti', icon: FaEnvelope, count: event.invited_users.length }
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -387,7 +415,7 @@ export default function CollaboratorEventDetailPage() {
                     : 'border-transparent text-white/60 hover:text-white/80'
                 }`}
               >
-                <span>{tab.icon}</span>
+                <tab.icon />
                 <span>{tab.label}</span>
                 {tab.count !== undefined && (
                   <span className="px-2 py-1 bg-white/10 text-white/80 rounded-full text-xs">
@@ -405,7 +433,7 @@ export default function CollaboratorEventDetailPage() {
                 {/* Event Description */}
                 {event.description_extended && (
                   <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                    <h3 className="text-white font-bold text-lg mb-4">📋 Descrizione Evento</h3>
+                    <h3 className="text-white font-bold text-lg mb-4 inline-flex items-center gap-2"><FaClipboardList /> <span>Descrizione Evento</span></h3>
                     <div 
                       className="text-white/80 prose prose-invert max-w-none"
                       dangerouslySetInnerHTML={{ __html: event.description_extended }}
@@ -416,7 +444,7 @@ export default function CollaboratorEventDetailPage() {
                 {/* Quick Summary */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6">
-                    <h4 className="text-blue-300 font-bold text-lg mb-4">🎫 I Tuoi Ingressi</h4>
+                    <h4 className="text-blue-300 font-bold text-lg mb-4 inline-flex items-center gap-2"><FaTicketAlt /> <span>I Tuoi Ingressi</span></h4>
                     <div className="space-y-3">
                       <div className="text-blue-200 text-2xl font-bold">{event.assigned_entry_types.length}</div>
                       <div className="text-blue-400/80 text-sm">Tipi di ingresso assegnati</div>
@@ -435,7 +463,7 @@ export default function CollaboratorEventDetailPage() {
                   </div>
 
                   <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6">
-                    <h4 className="text-green-300 font-bold text-lg mb-4">🛍️ I Tuoi Prodotti</h4>
+                    <h4 className="text-green-300 font-bold text-lg mb-4 inline-flex items-center gap-2"><FaShoppingBag /> <span>I Tuoi Prodotti</span></h4>
                     <div className="space-y-3">
                       <div className="text-green-200 text-2xl font-bold">{event.assigned_products.length}</div>
                       <div className="text-green-400/80 text-sm">Prodotti assegnati</div>
@@ -454,7 +482,7 @@ export default function CollaboratorEventDetailPage() {
                   </div>
 
                   <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-6">
-                    <h4 className="text-purple-300 font-bold text-lg mb-4">📧 Inviti Gestiti</h4>
+                    <h4 className="text-purple-300 font-bold text-lg mb-4 inline-flex items-center gap-2"><FaEnvelope /> <span>Inviti Gestiti</span></h4>
                     <div className="space-y-3">
                       <div className="text-purple-200 text-2xl font-bold">{event.invited_users.length}</div>
                       <div className="text-purple-400/80 text-sm">Utenti invitati</div>
@@ -487,7 +515,7 @@ export default function CollaboratorEventDetailPage() {
             {activeTab === 'products' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-white font-bold text-xl">🛍️ I Tuoi Prodotti</h3>
+                  <h3 className="text-white font-bold text-xl inline-flex items-center gap-2"><FaShoppingBag /> <span>I Tuoi Prodotti</span></h3>
                   <div className="text-white/60 text-sm">
                     {event.assigned_products.length} prodotti assegnati
                   </div>
@@ -495,7 +523,7 @@ export default function CollaboratorEventDetailPage() {
 
                 {event.assigned_products.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="text-6xl mb-4">🛍️</div>
+                    <FaShoppingBag className="text-6xl mb-4 mx-auto text-white/60" />
                     <h3 className="text-white text-xl font-bold mb-2">Nessun prodotto assegnato</h3>
                     <p className="text-white/60">
                       Non hai prodotti assegnati per questo evento.
@@ -513,17 +541,17 @@ export default function CollaboratorEventDetailPage() {
                             )}
                             <div className="flex items-center gap-4 text-sm">
                               <div className="flex items-center gap-2">
-                                <span className="text-green-400">💰</span>
+                                <FaMoneyBillWave className="text-green-400" />
                                 <span className="text-green-300 font-semibold">€{formatPrice(product.price || 0)}</span>
                               </div>
                               {product.category && (
                                 <div className="flex items-center gap-2">
-                                  <span className="text-blue-400">🏷️</span>
+                                  <FaTag className="text-blue-400" />
                                   <span className="text-blue-300">{product.category}</span>
                                 </div>
                               )}
                               <div className="flex items-center gap-2">
-                                <span className="text-purple-400">📦</span>
+                                <FaBox className="text-purple-400" />
                                 <span className="text-purple-300">Stock: {product.stock || 0}</span>
                               </div>
                             </div>
@@ -555,7 +583,7 @@ export default function CollaboratorEventDetailPage() {
             {activeTab === 'entries' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-white font-bold text-xl">🎫 I Tuoi Ingressi</h3>
+                  <h3 className="text-white font-bold text-xl inline-flex items-center gap-2"><FaTicketAlt /> <span>I Tuoi Ingressi</span></h3>
                   <div className="text-white/60 text-sm">
                     {event.assigned_entry_types.length} tipi di ingresso assegnati
                   </div>
@@ -563,7 +591,7 @@ export default function CollaboratorEventDetailPage() {
 
                 {event.assigned_entry_types.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="text-6xl mb-4">🎫</div>
+                    <FaTicketAlt className="text-6xl mb-4 mx-auto text-white/60" />
                     <h3 className="text-white text-xl font-bold mb-2">Nessun ingresso assegnato</h3>
                     <p className="text-white/60">
                       Non hai tipi di ingresso assegnati per questo evento.
@@ -581,17 +609,17 @@ export default function CollaboratorEventDetailPage() {
                             )}
                             <div className="flex items-center gap-4 text-sm">
                               <div className="flex items-center gap-2">
-                                <span className="text-green-400">💰</span>
+                                <FaMoneyBillWave className="text-green-400" />
                                 <span className="text-green-300 font-semibold">€{formatPrice(entry.price || 0)}</span>
                               </div>
                               {entry.category && (
                                 <div className="flex items-center gap-2">
-                                  <span className="text-blue-400">🏷️</span>
+                                  <FaTag className="text-blue-400" />
                                   <span className="text-blue-300">{entry.category}</span>
                                 </div>
                               )}
                               <div className="flex items-center gap-2">
-                                <span className="text-purple-400">📊</span>
+                                <FaBox className="text-purple-400" />
                                 <span className="text-purple-300">Stock: {entry.stock || 0}</span>
                               </div>
                             </div>
@@ -627,7 +655,7 @@ export default function CollaboratorEventDetailPage() {
             {activeTab === 'invitations' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-white font-bold text-xl">📧 Inviti Gestiti</h3>
+                  <h3 className="text-white font-bold text-xl inline-flex items-center gap-2"><FaEnvelope /> <span>Inviti Gestiti</span></h3>
                   <div className="text-white/60 text-sm">
                     {event.invited_users.length} utenti invitati
                   </div>
@@ -635,7 +663,7 @@ export default function CollaboratorEventDetailPage() {
 
                 {event.invited_users.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="text-6xl mb-4">📧</div>
+                    <FaEnvelope className="text-6xl mb-4 mx-auto text-white/60" />
                     <h3 className="text-white text-xl font-bold mb-2">Nessun invito gestito</h3>
                     <p className="text-white/60">
                       Non hai utenti invitati da gestire per questo evento.
@@ -650,7 +678,7 @@ export default function CollaboratorEventDetailPage() {
                             <h4 className="text-white font-bold text-lg">{user.name} {user.surname}</h4>
                             <div className="text-white/70 text-sm mb-2">{user.email}</div>
                             {user.phone && (
-                              <div className="text-white/60 text-sm mb-2">📱 {user.phone}</div>
+                              <div className="text-white/60 text-sm mb-2 inline-flex items-center gap-2"><FaMobileAlt /> <span>{user.phone}</span></div>
                             )}
                             <div className="text-white/60 text-xs">
                               Invitato il {formatDate(user.created_at)}
@@ -662,9 +690,16 @@ export default function CollaboratorEventDetailPage() {
                               user.status === 'declined' ? 'bg-red-500/20 text-red-300' :
                               'bg-yellow-500/20 text-yellow-300'
                             }`}>
-                              {user.status === 'accepted' ? '✅ Accettato' :
-                               user.status === 'declined' ? '❌ Rifiutato' :
-                               '⏳ In attesa'}
+                              <span className="inline-flex items-center gap-2">
+                                {user.status === 'accepted' ? <FaCheckCircle /> :
+                                 user.status === 'declined' ? <FaTimesCircle /> :
+                                 <FaHourglassHalf />}
+                                <span>
+                                  {user.status === 'accepted' ? 'Accettato' :
+                                   user.status === 'declined' ? 'Rifiutato' :
+                                   'In attesa'}
+                                </span>
+                              </span>
                             </span>
                           </div>
                         </div>

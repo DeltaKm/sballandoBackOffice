@@ -2,6 +2,7 @@
 
 import type { Product } from "~/types";
 import { useState, useMemo } from "react";
+import { FaShoppingBag, FaTags, FaEuroSign, FaCrown } from "react-icons/fa";
 
 interface ProductStats {
   label: string;
@@ -62,7 +63,7 @@ export function ProductsSection({
       return !hasEntryType;
     });
     
-    console.log('🔍 Statistics ProductsSection - Filtering:', {
+    console.log('Statistics ProductsSection - Filtering:', {
       totalProducts: products.length,
       standaloneProducts: standaloneProducts.length,
       filteredOut: products.length - standaloneProducts.length,
@@ -113,7 +114,7 @@ export function ProductsSection({
     );
   }, [filteredProducts, selectedCategory]);
 
-  console.log('🔍 ProductsSection Debug:', {
+  console.log('ProductsSection Debug:', {
     totalProducts: products.length,
     filteredProducts: filteredProducts.length,
     categoryFilteredProducts: categoryFilteredProducts.length,
@@ -134,7 +135,7 @@ export function ProductsSection({
 
   // ==================== VISTA CREATORE ====================
   function renderCreatorView() {
-    console.log('🎯 Rendering Creator View, selectedCollaborator:', selectedCollaborator);
+    console.log('Rendering Creator View, selectedCollaborator:', selectedCollaborator);
     
     // Raggruppa per label
     const productsByLabel = categoryFilteredProducts.reduce((acc, product) => {
@@ -146,7 +147,7 @@ export function ProductsSection({
       return acc;
     }, {} as Record<string, Product[]>);
 
-    console.log('📊 Products grouped by label:', Object.keys(productsByLabel));
+    console.log('Products grouped by label:', Object.keys(productsByLabel));
 
     // Calcola statistiche per ogni gruppo
     const productStats: ProductStats[] = Object.entries(productsByLabel).map(([label, groupProducts]) => {
@@ -155,7 +156,7 @@ export function ProductsSection({
         const creatorProduct = groupProducts.find(p => p.user_id === eventUserId);
         
         if (!creatorProduct) {
-          console.warn(`⚠️ No creator product found for label: ${label}`);
+          console.warn(`No creator product found for label: ${label}`);
           return null;
         }
         
@@ -180,7 +181,7 @@ export function ProductsSection({
         );
         const burnedCount = burnedProducts.length;
 
-        console.log(`👑 Creator stats for ${label}:`, {
+        console.log(`Creator stats for ${label}:`, {
           totalCreated,
           creatorRemaining,
           totalDistributed,
@@ -235,7 +236,7 @@ export function ProductsSection({
         );
         const totalRevenue = paidProducts.reduce((sum, p) => sum + Number(p.price || 0), 0);
 
-        console.log(`🌍 Global stats for ${label}:`, {
+        console.log(`Global stats for ${label}:`, {
           totalCreated,
           totalDistributed,
           totalRemaining,
@@ -297,12 +298,12 @@ export function ProductsSection({
     // CALCOLO RICAVI TOTALI (filtrati per categoria)
     const totalEventRevenue = productStats.reduce((sum, product) => sum + product.totalRevenue, 0);
 
-    console.log(`💰 TOTAL EVENT REVENUE from products (category: ${selectedCategory}): €${totalEventRevenue}`);
+    console.log(`TOTAL EVENT REVENUE from products (category: ${selectedCategory}): €${totalEventRevenue}`);
 
     if (productStats.length === 0) {
       return (
         <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-8 text-center">
-          <span className="text-orange-400 text-5xl">🛍️</span>
+          <FaShoppingBag className="text-orange-400 text-5xl mx-auto" />
           <p className="text-orange-300 mt-4">
             {selectedCategory === 'all' ? 'Nessun prodotto trovato' : `Nessun prodotto trovato per "${selectedCategory}"`}
           </p>
@@ -314,7 +315,7 @@ export function ProductsSection({
       <div className="space-y-6">
         {/* FILTRI CATEGORIE */}
         <div className="bg-gray-500/10 border border-gray-500/30 rounded-xl p-4">
-          <h4 className="text-gray-200 font-semibold mb-3">🏷️ Filtra per Categoria</h4>
+          <h4 className="text-gray-200 font-semibold mb-3 inline-flex items-center gap-2"><FaTags /><span>Filtra per Categoria</span></h4>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedCategory('all')}
@@ -350,8 +351,9 @@ export function ProductsSection({
         {/* RIEPILOGO TOTALE EVENTO */}
         {selectedCollaborator === 'all' && (
           <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6">
-            <h3 className="text-green-200 font-bold text-xl mb-4">
-              💰 Ricavi Totali Evento - Prodotti
+            <h3 className="text-green-200 font-bold text-xl mb-4 inline-flex items-center gap-2">
+              <FaEuroSign />
+              <span>Ricavi Totali Evento - Prodotti</span>
               {selectedCategory !== 'all' && (
                 <span className="text-green-400/80 font-normal ml-2">({selectedCategory})</span>
               )}
@@ -368,8 +370,9 @@ export function ProductsSection({
         {/* RIEPILOGO CREATORE */}
         {selectedCollaborator === 'me' && (
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6">
-            <h3 className="text-blue-200 font-bold text-xl mb-4">
-              👑 I Miei Ricavi Totali - Prodotti
+            <h3 className="text-blue-200 font-bold text-xl mb-4 inline-flex items-center gap-2">
+              <FaCrown />
+              <span>I Miei Ricavi Totali - Prodotti</span>
               {selectedCategory !== 'all' && (
                 <span className="text-blue-400/80 font-normal ml-2">({selectedCategory})</span>
               )}
@@ -486,14 +489,14 @@ export function ProductsSection({
   function renderCollaboratorView() {
     const targetUserId = parseInt(selectedCollaborator);
     
-    console.log('👤 Rendering Collaborator View for userId:', targetUserId);
+    console.log('Rendering Collaborator View for userId:', targetUserId);
     
     // CORREZIONE: Usa filteredProducts che ora include i prodotti venduti
     const collaboratorProducts = categoryFilteredProducts.filter(p => 
       p.user_id === targetUserId || p.old_user_id === targetUserId
     );
 
-    console.log(`📦 Found ${collaboratorProducts.length} products for collaborator ${targetUserId}`, {
+    console.log(`Found ${collaboratorProducts.length} products for collaborator ${targetUserId}`, {
       categoryFilteredProducts: categoryFilteredProducts.length,
       collaboratorProductsDetails: collaboratorProducts.slice(0, 3).map(p => ({
         id: p.id,
@@ -513,7 +516,7 @@ export function ProductsSection({
         <div className="space-y-6">
           {/* FILTRI CATEGORIE ANCHE PER COLLABORATORI */}
           <div className="bg-gray-500/10 border border-gray-500/30 rounded-xl p-4">
-            <h4 className="text-gray-200 font-semibold mb-3">🏷️ Filtra per Categoria</h4>
+            <h4 className="text-gray-200 font-semibold mb-3 inline-flex items-center gap-2"><FaTags /><span>Filtra per Categoria</span></h4>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setSelectedCategory('all')}
@@ -548,7 +551,7 @@ export function ProductsSection({
           </div>
 
           <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-8 text-center">
-            <span className="text-orange-400 text-5xl">🛍️</span>
+            <FaShoppingBag className="text-orange-400 text-5xl mx-auto" />
             <p className="text-orange-300 mt-4">
               {selectedCategory === 'all' ? 'Nessun prodotto trovato' : `Nessun prodotto trovato per "${selectedCategory}"`}
             </p>
@@ -602,7 +605,7 @@ export function ProductsSection({
       // RICAVO del collaboratore
       const collaboratorRevenue = soldByCollaborator.reduce((sum, p) => sum + Number(p.price || 0), 0);
 
-      console.log(`👤 Collaborator ${targetUserId} revenue for ${label}:`, {
+      console.log(`Collaborator ${targetUserId} revenue for ${label}:`, {
         received: collaboratorReceived,
         remaining: collaboratorRemaining,
         distributed: collaboratorDistributed,
@@ -651,13 +654,13 @@ export function ProductsSection({
       (selectedCategory === 'all' || (p.category || 'Senza Categoria') === selectedCategory)
     ).reduce((sum, p) => sum + Number(p.price || 0), 0);
 
-    console.log(`💵 Total collaborator ${targetUserId} revenue (category: ${selectedCategory}): €${totalCollaboratorRevenue}`);
+    console.log(`Total collaborator ${targetUserId} revenue (category: ${selectedCategory}): €${totalCollaboratorRevenue}`);
 
     return (
       <div className="space-y-6">
         {/* FILTRI CATEGORIE */}
         <div className="bg-gray-500/10 border border-gray-500/30 rounded-xl p-4">
-          <h4 className="text-gray-200 font-semibold mb-3">🏷️ Filtra per Categoria</h4>
+          <h4 className="text-gray-200 font-semibold mb-3 inline-flex items-center gap-2"><FaTags /><span>Filtra per Categoria</span></h4>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedCategory('all')}
@@ -693,8 +696,9 @@ export function ProductsSection({
 
         {/* RIEPILOGO TOTALE COLLABORATORE */}
         <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6">
-          <h3 className="text-green-200 font-bold text-xl mb-4">
-            💰 Riepilogo Totale Ricavi
+          <h3 className="text-green-200 font-bold text-xl mb-4 inline-flex items-center gap-2">
+            <FaEuroSign />
+            <span>Riepilogo Totale Ricavi</span>
             {selectedCategory !== 'all' && (
               <span className="text-green-400/80 font-normal ml-2">({selectedCategory})</span>
             )}

@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from "~/store/auth";
+import type { IconType } from 'react-icons';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { FaCalendarAlt, FaUsers, FaBuilding, FaBell } from 'react-icons/fa';
 
 type SubMenuItem = {
   title: string;
@@ -12,7 +14,7 @@ type SubMenuItem = {
 type MenuItem = {
   title: string;
   href: string;
-  icon: string;
+  icon: IconType;
   subItems: SubMenuItem[];
 };
 
@@ -20,7 +22,7 @@ const menuItems: MenuItem[] = [
   {
     title: "Eventi",
     href: "/event",
-    icon: "🎉",
+    icon: FaCalendarAlt,
     subItems: [
       // Example: { title: "Sub Evento", href: "/event/sub" }
     ]
@@ -28,13 +30,13 @@ const menuItems: MenuItem[] = [
   {
     title: "Eventi Collaboratore",
     href: "/collaborator-events",
-    icon: "👥",
+    icon: FaUsers,
     subItems: []
   },
   {
     title: "Locali",
     href: "/locations",
-    icon: "🏢",
+    icon: FaBuilding,
     subItems: [
       // Example: { title: "Sub Locale", href: "/locations/sub" }
     ]
@@ -44,7 +46,7 @@ const menuItems: MenuItem[] = [
   {
     title: "Notifiche",
     href: "/notifications",
-    icon: "🔔",
+    icon: FaBell,
     subItems: []
   },
 ];
@@ -92,7 +94,9 @@ export function Sidebar() {
                   }`}
                 >
                   <div className="flex items-center space-x-3">
-                    <span>{item.icon}</span>
+                    <span>
+                      <item.icon className="text-base" />
+                    </span>
                     <span>{item.title}</span>
                   </div>
                   {item.subItems.length > 0 && (

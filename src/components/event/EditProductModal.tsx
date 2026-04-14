@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { FaExclamationTriangle, FaEdit, FaTimes, FaSyncAlt, FaLightbulb, FaChartBar, FaCheckCircle } from "react-icons/fa";
 import { useAuthStore } from "~/store/auth";
 import type { Product, Event } from "~/types";
 
@@ -172,9 +173,11 @@ export function EditProductModal({ show, product, onClose, onSuccess }: EditProd
           <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
             isLimitedEdit ? 'bg-orange-500/20' : 'bg-blue-500/20'
           }`}>
-            <span className={`text-lg ${isLimitedEdit ? 'text-orange-400' : 'text-blue-400'}`}>
-              {isLimitedEdit ? '⚠️' : '✏️'}
-            </span>
+            {isLimitedEdit ? (
+              <FaExclamationTriangle className="text-lg text-orange-400" />
+            ) : (
+              <FaEdit className="text-lg text-blue-400" />
+            )}
           </div>
           <div className="flex-1">
             <h3 className="text-white font-semibold">
@@ -192,7 +195,7 @@ export function EditProductModal({ show, product, onClose, onSuccess }: EditProd
             disabled={updating}
             className="text-white/60 hover:text-white transition-colors disabled:opacity-50"
           >
-            ✕
+            <FaTimes />
           </button>
         </div>
 
@@ -200,7 +203,7 @@ export function EditProductModal({ show, product, onClose, onSuccess }: EditProd
         {isLimitedEdit && (
           <div className="mb-4 p-3 bg-orange-500/20 border border-orange-500/20 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-orange-400">🔄</span>
+              <FaSyncAlt className="text-orange-400" />
               <span className="text-orange-400 font-medium text-sm">Prodotto Trasferito</span>
             </div>
             <p className="text-orange-400/80 text-xs">
@@ -292,8 +295,9 @@ export function EditProductModal({ show, product, onClose, onSuccess }: EditProd
               <p className="text-red-400 text-sm mt-1">{errors.stock}</p>
             )}
             {transferInfo?.minStock && (
-              <p className="text-orange-400/80 text-xs mt-1">
-                ⚠️ Quantità minima: {transferInfo.minStock} (prodotti già trasferiti)
+              <p className="text-orange-400/80 text-xs mt-1 inline-flex items-center gap-1">
+                <FaExclamationTriangle />
+                <span>Quantità minima: {transferInfo.minStock} (prodotti già trasferiti)</span>
               </p>
             )}
           </div>
@@ -319,7 +323,7 @@ export function EditProductModal({ show, product, onClose, onSuccess }: EditProd
             <label className="block text-white/80 text-sm mb-2">
               Descrizione
               {isLimitedEdit && (
-                <span className="text-green-400 text-xs ml-2">✓ Modificabile</span>
+                <span className="text-green-400 text-xs ml-2 inline-flex items-center gap-1"><FaCheckCircle /><span>Modificabile</span></span>
               )}
             </label>
             <textarea
@@ -331,15 +335,19 @@ export function EditProductModal({ show, product, onClose, onSuccess }: EditProd
               className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-50"
             />
             {isLimitedEdit && (
-              <p className="text-green-400/60 text-xs mt-1">
-                💡 La modifica della descrizione verrà applicata anche ai prodotti trasferiti
+              <p className="text-green-400/60 text-xs mt-1 inline-flex items-center gap-1">
+                <FaLightbulb />
+                <span>La modifica della descrizione verrà applicata anche ai prodotti trasferiti</span>
               </p>
             )}
           </div>
 
           {/* Info Originali (readonly) */}
           <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
-            <h4 className="text-white font-medium text-sm mb-2">📊 Informazioni Originali</h4>
+            <h4 className="text-white font-medium text-sm mb-2 inline-flex items-center gap-2">
+              <FaChartBar />
+              <span>Informazioni Originali</span>
+            </h4>
             <div className="flex justify-between items-center text-sm">
               <span className="text-white/60">Stock attuale:</span>
               <span className="text-white">{product.stock || 'Illimitato'}</span>
@@ -383,7 +391,8 @@ export function EditProductModal({ show, product, onClose, onSuccess }: EditProd
               </>
             ) : (
               <>
-                ✏️ Aggiorna
+                <FaEdit />
+                <span>Aggiorna</span>
               </>
             )}
           </button>

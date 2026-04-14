@@ -3,6 +3,14 @@
 import { useState, useMemo } from "react";
 import { useAuthStore } from "~/store/auth";
 import type { Event, Product } from "~/types";
+import {
+  FaShoppingBag,
+  FaUsers,
+  FaTimes,
+  FaCheckCircle,
+  FaExclamationTriangle,
+  FaPaperPlane,
+} from 'react-icons/fa';
 
 interface TransferProductModalProps {
   show: boolean;
@@ -108,7 +116,7 @@ export function TransferProductModal({ show, product, event, onClose, onSuccess 
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0 w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
-              <span className="text-purple-400 text-lg">🛍️</span>
+              <FaShoppingBag className="text-purple-400 text-lg" />
             </div>
             <div>
               <h3 className="text-white font-semibold">Trasferisci Prodotti</h3>
@@ -119,7 +127,7 @@ export function TransferProductModal({ show, product, event, onClose, onSuccess 
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
           >
-            <span className="text-white/80">✕</span>
+            <FaTimes className="text-white/80" />
           </button>
         </div>
 
@@ -164,7 +172,7 @@ export function TransferProductModal({ show, product, event, onClose, onSuccess 
           
           {collaboratorsData.length === 0 ? (
             <div className="text-center py-6 text-white/60">
-              <span className="text-2xl mb-2 block">👥</span>
+              <FaUsers className="text-2xl mb-2 block mx-auto" />
               <p>Nessun collaboratore disponibile</p>
             </div>
           ) : (
@@ -204,14 +212,14 @@ export function TransferProductModal({ show, product, event, onClose, onSuccess 
                         <div className="mb-3">
                           {hasCompatibleProduct ? (
                             <div className="flex items-center gap-2">
-                              <span className="text-green-400 text-sm">✅ Ha prodotti compatibili</span>
+                              <span className="text-green-400 text-sm inline-flex items-center gap-1"><FaCheckCircle /> <span>Ha prodotti compatibili</span></span>
                               <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">
                                 {compatibleProducts.length} tipo{compatibleProducts.length !== 1 ? 'i' : ''} 
                                 {totalStock > 0 && ` • Stock totale: ${totalStock}`}
                               </span>
                             </div>
                           ) : (
-                            <span className="text-yellow-400 text-sm">⚠️ Nessun prodotto compatibile (stesso nome)</span>
+                            <span className="text-yellow-400 text-sm inline-flex items-center gap-1"><FaExclamationTriangle /> <span>Nessun prodotto compatibile (stesso nome)</span></span>
                           )}
                         </div>
 
@@ -289,7 +297,8 @@ export function TransferProductModal({ show, product, event, onClose, onSuccess 
               </>
             ) : (
               <>
-                🛍️ Trasferisci {totalToTransfer > 0 ? `(${totalToTransfer})` : ''}
+                <FaPaperPlane />
+                <span>Trasferisci {totalToTransfer > 0 ? `(${totalToTransfer})` : ''}</span>
               </>
             )}
           </button>

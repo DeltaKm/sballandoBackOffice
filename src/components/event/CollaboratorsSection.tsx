@@ -4,6 +4,18 @@ import { useState } from "react";
 import { useAuthStore } from "~/store/auth";
 import { UserCard } from "~/components/UserCard";
 import type { Event, User } from "~/types";
+import {
+  FaLock,
+  FaTimes,
+  FaPlus,
+  FaUser,
+  FaSearch,
+  FaTrash,
+  FaTicketAlt,
+  FaShoppingBag,
+  FaMask,
+  FaUsers,
+} from 'react-icons/fa';
 
 interface CollaboratorsSectionProps {
   event: Event;
@@ -157,7 +169,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
       <div className="pt-6 border-t border-white/10">
         <div className="text-center py-8">
           <div className="text-white/60 mb-4">
-            <span className="text-4xl">🔒</span>
+            <FaLock className="text-4xl mx-auto" />
           </div>
           <p className="text-white/60">Devi essere loggato per gestire i collaboratori</p>
         </div>
@@ -173,7 +185,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
           onClick={() => setShowForm(!showForm)}
           className="px-4 py-2 bg-[#FC0045] text-white rounded-lg hover:bg-[#FC0045]/80 transition-colors flex items-center gap-2"
         >
-          <span>{showForm ? '✕' : '➕'}</span>
+          {showForm ? <FaTimes /> : <FaPlus />}
           {showForm ? 'Annulla' : 'Aggiungi Collaboratore'}
         </button>
       </div>
@@ -224,7 +236,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
                         />
                       ) : null}
                       <div className={`w-8 h-8 rounded-full bg-white/20 flex items-center justify-center ${searchUser.picture && searchUser.picture.trim() !== '' ? 'hidden' : ''}`}>
-                        <span className="text-white/60 text-sm">👤</span>
+                        <FaUser className="text-white/60 text-sm" />
                       </div>
                       <div>
                         <p className="text-white text-sm">
@@ -259,7 +271,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
             {!searchLoading && searchQuery && searchQuery.length >= 2 && searchResults.length === 0 && (
               <div className="text-center py-4">
                 <div className="text-white/60 mb-2">
-                  <span className="text-2xl">🔍</span>
+                  <FaSearch className="text-2xl mx-auto" />
                 </div>
                 <p className="text-white/60 text-sm">
                   Nessun utente trovato per "{searchQuery}"
@@ -297,7 +309,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
                 {removingCollaborator[collab.id] ? (
                   <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin"></div>
                 ) : (
-                  <span className="text-sm">🗑️</span>
+                  <FaTrash className="text-sm" />
                 )}
               </button>
 
@@ -311,7 +323,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
                   />
                 ) : (
                   <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-3">
-                    <span className="text-white/60 text-2xl">👤</span>
+                    <FaUser className="text-white/60 text-2xl" />
                   </div>
                 )}
                 
@@ -337,7 +349,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
                 {/* Switch Vidimare Ingressi */}
                 <div className="flex items-center justify-between">
                   <label className="text-white/70 text-sm flex items-center gap-2 flex-1">
-                    <span className="text-base">🎫</span>
+                    <FaTicketAlt className="text-base" />
                     <span>Vidimare Ingressi</span>
                   </label>
                   <button
@@ -360,7 +372,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
                 {/* Switch Vidimare Prodotti */}
                 <div className="flex items-center justify-between">
                   <label className="text-white/70 text-sm flex items-center gap-2 flex-1">
-                    <span className="text-base">🛍️</span>
+                    <FaShoppingBag className="text-base" />
                     <span>Vidimare Prodotti</span>
                   </label>
                   <button
@@ -383,7 +395,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
                 {/* Switch Ospite */}
                 <div className="flex items-center justify-between">
                   <label className="text-white/70 text-sm flex items-center gap-2 flex-1">
-                    <span className="text-base">🎭</span>
+                    <FaMask className="text-base" />
                     <span>Ospite</span>
                   </label>
                   <button
@@ -417,7 +429,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
       ) : (
         <div className="text-center py-8">
           <div className="text-white/60 mb-4">
-            <span className="text-4xl">👥</span>
+            <FaUsers className="text-4xl mx-auto" />
           </div>
           <p className="text-white/60 mb-4">Nessun collaboratore aggiunto</p>
           <button

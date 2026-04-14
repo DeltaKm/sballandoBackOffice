@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useAuthStore } from "~/store/auth";
 import { useAuthRedirect } from "~/lib/useAuth";
 import { getLocationLogoUrl } from "~/lib/imageUtils";
-import { FaSearch, FaTimes, FaMapMarkerAlt, FaPhone, FaEnvelope, FaGlobe, FaInstagram, FaFacebook, FaTwitter } from 'react-icons/fa';
+import { FaSearch, FaTimes, FaMapMarkerAlt, FaPhone, FaEnvelope, FaGlobe, FaInstagram, FaFacebook, FaTwitter, FaExclamationTriangle, FaTimesCircle, FaCheckCircle, FaImage, FaSave } from 'react-icons/fa';
 import { Switch } from '@headlessui/react';
 
 interface LocationFormData {
@@ -82,7 +82,7 @@ export default function UpdateLocationPage() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
-    // ✅ CARICA I DATI DEL LOCALE
+    // CARICA I DATI DEL LOCALE
     useEffect(() => {
         if (!locationId) {
             setError("ID locale mancante");
@@ -112,7 +112,7 @@ export default function UpdateLocationPage() {
 
                 const location: Location = await response.json();
 
-                console.log('📊 Dati locale caricati:', {
+                console.log('Dati locale caricati:', {
                     name: location.name,
                     link_instagram: location.link_instagram,
                     link_facebook: location.link_facebook,
@@ -154,7 +154,7 @@ export default function UpdateLocationPage() {
         }
     }, [locationId, auth.isAuthenticated, user?.token]);
 
-    // ✅ GESTIONE UPLOAD IMMAGINE
+    // GESTIONE UPLOAD IMMAGINE
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -167,7 +167,7 @@ export default function UpdateLocationPage() {
         }
     };
 
-    // ✅ RIMUOVI IMMAGINE
+    // RIMUOVI IMMAGINE
     const removeImage = () => {
         if (formData.cover_preview && formData.cover_preview.startsWith('blob:')) {
             URL.revokeObjectURL(formData.cover_preview);
@@ -180,7 +180,7 @@ export default function UpdateLocationPage() {
         });
     };
 
-    // ✅ GESTIONE INVIO FORM
+    // GESTIONE INVIO FORM
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -294,7 +294,7 @@ export default function UpdateLocationPage() {
                         {error && (
                             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                                 <div className="flex">
-                                    <div className="text-red-400">❌</div>
+                                    <FaTimesCircle className="text-red-400" />
                                     <div className="ml-3">
                                         <p className="text-red-800">{error}</p>
                                     </div>
@@ -305,7 +305,7 @@ export default function UpdateLocationPage() {
                         {success && (
                             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                                 <div className="flex">
-                                    <div className="text-green-400">✅</div>
+                                    <FaCheckCircle className="text-green-400" />
                                     <div className="ml-3">
                                         <p className="text-green-800">{success}</p>
                                     </div>
@@ -313,10 +313,11 @@ export default function UpdateLocationPage() {
                             </div>
                         )}
 
-                        {/* ✅ INFORMAZIONI BASE */}
+                        {/* INFORMAZIONI BASE */}
                         <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
-                                📍 Informazioni Base
+                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 inline-flex items-center gap-2">
+                                <FaMapMarkerAlt />
+                                <span>Informazioni Base</span>
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -353,10 +354,11 @@ export default function UpdateLocationPage() {
                             </div>
                         </div>
 
-                        {/* ✅ INDIRIZZO */}
+                        {/* INDIRIZZO */}
                         <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
-                                🗺️ Indirizzo
+                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 inline-flex items-center gap-2">
+                                <FaMapMarkerAlt />
+                                <span>Indirizzo</span>
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -469,10 +471,11 @@ export default function UpdateLocationPage() {
                             </div>
                         </div>
 
-                        {/* ✅ CONTATTI */}
+                        {/* CONTATTI */}
                         <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
-                                📞 Contatti
+                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 inline-flex items-center gap-2">
+                                <FaPhone />
+                                <span>Contatti</span>
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -568,10 +571,11 @@ export default function UpdateLocationPage() {
                             </div>
                         </div>
 
-                        {/* ✅ IMMAGINE DI COPERTINA */}
+                        {/* IMMAGINE DI COPERTINA */}
                         <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
-                                🖼️ Immagine di Copertina
+                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 inline-flex items-center gap-2">
+                                <FaImage />
+                                <span>Immagine di Copertina</span>
                             </h3>
 
                             <div className="flex items-start gap-6">
@@ -625,7 +629,7 @@ export default function UpdateLocationPage() {
                             </div>
                         </div>
 
-                        {/* ✅ PULSANTI AZIONE */}
+                        {/* PULSANTI AZIONE */}
                         <div className="flex justify-end space-x-4 pt-6 border-t">
                             <button
                                 type="button"
@@ -646,7 +650,8 @@ export default function UpdateLocationPage() {
                                     </>
                                 ) : (
                                     <>
-                                        💾 Aggiorna Locale
+                                        <FaSave />
+                                        <span>Aggiorna Locale</span>
                                     </>
                                 )}
                             </button>

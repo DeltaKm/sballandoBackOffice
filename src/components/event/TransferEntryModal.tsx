@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useAuthStore } from "~/store/auth";
 import type { Event, EntryType } from "~/types";
+import { FaTicketAlt, FaUsers, FaTimes, FaPaperPlane } from 'react-icons/fa';
 
 interface TransferEntryModalProps {
   show: boolean;
@@ -111,7 +112,7 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0 w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
-              <span className="text-blue-400 text-lg">🎫</span>
+              <FaTicketAlt className="text-blue-400 text-lg" />
             </div>
             <div>
               <h3 className="text-white font-semibold">Trasferisci Ingressi</h3>
@@ -122,7 +123,7 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
           >
-            <span className="text-white/80">✕</span>
+            <FaTimes className="text-white/80" />
           </button>
         </div>
 
@@ -167,7 +168,7 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
           
           {collaboratorsData.length === 0 ? (
             <div className="text-center py-6 text-white/60">
-              <span className="text-2xl mb-2 block">👥</span>
+              <FaUsers className="text-2xl mb-2 block mx-auto" />
               <p>Nessun collaboratore disponibile</p>
             </div>
           ) : (
@@ -278,7 +279,8 @@ export function TransferEntryModal({ show, entry, event, onClose, onSuccess }: T
               </>
             ) : (
               <>
-                🎫 Trasferisci {totalToTransfer > 0 ? `(${totalToTransfer})` : ''}
+                <FaPaperPlane />
+                <span>Trasferisci {totalToTransfer > 0 ? `(${totalToTransfer})` : ''}</span>
               </>
             )}
           </button>

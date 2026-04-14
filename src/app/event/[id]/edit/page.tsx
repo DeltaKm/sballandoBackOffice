@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useAuthStore } from "~/store/auth";
 import { getEventCoverUrl } from "~/lib/imageUtils";
 import { dateToLocalInput, localInputToDate } from "~/lib/timezone";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaUserTie, FaExclamationTriangle } from "react-icons/fa";
 import { Switch } from "@headlessui/react";
 import ErrorModal from "~/components/ErrorModal";
 
@@ -223,7 +223,7 @@ export default function EditEventPage() {
                 }
             });
 
-            console.log('🚀 Sending data to server:', {
+            console.log('Sending data to server:', {
                 datetime_start: formDataToSend.get('datetime_start'),
                 datetime_end: formDataToSend.get('datetime_end'),
                 title: formDataToSend.get('title'),
@@ -240,7 +240,7 @@ export default function EditEventPage() {
             const data = await res.json();
             
             if (!res.ok) {
-                console.error('❌ Server error:', data);
+                console.error('Server error:', data);
                 
                 // Gestione dettagliata degli errori
                 let errorMessage = data.error || 'Errore durante la modifica dell\'evento';
@@ -260,10 +260,10 @@ export default function EditEventPage() {
                 return;
             }
 
-            console.log('✅ Event updated successfully:', data);
+            console.log('Event updated successfully:', data);
             router.push(`/event/${params.id}`);
         } catch (err) {
-            console.error('❌ Network/unexpected error:', err);
+            console.error('Network/unexpected error:', err);
             const errorMessage = err instanceof Error ? err.message : 'Errore di rete durante la modifica dell\'evento';
             setError(errorMessage);
             setErrorDetails(['Verifica la connessione internet e riprova']);
@@ -381,7 +381,10 @@ export default function EditEventPage() {
                         {/* Dress Code */}
                         <div>
                             <label className="block text-sm font-medium text-white/80 mb-2">
-                                👔 Dress Code
+                                <span className="inline-flex items-center gap-2">
+                                    <FaUserTie />
+                                    <span>Dress Code</span>
+                                </span>
                             </label>
                             <input
                                 type="text"
@@ -395,7 +398,10 @@ export default function EditEventPage() {
                         {/* Età Consigliata */}
                         <div>
                             <label className="block text-sm font-medium text-white/80 mb-2">
-                                🔞 Età Consigliata
+                                <span className="inline-flex items-center gap-2">
+                                    <FaExclamationTriangle />
+                                    <span>Età Consigliata</span>
+                                </span>
                             </label>
                             <input
                                 type="text"

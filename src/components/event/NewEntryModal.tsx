@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FaTicketAlt, FaTimes, FaPlus } from "react-icons/fa";
 import { useAuthStore } from "~/store/auth";
 import { z } from "zod";
 
@@ -215,7 +216,7 @@ export function NewEntryModal({ show, eventId, onClose, onSuccess }: NewEntryMod
         }
       }
       
-      console.log("🔥 FRONTEND NEW - formData.price:", formData.price, "finalPrice:", finalPrice);
+      console.log("FRONTEND NEW - formData.price:", formData.price, "finalPrice:", finalPrice);
       
       // Usa il tipo selezionato dall'utente
       const finalType = formData.type;
@@ -299,7 +300,7 @@ export function NewEntryModal({ show, eventId, onClose, onSuccess }: NewEntryMod
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#FC0045]/20 rounded-lg flex items-center justify-center">
-              <span className="text-[#FC0045] text-xl">🎟️</span>
+              <FaTicketAlt className="text-[#FC0045] text-xl" />
             </div>
             <div>
               <h2 className="text-white font-bold text-xl">Nuovo Ingresso</h2>
@@ -311,7 +312,7 @@ export function NewEntryModal({ show, eventId, onClose, onSuccess }: NewEntryMod
             disabled={loading}
             className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center text-white/70 hover:text-white transition-colors disabled:opacity-50"
           >
-            <span className="text-lg">✕</span>
+            <FaTimes className="text-lg" />
           </button>
         </div>
 
@@ -568,9 +569,10 @@ export function NewEntryModal({ show, eventId, onClose, onSuccess }: NewEntryMod
                 type="button"
                 onClick={() => setShowConsumationForm(true)}
                 disabled={formData.consumations.length >= 10}
-                className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1"
               >
-                ➕ Aggiungi
+                <FaPlus />
+                <span>Aggiungi</span>
               </button>
             </div>
 
@@ -684,8 +686,8 @@ export function NewEntryModal({ show, eventId, onClose, onSuccess }: NewEntryMod
                 </>
               ) : (
                 <>
-                  <span>➕</span>
-                  Crea Ingresso
+                  <FaPlus />
+                  <span>Crea Ingresso</span>
                 </>
               )}
             </button>

@@ -1,4 +1,13 @@
 import { InfoItem } from './InfoItem';
+import {
+  FaCalendarAlt,
+  FaFlagCheckered,
+  FaMapMarkerAlt,
+  FaUserTie,
+  FaExclamationTriangle,
+  FaUsers,
+  FaSyncAlt,
+} from 'react-icons/fa';
 
 interface Event {
   datetime_start: string | null;
@@ -15,7 +24,7 @@ interface Event {
   age_recommended?: string | null;
 }
 
-// ✅ Utility per aggiustare le date per il frontend
+// Utility per aggiustare le date per il frontend
 const adjustDateForDisplay = (dateString: string): Date => {
   const date = new Date(dateString);
   // Sottrai 2 ore per compensare l'offset del server
@@ -29,7 +38,7 @@ export function EventInfo({ event }: { event: Event }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-4">
           <InfoItem 
-            icon="📅" 
+            icon={FaCalendarAlt}
             label="Data Inizio" 
             value={event.datetime_start ? 
               adjustDateForDisplay(event.datetime_start).toLocaleString('it-IT', {
@@ -39,7 +48,7 @@ export function EventInfo({ event }: { event: Event }) {
           />
           {event.datetime_end && (
             <InfoItem 
-              icon="🏁" 
+              icon={FaFlagCheckered}
               label="Data Fine" 
               value={adjustDateForDisplay(event.datetime_end).toLocaleString('it-IT', {
               })} 
@@ -47,21 +56,21 @@ export function EventInfo({ event }: { event: Event }) {
           )}
           {event.location_ && (
             <InfoItem 
-              icon="📍" 
+              icon={FaMapMarkerAlt}
               label="Location" 
               value={`${event.location_.name}${event.location_.address ? ` - ${event.location_.address}` : ''}`} 
             />
           )}
           {event.dress_code && (
             <InfoItem 
-              icon="👔" 
+              icon={FaUserTie}
               label="Dress Code" 
               value={event.dress_code} 
             />
           )}
           {event.age_recommended && (
             <InfoItem 
-              icon="🔞" 
+              icon={FaExclamationTriangle}
               label="Età Consigliata" 
               value={event.age_recommended} 
             />
@@ -69,19 +78,19 @@ export function EventInfo({ event }: { event: Event }) {
         </div>
         <div className="space-y-4">
           <InfoItem 
-            icon="👥" 
+            icon={FaUsers}
             label="Iscritti" 
             value={`${event.subscribers ?? 0}`} 
           />
           <InfoItem 
-            icon="📅" 
+            icon={FaCalendarAlt}
             label="Creato il" 
             value={adjustDateForDisplay(event.created_at).toLocaleDateString('it-IT', {
             })} 
           />
           {event.updated_at && (
             <InfoItem 
-              icon="🔄" 
+              icon={FaSyncAlt}
               label="Aggiornato il" 
               value={adjustDateForDisplay(event.updated_at).toLocaleDateString('it-IT', {
               })} 

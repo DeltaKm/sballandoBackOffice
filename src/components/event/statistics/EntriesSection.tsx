@@ -2,6 +2,7 @@
 
 import type { EntryType } from "~/types";
 import { useState, useMemo } from "react";
+import { FaTicketAlt, FaTags, FaEuroSign, FaCrown } from "react-icons/fa";
 
 interface EntryStats {
   label: string;
@@ -85,7 +86,7 @@ export function EntriesSection({
     );
   }, [filteredEntries, selectedCategory]);
 
-  console.log('🎟️ EntriesSection Debug:', {
+  console.log('EntriesSection Debug:', {
     totalEntries: entries.length,
     filteredEntries: filteredEntries.length,
     categoryFilteredEntries: categoryFilteredEntries.length,
@@ -106,7 +107,7 @@ export function EntriesSection({
 
   // ==================== VISTA CREATORE ====================
   function renderCreatorView() {
-    console.log('🎯 Rendering Creator View for Entries, selectedCollaborator:', selectedCollaborator);
+    console.log('Rendering Creator View for Entries, selectedCollaborator:', selectedCollaborator);
     
     // Raggruppa per label
     const entriesByLabel = categoryFilteredEntries.reduce((acc, entry) => {
@@ -118,7 +119,7 @@ export function EntriesSection({
       return acc;
     }, {} as Record<string, EntryType[]>);
 
-    console.log('🎟️ Entries grouped by label:', Object.keys(entriesByLabel));
+    console.log('Entries grouped by label:', Object.keys(entriesByLabel));
 
     // Calcola statistiche per ogni gruppo
     const entryStats: EntryStats[] = Object.entries(entriesByLabel).map(([label, groupEntries]) => {
@@ -127,7 +128,7 @@ export function EntriesSection({
         const creatorEntry = groupEntries.find(e => e.user_id === eventUserId);
         
         if (!creatorEntry) {
-          console.warn(`⚠️ No creator entry found for label: ${label}`);
+          console.warn(`No creator entry found for label: ${label}`);
           return null;
         }
         
@@ -152,7 +153,7 @@ export function EntriesSection({
         );
         const burnedCount = burnedEntries.length;
 
-        console.log(`👑 Creator stats for entry ${label}:`, {
+        console.log(`Creator stats for entry ${label}:`, {
           totalCreated,
           creatorRemaining,
           totalDistributed,
@@ -207,7 +208,7 @@ export function EntriesSection({
         );
         const totalRevenue = paidEntries.reduce((sum, e) => sum + Number(e.price || 0), 0);
 
-        console.log(`🌍 Global stats for entry ${label}:`, {
+        console.log(`Global stats for entry ${label}:`, {
           totalCreated,
           totalDistributed,
           totalRemaining,
@@ -269,12 +270,12 @@ export function EntriesSection({
     // CALCOLO RICAVI TOTALI (filtrati per categoria)
     const totalEventRevenue = entryStats.reduce((sum, entry) => sum + entry.totalRevenue, 0);
 
-    console.log(`💰 TOTAL EVENT REVENUE from entries (category: ${selectedCategory}): €${totalEventRevenue}`);
+    console.log(`TOTAL EVENT REVENUE from entries (category: ${selectedCategory}): €${totalEventRevenue}`);
 
     if (entryStats.length === 0) {
       return (
         <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-8 text-center">
-          <span className="text-purple-400 text-5xl">🎟️</span>
+          <FaTicketAlt className="text-purple-400 text-5xl mx-auto" />
           <p className="text-purple-300 mt-4">
             {selectedCategory === 'all' ? 'Nessun ingresso trovato' : `Nessun ingresso trovato per "${selectedCategory}"`}
           </p>
@@ -286,7 +287,7 @@ export function EntriesSection({
       <div className="space-y-6">
         {/* FILTRI CATEGORIE */}
         <div className="bg-gray-500/10 border border-gray-500/30 rounded-xl p-4">
-          <h4 className="text-gray-200 font-semibold mb-3">🏷️ Filtra per Categoria</h4>
+          <h4 className="text-gray-200 font-semibold mb-3 inline-flex items-center gap-2"><FaTags /><span>Filtra per Categoria</span></h4>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedCategory('all')}
@@ -322,8 +323,9 @@ export function EntriesSection({
         {/* RIEPILOGO TOTALE EVENTO */}
         {selectedCollaborator === 'all' && (
           <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6">
-            <h3 className="text-green-200 font-bold text-xl mb-4">
-              🎟️ Ricavi Totali Evento - Ingressi
+            <h3 className="text-green-200 font-bold text-xl mb-4 inline-flex items-center gap-2">
+              <FaTicketAlt />
+              <span>Ricavi Totali Evento - Ingressi</span>
               {selectedCategory !== 'all' && (
                 <span className="text-green-400/80 font-normal ml-2">({selectedCategory})</span>
               )}
@@ -340,8 +342,9 @@ export function EntriesSection({
         {/* RIEPILOGO CREATORE */}
         {selectedCollaborator === 'me' && (
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6">
-            <h3 className="text-blue-200 font-bold text-xl mb-4">
-              👑 I Miei Ricavi Totali - Ingressi
+            <h3 className="text-blue-200 font-bold text-xl mb-4 inline-flex items-center gap-2">
+              <FaCrown />
+              <span>I Miei Ricavi Totali - Ingressi</span>
               {selectedCategory !== 'all' && (
                 <span className="text-blue-400/80 font-normal ml-2">({selectedCategory})</span>
               )}
@@ -458,14 +461,14 @@ export function EntriesSection({
   function renderCollaboratorView() {
     const targetUserId = parseInt(selectedCollaborator);
     
-    console.log('👤 Rendering Collaborator View for Entries, userId:', targetUserId);
+    console.log('Rendering Collaborator View for Entries, userId:', targetUserId);
     
     // Trova gli ingressi di questo collaboratore (già filtrati per categoria)
     const collaboratorEntries = categoryFilteredEntries.filter(e => 
       e.user_id === targetUserId || e.old_user_id === targetUserId
     );
 
-    console.log(`🎟️ Found ${collaboratorEntries.length} entries for collaborator ${targetUserId}`);
+    console.log(`Found ${collaboratorEntries.length} entries for collaborator ${targetUserId}`);
 
     if (collaboratorEntries.length === 0) {
       const collaboratorName = collaborators.find(c => c.user_id === targetUserId)?.users ? 
@@ -476,7 +479,7 @@ export function EntriesSection({
         <div className="space-y-6">
           {/* FILTRI CATEGORIE ANCHE PER COLLABORATORI */}
           <div className="bg-gray-500/10 border border-gray-500/30 rounded-xl p-4">
-            <h4 className="text-gray-200 font-semibold mb-3">🏷️ Filtra per Categoria</h4>
+            <h4 className="text-gray-200 font-semibold mb-3 inline-flex items-center gap-2"><FaTags /><span>Filtra per Categoria</span></h4>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setSelectedCategory('all')}
@@ -511,7 +514,7 @@ export function EntriesSection({
           </div>
 
           <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-8 text-center">
-            <span className="text-purple-400 text-5xl">🎟️</span>
+            <FaTicketAlt className="text-purple-400 text-5xl mx-auto" />
             <p className="text-purple-300 mt-4">
               {selectedCategory === 'all' ? 'Nessun ingresso trovato' : `Nessun ingresso trovato per "${selectedCategory}"`}
             </p>
@@ -562,7 +565,7 @@ export function EntriesSection({
       // RICAVO del collaboratore
       const collaboratorRevenue = soldByCollaborator.reduce((sum, e) => sum + Number(e.price || 0), 0);
 
-      console.log(`👤 Collaborator ${targetUserId} revenue for entry ${label}:`, {
+      console.log(`Collaborator ${targetUserId} revenue for entry ${label}:`, {
         received: collaboratorReceived,
         remaining: collaboratorRemaining,
         distributed: collaboratorDistributed,
@@ -611,13 +614,13 @@ export function EntriesSection({
       (selectedCategory === 'all' || (e.category || 'Senza Categoria') === selectedCategory)
     ).reduce((sum, e) => sum + Number(e.price || 0), 0);
 
-    console.log(`💵 Total collaborator ${targetUserId} entry revenue (category: ${selectedCategory}): €${totalCollaboratorRevenue}`);
+    console.log(`Total collaborator ${targetUserId} entry revenue (category: ${selectedCategory}): €${totalCollaboratorRevenue}`);
 
     return (
       <div className="space-y-6">
         {/* FILTRI CATEGORIE */}
         <div className="bg-gray-500/10 border border-gray-500/30 rounded-xl p-4">
-          <h4 className="text-gray-200 font-semibold mb-3">🏷️ Filtra per Categoria</h4>
+          <h4 className="text-gray-200 font-semibold mb-3 inline-flex items-center gap-2"><FaTags /><span>Filtra per Categoria</span></h4>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedCategory('all')}
@@ -653,8 +656,9 @@ export function EntriesSection({
 
         {/* RIEPILOGO TOTALE COLLABORATORE */}
         <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6">
-          <h3 className="text-green-200 font-bold text-xl mb-4">
-            🎟️ Riepilogo Totale Ricavi - Ingressi
+          <h3 className="text-green-200 font-bold text-xl mb-4 inline-flex items-center gap-2">
+            <FaEuroSign />
+            <span>Riepilogo Totale Ricavi - Ingressi</span>
             {selectedCategory !== 'all' && (
               <span className="text-green-400/80 font-normal ml-2">({selectedCategory})</span>
             )}

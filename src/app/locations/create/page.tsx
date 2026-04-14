@@ -578,7 +578,7 @@ export default function CreatelocationPage() {
                                     )}
                                     {caps.length > 1 && !selectedCap && (
                                         <p className="mt-1 text-xs text-yellow-400">
-                                            ⚠️ Questo comune ha più CAP. Seleziona quello corretto.
+                                            Questo comune ha più CAP. Seleziona quello corretto.
                                         </p>
                                     )}
                                 </div>

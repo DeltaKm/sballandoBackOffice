@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { FaTimes, FaSearch, FaMusic, FaPlus } from "react-icons/fa";
 import { useAuthStore } from "~/store/auth";
 import type { Event, MusicGenre } from "~/types";
 
@@ -131,7 +132,7 @@ export function MusicGenresSection({ event, onUpdate }: MusicGenresSectionProps)
           onClick={() => setShowSearch(!showSearch)}
           className="px-4 py-2 bg-[#FC0045] text-white rounded-lg hover:bg-[#FC0045]/80 transition-colors flex items-center gap-2"
         >
-          <span>{showSearch ? '✕' : '🔍'}</span>
+          {showSearch ? <FaTimes /> : <FaSearch />}
           {showSearch ? 'Chiudi Ricerca' : 'Aggiungi Generi'}
         </button>
       </div>
@@ -160,7 +161,7 @@ export function MusicGenresSection({ event, onUpdate }: MusicGenresSectionProps)
                   disabled={loading}
                   className="w-6 h-6 bg-red-500/20 text-red-400 rounded-full hover:bg-red-500/40 transition-colors flex items-center justify-center text-xs disabled:opacity-50"
                 >
-                  ✕
+                  <FaTimes />
                 </button>
               </div>
             ))}
@@ -168,7 +169,7 @@ export function MusicGenresSection({ event, onUpdate }: MusicGenresSectionProps)
         ) : (
           <div className="text-center py-6 border border-white/10 rounded-lg bg-white/5">
             <div className="text-white/60 mb-2">
-              <span className="text-2xl">🎵</span>
+              <FaMusic className="text-2xl mx-auto" />
             </div>
             <p className="text-white/60 text-sm mb-3">Nessun genere musicale selezionato</p>
             <button
@@ -220,7 +221,7 @@ export function MusicGenresSection({ event, onUpdate }: MusicGenresSectionProps)
                           className="flex items-center justify-between p-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50 text-left"
                         >
                           <span className="text-white text-sm">{genre.label}</span>
-                          <span className="text-[#FC0045] text-lg">➕</span>
+                          <FaPlus className="text-[#FC0045] text-sm" />
                         </button>
                       ))}
                     </div>
@@ -228,7 +229,7 @@ export function MusicGenresSection({ event, onUpdate }: MusicGenresSectionProps)
                 ) : (
                   <div className="text-center py-4">
                     <div className="text-white/60 mb-2">
-                      <span className="text-2xl">🔍</span>
+                      <FaSearch className="text-2xl mx-auto" />
                     </div>
                     <p className="text-white/60 text-sm">
                       Nessun genere trovato per "{searchQuery}"

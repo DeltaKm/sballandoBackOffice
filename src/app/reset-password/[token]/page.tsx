@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import toast from "react-hot-toast";
+import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -16,19 +17,19 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log("🚀 [Client] Form submit iniziato");
-    console.log("🚀 [Client] Token:", token);
-    console.log("🚀 [Client] Password length:", password.length);
+    console.log("[Client] Form submit iniziato");
+    console.log("[Client] Token:", token);
+    console.log("[Client] Password length:", password.length);
 
     // Validazione
     if (password !== confirmPassword) {
-      console.log("❌ [Client] Password non corrispondono");
+      console.log("[Client] Password non corrispondono");
       toast.error("Le password non corrispondono");
       return;
     }
 
     if (password.length < 8) {
-      console.log("❌ [Client] Password troppo corta");
+      console.log("[Client] Password troppo corta");
       toast.error("La password deve essere di almeno 8 caratteri");
       return;
     }
@@ -36,7 +37,7 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      console.log("📤 [Client] Invio richiesta POST a /api/auth/reset-password");
+      console.log("[Client] Invio richiesta POST a /api/auth/reset-password");
       
       const res = await fetch("/api/auth/reset-password", {
         method: "POST",
@@ -46,35 +47,35 @@ export default function ResetPasswordPage() {
         body: JSON.stringify({ token, password }),
       });
 
-      console.log("📨 [Client] Response status:", res.status);
-      console.log("📨 [Client] Response headers:", Object.fromEntries(res.headers.entries()));
+      console.log("[Client] Response status:", res.status);
+      console.log("[Client] Response headers:", Object.fromEntries(res.headers.entries()));
 
       // Verifica se la risposta ha contenuto
       const contentType = res.headers.get("content-type");
-      console.log("📨 [Client] Content-Type:", contentType);
+      console.log("[Client] Content-Type:", contentType);
       
       if (!contentType || !contentType.includes("application/json")) {
         const text = await res.text();
-        console.error("❌ [Client] Non-JSON response:", text);
+        console.error("[Client] Non-JSON response:", text);
         toast.error("Errore nel server. Riprova più tardi.");
         return;
       }
 
       const data = await res.json();
-      console.log("📨 [Client] Response data:", data);
+      console.log("[Client] Response data:", data);
 
       if (!res.ok) {
-        console.error("❌ [Client] Request failed:", data.error);
+        console.error("[Client] Request failed:", data.error);
         toast.error(data.error || "Errore durante il reset della password");
       } else {
-        console.log("✅ [Client] Password reset successful!");
+        console.log("[Client] Password reset successful!");
         toast.success("Password reimpostata con successo!");
         setTimeout(() => {
           router.push("/");
         }, 2000);
       }
     } catch (err) {
-      console.error("❌ [Client] Fetch error:", err);
+      console.error("[Client] Fetch error:", err);
       toast.error("Errore di connessione al server");
     } finally {
       setLoading(false);
@@ -85,8 +86,9 @@ export default function ResetPasswordPage() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#212939] px-4">
       <div className="w-full max-w-md space-y-8 p-8 rounded-lg bg-[#FC0045] shadow-2xl">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            🔐 Reimposta Password
+          <h1 className="text-3xl font-bold text-white mb-2 inline-flex items-center gap-2">
+            <FaLock />
+            <span>Reimposta Password</span>
           </h1>
           <p className="text-white/80 text-sm">
             Inserisci la tua nuova password
@@ -114,7 +116,7 @@ export default function ResetPasswordPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
               >
-                {showPassword ? "🙈" : "👁️"}
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
           </div>
@@ -163,15 +165,15 @@ export default function ResetPasswordPage() {
                 />
               </div>
               <div className="text-xs text-white/60">
-                {password.length < 8 && "⚠️ Minimo 8 caratteri"}
-                {password.length >= 8 && password.length < 10 && "✅ Password accettabile"}
+                {password.length < 8 && "Minimo 8 caratteri"}
+                {password.length >= 8 && password.length < 10 && "Password accettabile"}
                 {password.length >= 10 &&
                   /[A-Z]/.test(password) &&
-                  "✅ Password buona"}
+                  "Password buona"}
                 {password.length >= 12 &&
                   /[A-Z]/.test(password) &&
                   /[0-9]/.test(password) &&
-                  "✅ Password forte"}
+                  "Password forte"}
               </div>
             </div>
           )}

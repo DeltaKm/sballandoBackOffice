@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import type { Socket } from "socket.io-client";
+import { FaMusic, FaCheckCircle, FaExpand, FaBell } from "react-icons/fa";
 import { useAuthStore } from "~/store/auth";
 import type { Event } from "~/types";
 
@@ -88,9 +89,9 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
     });
     
     if (currentIndex >= 0) {
-      console.log(`🎵 Current track found at position ${currentIndex + 1}/${spotifyMessages.length}`);
+      console.log(`Current track found at position ${currentIndex + 1}/${spotifyMessages.length}`);
       
-      // ✅ NON RIMUOVERE I MESSAGGI, LASCIA CHE IL FILTRO NEL RENDER SE NE OCCUPI
+      // NON RIMUOVERE I MESSAGGI, LASCIA CHE IL FILTRO NEL RENDER SE NE OCCUPI
       // Questo evita di perdere messaggi e permette di visualizzare la cronologia
       
       // Opzionalmente, puoi scrollare o evidenziare il brano corrente
@@ -118,7 +119,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
             duration_ms: data.item.duration_ms ?? 0,
           };
 
-          // ✅ CONTROLLA SE È UNA NUOVA TRACCIA IN RIPRODUZIONE
+          // CONTROLLA SE È UNA NUOVA TRACCIA IN RIPRODUZIONE
           const isNewTrack = !currentTrack || 
             currentTrack.title !== newTrack.title || 
             currentTrack.artists !== newTrack.artists;
@@ -127,9 +128,9 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
           setCurrentDurationMs(data.item.duration_ms ?? 0);
           setCurrentTrack(newTrack);
 
-          // ✅ SE È UNA NUOVA TRACCIA E STA SUONANDO, CONTROLLA LE NOTIFICHE
+          // SE È UNA NUOVA TRACCIA E STA SUONANDO, CONTROLLA LE NOTIFICHE
           if (isNewTrack && newTrack.is_playing) {
-            console.log('🎵 New track detected:', newTrack.title);
+            console.log('New track detected:', newTrack.title);
             // Aspetta un po' per assicurarsi che i messaggi siano caricati
             setTimeout(() => {
               checkAndSendNotification(newTrack);
@@ -190,7 +191,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
   const fetchMessages = async () => {
     if (!user?.token) return;
     try {
-      console.log('🔄 Fetching messages from API...');
+      console.log('Fetching messages from API...');
       
       const res = await fetch('/api/messages/get_messages', {
         method: 'POST',
@@ -203,13 +204,13 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
       
       if (res.ok) {
         const data = await res.json();
-        console.log('📨 API Response:', data);
+        console.log('API Response:', data);
         
         if (data.success) {
           const apiMessages = data.messages ?? [];
-          console.log('✅ Setting messages from API:', apiMessages.length);
+          console.log('Setting messages from API:', apiMessages.length);
           
-          // ✅ ASSICURATI CHE OGNI MESSAGGIO ABBIA UN ID UNICO
+          // ASSICURATI CHE OGNI MESSAGGIO ABBIA UN ID UNICO
           const processedMessages = apiMessages.map((msg: any, index: number) => ({
             ...msg,
             id: msg.id || `api-${Date.now()}-${index}` // Fallback ID se manca
@@ -219,17 +220,17 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
           setIsLoadingPlaylist(false);
           scrollToBottom();
         } else {
-          console.log('❌ API error:', data.error);
+          console.log('API error:', data.error);
           setMessages([]);
           setIsLoadingPlaylist(false);
         }
       } else {
-        console.log('❌ HTTP error:', res.status);
+        console.log('HTTP error:', res.status);
         setMessages([]);
         setIsLoadingPlaylist(false);
       }
     } catch (error) {
-      console.error("❌ Error loading messages:", error);
+      console.error("Error loading messages:", error);
       setMessages([]);
       setIsLoadingPlaylist(false);
     }
@@ -249,16 +250,16 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
     });
     
     newSocket.on('connect', () => {
-      console.log('✅ Socket connessa');
+      console.log('Socket connessa');
       newSocket.emit('join-to-room', JSON.stringify({ 
         joinType: 'publish', 
         eventId: event.id 
       }));
     });
     
-    // ✅ AGGIUNGI CONTROLLO PER EVITARE DUPLICATI
+    // AGGIUNGI CONTROLLO PER EVITARE DUPLICATI
     newSocket.on('new-public-message', (data: any) => {
-      console.log('📩 New socket message received:', data);
+      console.log('New socket message received:', data);
       
       let newMessage: ChatMessage;
       
@@ -280,17 +281,17 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
           created_at: data.message?.created_at || data.created_at || new Date().toISOString()
         };
       } else {
-        console.log('❌ Invalid message format:', data);
+        console.log('Invalid message format:', data);
         return;
       }
       
-      console.log('✅ Processed message:', newMessage);
+      console.log('Processed message:', newMessage);
       
-      // ✅ CONTROLLA SE IL MESSAGGIO ESISTE GIÀ PRIMA DI AGGIUNGERLO
+      // CONTROLLA SE IL MESSAGGIO ESISTE GIÀ PRIMA DI AGGIUNGERLO
       setMessages(prev => {
         // Controlla se il messaggio esiste già per ID
         if (newMessage.id && prev.some(msg => msg.id === newMessage.id)) {
-          console.log('⚠️ Message already exists, skipping:', newMessage.id);
+          console.log('Message already exists, skipping:', newMessage.id);
           return prev;
         }
         
@@ -302,11 +303,11 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
         );
         
         if (isDuplicate) {
-          console.log('⚠️ Duplicate message detected, skipping');
+          console.log('Duplicate message detected, skipping');
           return prev;
         }
         
-        console.log('✅ Adding new message to array');
+        console.log('Adding new message to array');
         return [...prev, newMessage];
       });
       
@@ -316,9 +317,9 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
       }, 100);
     });
     
-    // ✅ AGGIUNGI GESTIONE ERRORI E DISCONNECT
+    // AGGIUNGI GESTIONE ERRORI E DISCONNECT
     newSocket.on('disconnect', () => {
-      console.log('❌ Socket disconnessa');
+      console.log('Socket disconnessa');
     });
 
     
@@ -326,7 +327,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
     setSocket(newSocket);
   };
 
-  // ✅ AGGIUNGI FUNZIONE PER PULIRE DUPLICATI (OPZIONALE)
+  // AGGIUNGI FUNZIONE PER PULIRE DUPLICATI (OPZIONALE)
   const removeDuplicateMessages = () => {
     setMessages(prev => {
       const seen = new Set();
@@ -343,7 +344,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
       });
       
       if (unique.length !== prev.length) {
-        console.log(`🧹 Removed ${prev.length - unique.length} duplicate messages`);
+        console.log(`Removed ${prev.length - unique.length} duplicate messages`);
       }
       
       return unique;
@@ -401,7 +402,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
       await fetchMessages();
       await initSocket();
       
-      // ✅ PULISCI DUPLICATI DOPO 2 SECONDI
+      // PULISCI DUPLICATI DOPO 2 SECONDI
       setTimeout(() => {
         removeDuplicateMessages();
       }, 2000);
@@ -414,7 +415,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
       void fetchPlaybackQueue();
       filterMessagesByCurrentTrack();
       
-      // ✅ PULISCI DUPLICATI OGNI 30 SECONDI
+      // PULISCI DUPLICATI OGNI 30 SECONDI
       removeDuplicateMessages();
     }, 5000);
 
@@ -466,7 +467,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
 
   const sendPlayingNotification = async (track: CurrentTrack, dedicationMessage: ChatMessage) => {
     try {
-      console.log('📤 Sending playing notification for:', track.title);
+      console.log('Sending playing notification for:', track.title);
       
       const notificationData = {
         event_id: event.id,
@@ -490,19 +491,19 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
 
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ Notification sent successfully:', result);
+        console.log('Notification sent successfully:', result);
         
-        // ✅ AGGIUNGI LA TRACCIA AL SET DELLE NOTIFICHE INVIATE
+        // AGGIUNGI LA TRACCIA AL SET DELLE NOTIFICHE INVIATE
         const trackKey = `${track.title}-${track.artists}`;
         setNotifiedTracks(prev => new Set(prev).add(trackKey));
         
       } else {
         const error = await response.json();
-        console.error('❌ Failed to send notification:', error);
+        console.error('Failed to send notification:', error);
       }
 
     } catch (error) {
-      console.error('❌ Error sending notification:', error);
+      console.error('Error sending notification:', error);
     }
   };
 
@@ -526,10 +527,10 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
     );
 
     if (dedicationMessage) {
-      console.log('🎵 Found dedication for playing track, sending notification...');
+      console.log('Found dedication for playing track, sending notification...');
       await sendPlayingNotification(track, dedicationMessage);
     } else {
-      console.log('🎵 No dedication found for current track');
+      console.log('No dedication found for current track');
     }
   };
 
@@ -545,7 +546,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
             className="inline-flex items-center gap-2 px-6 py-3 text-white font-bold rounded-lg transition-colors"
             style={{ backgroundColor: 'rgb(79, 174, 27)' }}
           >
-            <span className="text-xl">🎵</span>
+            <FaMusic className="text-xl" />
             Collega Spotify
           </a>
         ) : (
@@ -554,7 +555,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
             className="inline-flex items-center gap-2 px-6 py-3 text-white font-bold rounded-lg transition-colors"
             style={{ backgroundColor: 'rgb(79, 174, 27)' }}
           >
-            <span className="text-xl">✅</span>
+            <FaCheckCircle className="text-xl" />
             Spotify connesso
           </a>
         )}
@@ -565,7 +566,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
         onClick={toggleFullscreen}
         className="absolute top-4 right-4 bg-green-600 hover:bg-green-700 text-white text-xl px-3 py-2 rounded-md transition-colors z-50"
       >
-        ⛶
+        <FaExpand />
       </button>
 
       {/* Main Content */}
@@ -585,7 +586,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
                   />
                 ) : (
                   <div className="w-96 h-96 bg-white/10 mb-8 rounded-lg flex items-center justify-center text-6xl">
-                    🎵
+                    <FaMusic />
                   </div>
                 )}
                 
@@ -628,7 +629,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
           )}
         </div>
 
-        {/* Queue Section - ✅ USA I MESSAGGI DAL DB + WEBSOCKET */}
+        {/* Queue Section - USA I MESSAGGI DAL DB + WEBSOCKET */}
         <div className="flex-1 p-4 rounded-lg max-h-screen overflow-y-auto">
           <h3 className="text-5xl font-normal pb-10">Canzoni in coda</h3>
           
@@ -640,11 +641,11 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
               <br />• Messages with Spotify: {messages.filter(m => m.spotify_playlist).length}
               <br />• Queue Tracks from API: {queueTracks.length}
               <br />• Current Track: {currentTrack?.title || 'None'}
-              <br />• Is Playing: {currentTrack?.is_playing ? '▶️' : '⏸️'}
+              <br />• Is Playing: {currentTrack?.is_playing ? 'Playing' : 'Paused'}
               <br />• Notifications Sent: {notifiedTracks.size}
-              <br />• Current Track Has Dedication: {getCurrentTrackDedication() ? '✅' : '❌'}
+              <br />• Current Track Has Dedication: {getCurrentTrackDedication() ? 'Yes' : 'No'}
               
-              {/* ✅ LISTA NOTIFICHE INVIATE */}
+              {/* LISTA NOTIFICHE INVIATE */}
               {notifiedTracks.size > 0 && (
                 <>
                   <br />• Notified Tracks:
@@ -656,7 +657,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
                 </>
               )}
               
-              {/* ✅ BOTTONE PER TESTARE NOTIFICA */}
+              {/* BOTTONE PER TESTARE NOTIFICA */}
               <div className="mt-2">
                 <button 
                   onClick={() => {
@@ -673,18 +674,18 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
                   }}
                   className="px-2 py-1 bg-purple-500/20 border border-purple-500/30 rounded text-xs"
                 >
-                  🔔 Test Notification
+                  <span className="inline-flex items-center gap-1"><FaBell /><span>Test Notification</span></span>
                 </button>
               </div>
             </div>
           )}
           
-          {/* ✅ MESSAGGI DALLA CHAT (DATABASE + WEBSOCKET) - SOLO BRANI FUTURI */}
+          {/* MESSAGGI DALLA CHAT (DATABASE + WEBSOCKET) - SOLO BRANI FUTURI */}
           <div>
-            <h4 className="text-3xl text-green-400 mb-6">🎵 Brani richiesti dagli utenti</h4>
+            <h4 className="text-3xl text-green-400 mb-6 inline-flex items-center gap-2"><FaMusic /><span>Brani richiesti dagli utenti</span></h4>
             
             {(() => {
-              // ✅ FILTRA MESSAGGI: RIMUOVI QUELLI PRECEDENTI AL BRANO CORRENTE
+              // FILTRA MESSAGGI: RIMUOVI QUELLI PRECEDENTI AL BRANO CORRENTE
               const spotifyMessages = messages.filter(msg => msg.spotify_playlist);
               
               if (!currentTrack || spotifyMessages.length === 0) {
@@ -703,7 +704,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
                 ? spotifyMessages.slice(currentTrackIndex + 1) // +1 per escludere anche quello corrente
                 : spotifyMessages;
               
-              console.log('🎵 Queue filtering:', {
+              console.log('Queue filtering:', {
                 totalSpotifyMessages: spotifyMessages.length,
                 currentTrack: currentTrack?.title,
                 currentTrackIndex,
@@ -714,7 +715,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
             })().length > 0 ? (
               <div className="space-y-4">
                 {(() => {
-                  // ✅ STESSA LOGICA DI FILTRO PER IL RENDERING
+                  // STESSA LOGICA DI FILTRO PER IL RENDERING
                   const spotifyMessages = messages.filter(msg => msg.spotify_playlist);
                   
                   if (!currentTrack) {
@@ -733,7 +734,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
                   return filteredMessages;
                 })().map((msg, index) => (
                   <div key={`msg-${msg.id ?? index}`} className="bg-gray-800/50 border border-green-500/30 rounded-lg p-4">
-                    {/* ✅ AGGIUNGI NUMERO DI POSIZIONE NELLA CODA */}
+                    {/* AGGIUNGI NUMERO DI POSIZIONE NELLA CODA */}
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-green-500 text-black rounded-full flex items-center justify-center font-bold text-sm">
@@ -761,7 +762,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
                         />
                       ) : (
                         <div className="w-20 h-20 bg-white/10 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
-                          🎵
+                          <FaMusic />
                         </div>
                       )}
                       
@@ -782,7 +783,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
             ) : (
               <div className="flex items-center justify-center h-64 text-white/30">
                 <div className="text-center">
-                  <div className="text-6xl mb-4">🎵</div>
+                  <FaMusic className="text-6xl mb-4 mx-auto" />
                   <p className="text-xl">
                     {currentTrack ? 'Nessun brano in coda' : 'Nessun brano richiesto'}
                   </p>
@@ -792,7 +793,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
                       : 'I brani aggiunti dagli utenti appariranno qui'
                     }
                   </p>
-                  {/* ✅ MOSTRA BRANO CORRENTE SE PRESENTE */}
+                  {/* MOSTRA BRANO CORRENTE SE PRESENTE */}
                   {currentTrack && (
                     <div className="mt-4 text-xs text-gray-400">
                       Ora in riproduzione: <span className="text-green-400">{currentTrack.title}</span>

@@ -6,6 +6,20 @@ import { useAuthStore } from "~/store/auth";
 import { useAuthRedirect } from "~/lib/useAuth";
 import { Sidebar } from "~/components/Sidebar";
 import { getLocationLogoUrl } from "~/lib/imageUtils";
+import {
+  FaSearch,
+  FaTimes,
+  FaCrown,
+  FaBuilding,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaEnvelope,
+  FaChartBar,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaTrash,
+  FaEdit,
+} from "react-icons/fa";
 import type { location_ } from "~/types";
 
 export default function locationsPage() {
@@ -23,7 +37,7 @@ export default function locationsPage() {
   const isSuperAdmin = user?.role === 'SUPERADMIN';
 
   // DEBUG - rimuovere in produzione
-  console.log('🔍 DEBUG Locations Page:', {
+  console.log('[DEBUG] Locations Page:', {
     userRole: user?.role,
     isSuperAdmin,
     userEmail: user?.email
@@ -90,7 +104,7 @@ export default function locationsPage() {
 
     // Doppia conferma per sicurezza
     const confirmed = confirm(
-      `⚠️ ATTENZIONE: Vuoi davvero eliminare il locale "${location_.name}"?\n\n` +
+      `ATTENZIONE: Vuoi davvero eliminare il locale "${location_.name}"?\n\n` +
       `Questa azione è IRREVERSIBILE e eliminerà:\n` +
       `• Il locale e tutti i suoi dati\n` +
       `• Tutte le informazioni associate\n\n` +
@@ -116,20 +130,20 @@ export default function locationsPage() {
 
       if (res.ok) {
         const result = await res.json();
-        alert(`✅ Locale "${result.deletedLocation.name}" eliminato con successo!`);
+        alert(`Locale "${result.deletedLocation.name}" eliminato con successo!`);
         
         // Rimuovi il locale dalla lista locale
         setlocations(prev => prev.filter(loc => loc.id !== location_.id));
       } else {
         const error = await res.json();
-        alert(`❌ Errore: ${error.error}`);
+        alert(`Errore: ${error.error}`);
         if (error.details) {
           alert(`Dettagli: ${error.details}`);
         }
       }
     } catch (err) {
       console.error('Error deleting location:', err);
-      alert('❌ Errore di connessione durante l\'eliminazione');
+      alert('Errore di connessione durante l\'eliminazione');
     } finally {
       setDeletingLocation(null);
     }
@@ -228,7 +242,7 @@ export default function locationsPage() {
         <div className="max-w-7xl mx-auto p-6 pb-0">
           {/* DEBUG INFO - RIMUOVERE IN PRODUZIONE */}
           <div className="mb-4 p-3 bg-yellow-500/20 border border-yellow-400/30 rounded-lg text-yellow-300 text-sm">
-            <strong>🔍 DEBUG INFO:</strong> User role: {user?.role || 'undefined'} | 
+            <strong className="inline-flex items-center gap-2"><FaSearch /><span>DEBUG INFO:</span></strong> User role: {user?.role || 'undefined'} | 
             Is SUPERADMIN: {isSuperAdmin ? 'YES' : 'NO'} | 
             Email: {user?.email || 'undefined'} | 
             Should show delete button: {isSuperAdmin ? 'YES' : 'NO'}
@@ -236,7 +250,7 @@ export default function locationsPage() {
 
           <div className="relative mb-6">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-white/60">🔍</span>
+              <FaSearch className="text-white/60" />
             </div>
             <input
               type="text"
@@ -250,7 +264,7 @@ export default function locationsPage() {
                 onClick={() => setSearchQuery("")}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/60 hover:text-white"
               >
-                ✕
+                <FaTimes />
               </button>
             )}
           </div>
@@ -319,21 +333,23 @@ export default function locationsPage() {
                       {/* Badge Super Admin in overlay */}
                       {isSuperAdmin && (
                         <div className="absolute top-3 left-3">
-                          <span className="px-2 py-1 bg-yellow-500/90 text-yellow-900 rounded text-xs font-bold">
-                            👑 SUPER ADMIN
+                          <span className="px-2 py-1 bg-yellow-500/90 text-yellow-900 rounded text-xs font-bold inline-flex items-center gap-1">
+                            <FaCrown />
+                            <span>SUPER ADMIN</span>
                           </span>
                         </div>
                       )}
                     </div>
                   ) : (
                     <div className="h-48 w-full bg-gradient-to-br from-[#FC0045]/20 to-purple-600/20 flex items-center justify-center relative">
-                      <span className="text-4xl">🏢</span>
+                      <FaBuilding className="text-4xl" />
 
                       {/* Badge Super Admin */}
                       {isSuperAdmin && (
                         <div className="absolute top-3 left-3">
-                          <span className="px-2 py-1 bg-yellow-500/90 text-yellow-900 rounded text-xs font-bold">
-                            👑 SUPER ADMIN
+                          <span className="px-2 py-1 bg-yellow-500/90 text-yellow-900 rounded text-xs font-bold inline-flex items-center gap-1">
+                            <FaCrown />
+                            <span>SUPER ADMIN</span>
                           </span>
                         </div>
                       )}
@@ -367,7 +383,7 @@ export default function locationsPage() {
                     {/* Informazioni location_ */}
                     <div className="space-y-2 text-white/60 text-sm">
                       <div className="flex items-center gap-2">
-                        <span>📍</span>
+                        <FaMapMarkerAlt />
                         <span className="line-clamp-1">
                           {location_.address}
                           {location_.comune && `, ${location_.comune}`}
@@ -376,20 +392,20 @@ export default function locationsPage() {
 
                       {location_.phone && (
                         <div className="flex items-center gap-2">
-                          <span>📞</span>
+                          <FaPhone />
                           <span>{location_.phone}</span>
                         </div>
                       )}
 
                       {location_.email && (
                         <div className="flex items-center gap-2">
-                          <span>📧</span>
+                          <FaEnvelope />
                           <span className="line-clamp-1">{location_.email}</span>
                         </div>
                       )}
 
                       <div className="flex items-center gap-2">
-                        <span>📊</span>
+                        <FaChartBar />
                         <span>
                           Creato il {new Date(location_.created_at).toLocaleDateString('it-IT')}
                         </span>
@@ -441,12 +457,12 @@ export default function locationsPage() {
                               </>
                             ) : location_.enable ? (
                               <>
-                                <span>❌</span>
-                                <span className="text-xs">Disattiva2</span>
+                                <FaTimesCircle />
+                                <span className="text-xs">Disattiva</span>
                               </>
                             ) : (
                               <>
-                                <span>✅</span>
+                                <FaCheckCircle />
                                 <span className="text-xs">Attiva</span>
                               </>
                             )}
@@ -473,7 +489,7 @@ export default function locationsPage() {
                               </>
                             ) : (
                               <>
-                                <span>🗑️</span>
+                                <FaTrash />
                                 <span className="text-xs">Elimina</span>
                               </>
                             )}
@@ -489,9 +505,10 @@ export default function locationsPage() {
                           e.stopPropagation();
                           router.push(`/locations/${location_.id}/update`);
                         }}
-                        className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+                        className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors inline-flex items-center gap-2"
                       >
-                        ✏️ Modifica
+                        <FaEdit />
+                        <span>Modifica</span>
                       </button>
                     </div>
                   </div>

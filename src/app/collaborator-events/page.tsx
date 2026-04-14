@@ -5,6 +5,23 @@ import { useAuthRedirect } from "~/lib/useAuth";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "~/components/Sidebar";
 import { EventCard } from "~/components/EventCard";
+import { 
+  FaClipboardList,
+  FaSearch,
+  FaRocket,
+  FaCalendarAlt,
+  FaCheckCircle,
+  FaPen,
+  FaTimesCircle,
+  FaUsers,
+  FaUser,
+  FaMask,
+  FaTicketAlt,
+  FaShoppingBag,
+  FaMusic,
+  FaEye,
+  FaTimes,
+} from 'react-icons/fa';
 import type { Event } from "~/types";
 
 interface CollaboratorEvent extends Event {
@@ -147,7 +164,7 @@ export default function CollaboratorEventsPage() {
               onClick={() => router.push("/event")}
               className="px-4 py-2 bg-white text-[#FC0045] rounded-lg hover:bg-white/90 transition-colors flex items-center gap-2"
             >
-              <span>📋</span>
+              <FaClipboardList className="text-sm" />
               Miei Eventi
             </button>
           </div>
@@ -186,7 +203,7 @@ export default function CollaboratorEventsPage() {
           {/* Search Bar */}
           <div className="relative mb-4">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-white/60">🔍</span>
+              <FaSearch className="text-white/60 text-sm" />
             </div>
             <input
               type="text"
@@ -200,7 +217,7 @@ export default function CollaboratorEventsPage() {
                 onClick={() => setSearchQuery("")}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/60 hover:text-white"
               >
-                ✕
+                <FaTimes />
               </button>
             )}
           </div>
@@ -208,11 +225,11 @@ export default function CollaboratorEventsPage() {
           {/* Status Filter */}
           <div className="flex flex-wrap gap-2 mb-6">
             {[
-              { key: 'all', label: 'Tutti', icon: '📋' },
-              { key: 'upcoming', label: 'Prossimi', icon: '🚀' },
-              { key: 'past', label: 'Passati', icon: '📅' },
-              { key: 'published', label: 'Pubblicati', icon: '✅' },
-              { key: 'draft', label: 'Bozze', icon: '📝' }
+              { key: 'all', label: 'Tutti', icon: FaClipboardList },
+              { key: 'upcoming', label: 'Prossimi', icon: FaRocket },
+              { key: 'past', label: 'Passati', icon: FaCalendarAlt },
+              { key: 'published', label: 'Pubblicati', icon: FaCheckCircle },
+              { key: 'draft', label: 'Bozze', icon: FaPen }
             ].map((filter) => (
               <button
                 key={filter.key}
@@ -223,7 +240,7 @@ export default function CollaboratorEventsPage() {
                     : 'bg-white/10 text-white/70 hover:bg-white/20'
                 }`}
               >
-                <span>{filter.icon}</span>
+                <filter.icon className="text-sm" />
                 {filter.label}
               </button>
             ))}
@@ -246,7 +263,7 @@ export default function CollaboratorEventsPage() {
           {error ? (
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-white">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">❌</span>
+                <FaTimesCircle className="text-2xl text-red-300" />
                 <div>
                   <h3 className="font-bold mb-1">Errore di caricamento</h3>
                   <p>{error}</p>
@@ -263,7 +280,7 @@ export default function CollaboratorEventsPage() {
             <div className="text-center py-12">
               {searchQuery || filterStatus !== 'all' ? (
                 <div>
-                  <div className="text-6xl mb-4">🔍</div>
+                  <FaSearch className="text-6xl mb-4 mx-auto text-white/60" />
                   <p className="text-white/60 mb-4">
                     Nessun evento trovato{searchQuery && ` per "${searchQuery}"`}
                     {filterStatus !== 'all' && ` con filtro "${filterStatus}"`}
@@ -289,7 +306,7 @@ export default function CollaboratorEventsPage() {
                 </div>
               ) : (
                 <div>
-                  <div className="text-6xl mb-4">👥</div>
+                  <FaUsers className="text-6xl mb-4 mx-auto text-white/60" />
                   <h3 className="text-white text-xl font-bold mb-2">Nessun evento collaboratore</h3>
                   <p className="text-white/60 mb-6">
                     Non sei ancora collaboratore di nessun evento.
@@ -329,7 +346,7 @@ export default function CollaboratorEventsPage() {
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 rounded-b-xl">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-orange-400 text-sm">👤</span>
+                          <FaUser className="text-orange-400 text-sm" />
                           <span className="text-orange-300 text-sm font-medium">
                             {event.collaborator_label || event.collaborator_role}
                           </span>
@@ -357,13 +374,13 @@ export default function CollaboratorEventsPage() {
                       <div className="flex items-center gap-2 text-xs">
                         <span className="text-white/60">Permessi:</span>
                         {event.permissions.guest_enabled && (
-                          <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded">🎭 Ospite</span>
+                          <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded inline-flex items-center gap-1"><FaMask /> <span>Ospite</span></span>
                         )}
                         {event.permissions.vidimate_enabled_entry && (
-                          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded">🎫 Ingressi</span>
+                          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded inline-flex items-center gap-1"><FaTicketAlt /> <span>Ingressi</span></span>
                         )}
                         {event.permissions.vidimate_enabled_product && (
-                          <span className="px-2 py-1 bg-green-500/20 text-green-300 rounded">🛍️ Prodotti</span>
+                          <span className="px-2 py-1 bg-green-500/20 text-green-300 rounded inline-flex items-center gap-1"><FaShoppingBag /> <span>Prodotti</span></span>
                         )}
                         {!event.permissions.guest_enabled && 
                          !event.permissions.vidimate_enabled_entry && 
@@ -374,15 +391,18 @@ export default function CollaboratorEventsPage() {
                       
                       {/* Quick stats */}
                       <div className="flex items-center gap-4 mt-2 text-xs text-white/60">
-                        <span>🛍️ {event.products_count} prodotti</span>
-                        <span>🎫 {event.entry_types_count} ingressi</span>
-                        <span>🎵 {event.music_genres_count} generi</span>
+                        <span className="inline-flex items-center gap-1"><FaShoppingBag /> <span>{event.products_count} prodotti</span></span>
+                        <span className="inline-flex items-center gap-1"><FaTicketAlt /> <span>{event.entry_types_count} ingressi</span></span>
+                        <span className="inline-flex items-center gap-1"><FaMusic /> <span>{event.music_genres_count} generi</span></span>
                       </div>
                       
                       {/* Action button */}
                       <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button className="w-full px-3 py-2 bg-[#FC0045] text-white rounded-lg text-sm font-medium hover:bg-[#FC0045]/80 transition-colors">
-                          👁️ Visualizza Dettagli
+                          <span className="inline-flex items-center gap-2">
+                            <FaEye />
+                            <span>Visualizza Dettagli</span>
+                          </span>
                         </button>
                       </div>
                     </div>

@@ -6,6 +6,24 @@ import { useAuthRedirect } from "~/lib/useAuth";
 import { getLocationLogoUrl } from "~/lib/imageUtils";
 import Link from "next/link";
 import { EventCard } from "~/components/EventCard";
+import {
+  FaExclamationTriangle,
+  FaMapMarkerAlt,
+  FaCreditCard,
+  FaCheckCircle,
+  FaLink,
+  FaTicketAlt,
+  FaLock,
+  FaChartBar,
+  FaEuroSign,
+  FaRocket,
+  FaEdit,
+  FaTrash,
+  FaMagic,
+  FaCalendarAlt,
+  FaBook,
+  FaBookOpen,
+} from "react-icons/fa";
 import type { location_, Event } from "~/types";
 
 export default function locationPage() {
@@ -67,7 +85,7 @@ export default function locationPage() {
 
     // Doppia conferma per sicurezza
     const confirmed = confirm(
-      `⚠️ ATTENZIONE: Vuoi davvero eliminare il locale "${location_.name}"?\n\n` +
+      `ATTENZIONE: Vuoi davvero eliminare il locale "${location_.name}"?\n\n` +
       `Questa azione è IRREVERSIBILE e eliminerà:\n` +
       `• Il locale e tutti i suoi dati\n` +
       `• Tutte le informazioni associate\n\n` +
@@ -93,18 +111,18 @@ export default function locationPage() {
 
       if (res.ok) {
         const result = await res.json();
-        alert(`✅ Locale "${result.deletedLocation.name}" eliminato con successo!`);
+        alert(`Locale "${result.deletedLocation.name}" eliminato con successo!`);
         router.push('/locations');
       } else {
         const error = await res.json();
-        alert(`❌ Errore: ${error.error}`);
+        alert(`Errore: ${error.error}`);
         if (error.details) {
           alert(`Dettagli: ${error.details}`);
         }
       }
     } catch (err) {
       console.error('Error deleting location:', err);
-      alert('❌ Errore di connessione durante l\'eliminazione');
+      alert('Errore di connessione durante l\'eliminazione');
     } finally {
       setDeleting(false);
     }
@@ -133,11 +151,11 @@ export default function locationPage() {
         // Redirect to Stripe onboarding
         window.location.href = data.link_stripe_created;
       } else {
-        alert(`❌ Errore: ${data.error || 'Impossibile creare il link Stripe'}`);
+        alert(`Errore: ${data.error || 'Impossibile creare il link Stripe'}`);
       }
     } catch (err) {
       console.error('Error creating merchant link:', err);
-      alert('❌ Errore di connessione durante l\'attivazione dei pagamenti');
+      alert('Errore di connessione durante l\'attivazione dei pagamenti');
     } finally {
       setIsPaymentLoading(false);
     }
@@ -182,7 +200,7 @@ export default function locationPage() {
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4 mx-auto">
-            <span className="text-red-400 text-2xl">⚠️</span>
+            <FaExclamationTriangle className="text-red-400 text-2xl" />
           </div>
           <p className="text-red-400 mb-4">{error}</p>
           <Link href="/" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
@@ -233,8 +251,9 @@ export default function locationPage() {
             )}
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-white mb-2">{location_.name}</h1>
-              <p className="text-white/80 text-lg mb-2">
-                📍 {location_.address}{location_.comune && `, ${location_.comune}`}
+              <p className="text-white/80 text-lg mb-2 inline-flex items-center gap-2">
+                <FaMapMarkerAlt />
+                <span>{location_.address}{location_.comune && `, ${location_.comune}`}</span>
               </p>
               {location_.description && (
                 <p className="text-white/60">{location_.description}</p>
@@ -261,14 +280,15 @@ export default function locationPage() {
           {/* Sezione Pagamenti Stripe */}
           <div className="mb-6 p-6 bg-white/5 border border-white/10 rounded-lg">
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              💳 Gestione Pagamenti
+              <FaCreditCard />
+              <span>Gestione Pagamenti</span>
             </h3>
             
             {location_.stripe_account?.active ? (
               // Stato Attivo
               <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-5">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="text-2xl">✅</span>
+                  <FaCheckCircle className="text-2xl" />
                   <div>
                     <div className="text-green-400 font-semibold text-lg">Pagamenti Attivi</div>
                     <div className="text-white/60 text-sm">Account Stripe connesso e attivo</div>
@@ -286,7 +306,7 @@ export default function locationPage() {
                   onClick={handleGoToStripeAccount}
                   className="w-full px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
                 >
-                  <span>🔗</span>
+                  <FaLink />
                   Vai al Dashboard Stripe
                 </button>
               </div>
@@ -294,7 +314,7 @@ export default function locationPage() {
               // Stato Inattivo
               <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-5">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="text-2xl">⚠️</span>
+                  <FaExclamationTriangle className="text-2xl" />
                   <div>
                     <div className="text-orange-400 font-semibold text-lg">Pagamenti Non Attivi</div>
                     <div className="text-white/60 text-sm">Abilita i pagamenti per vendere biglietti</div>
@@ -305,19 +325,19 @@ export default function locationPage() {
                   <div className="text-white/80 font-medium mb-3">Vantaggi dell'attivazione:</div>
                   <ul className="space-y-2 text-white/70 text-sm">
                     <li className="flex items-start gap-2">
-                      <span className="mt-0.5">🎫</span>
+                      <FaTicketAlt className="mt-0.5" />
                       <span>Vendere biglietti direttamente dall'app Sballando</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="mt-0.5">🔒</span>
+                      <FaLock className="mt-0.5" />
                       <span>Pagamenti sicuri gestiti da Stripe, leader mondiale nei pagamenti online</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="mt-0.5">📊</span>
+                      <FaChartBar className="mt-0.5" />
                       <span>Dashboard completa per gestire i tuoi ricavi e transazioni</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="mt-0.5">💰</span>
+                      <FaEuroSign className="mt-0.5" />
                       <span>Accredito diretto sul tuo conto corrente</span>
                     </li>
                   </ul>
@@ -339,8 +359,8 @@ export default function locationPage() {
                     </>
                   ) : (
                     <>
-                      <span>🚀</span>
-                      Attiva Pagamenti con Stripe
+                      <FaRocket />
+                      <span>Attiva Pagamenti con Stripe</span>
                     </>
                   )}
                 </button>
@@ -362,8 +382,8 @@ export default function locationPage() {
               href={`/locations/${id}/update`}
               className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
             >
-              <span>✏️</span>
-              Modifica Locale
+              <FaEdit />
+              <span>Modifica Locale</span>
             </Link>
 
             {/* Pulsante Elimina (solo per SUPERADMIN) */}
@@ -385,8 +405,8 @@ export default function locationPage() {
                   </>
                 ) : (
                   <>
-                    <span>🗑️</span>
-                    Elimina Locale
+                    <FaTrash />
+                    <span>Elimina Locale</span>
                   </>
                 )}
               </button>
@@ -409,7 +429,8 @@ export default function locationPage() {
         {/* Eventi futuri */}
         <div className="mb-10">
           <h2 className="text-2xl font-semibold text-[#FC0045] mb-6 flex items-center gap-2">
-            🔮 Eventi Futuri
+            <FaMagic />
+            <span>Eventi Futuri</span>
           </h2>
           {futureEvents.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -425,7 +446,7 @@ export default function locationPage() {
           ) : (
             <div className="p-8 bg-white/5 border border-white/10 rounded-lg text-center">
               <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-4 mx-auto">
-                <span className="text-blue-400 text-2xl">📅</span>
+                <FaCalendarAlt className="text-blue-400 text-2xl" />
               </div>
               <p className="text-white/60">Nessun evento futuro programmato</p>
             </div>
@@ -435,7 +456,8 @@ export default function locationPage() {
         {/* Eventi passati */}
         <div>
           <h2 className="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
-            📚 Eventi Passati
+            <FaBook />
+            <span>Eventi Passati</span>
           </h2>
           {pastEvents.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -451,7 +473,7 @@ export default function locationPage() {
           ) : (
             <div className="p-8 bg-white/5 border border-white/10 rounded-lg text-center">
               <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mb-4 mx-auto">
-                <span className="text-orange-400 text-2xl">📖</span>
+                <FaBookOpen className="text-orange-400 text-2xl" />
               </div>
               <p className="text-white/60">Nessun evento passato</p>
             </div>
@@ -463,8 +485,9 @@ export default function locationPage() {
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 border border-white/20 rounded-lg max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-white mb-4">
-              🚀 Attivazione Pagamenti
+            <h3 className="text-xl font-bold text-white mb-4 inline-flex items-center gap-2">
+              <FaRocket />
+              <span>Attivazione Pagamenti</span>
             </h3>
             
             <div className="text-white/80 mb-6 space-y-3 text-sm">

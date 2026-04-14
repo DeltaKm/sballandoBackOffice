@@ -6,6 +6,17 @@ import type { Event, Product } from "~/types";
 import { TransferProductModal } from "./TransferProductModal";
 import { EditProductModal } from "./EditProductModal";
 import { NewProductModal } from "./NewProductModal";
+import {
+  FaPlus,
+  FaShoppingBag,
+  FaSyncAlt,
+  FaTrash,
+  FaUsers,
+  FaUser,
+  FaClipboardList,
+  FaUndo,
+  FaExclamationTriangle,
+} from 'react-icons/fa';
 
 interface ProductsSectionProps {
   event: Event;
@@ -81,7 +92,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
     }
 
     // Debug: verifica i prodotti ricevuti
-    console.log('🔍 ProductsSection - Products received:', {
+    console.log('ProductsSection - Products received:', {
       totalProducts: event.products.length,
       sampleProducts: event.products.slice(0, 5).map(p => ({
         id: p.id,
@@ -105,7 +116,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
       return !hasEntryType;
     });
     
-    console.log('🔍 ProductsSection - After filtering:', {
+    console.log('ProductsSection - After filtering:', {
       standaloneProducts: standaloneProducts.length,
       filteredOut: event.products.length - standaloneProducts.length
     });
@@ -242,7 +253,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
         const errorMessage = errorData.message 
           ? `${errorData.error}\n\n${errorData.message}` 
           : errorData.error || 'Errore sconosciuto';
-        alert(`❌ ${errorMessage}`);
+        alert(errorMessage);
       }
     } catch (err) {
       console.error('Error adding product:', err);
@@ -457,7 +468,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
           onClick={openNewProductModal}
           className="px-6 py-3 bg-[#FC0045] text-white rounded-xl hover:bg-[#FC0045]/80 transition-colors flex items-center gap-3 text-lg font-semibold"
         >
-          <span className="text-xl">➕</span>
+          <FaPlus className="text-xl" />
           Nuovo Prodotto
         </button>
       </div>
@@ -471,7 +482,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
             {/* Header sezione */}
             <div className="flex items-center gap-4 mb-6">
               <div className="w-14 h-14 bg-purple-500/30 rounded-xl flex items-center justify-center">
-                <span className="text-purple-400 text-2xl">🛍️</span>
+                <FaShoppingBag className="text-purple-400 text-2xl" />
               </div>
               <div className="flex-1">
                 <h4 className="text-purple-300 font-bold text-xl">I Miei Prodotti</h4>
@@ -578,7 +589,10 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                             : 'Trasferisci prodotti ai collaboratori'
                         }
                       >
-                        🔄 Trasferisci
+                        <span className="inline-flex items-center gap-2">
+                          <FaSyncAlt />
+                          <span>Trasferisci</span>
+                        </span>
                       </button>
                       
                       <button
@@ -594,7 +608,8 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                             : `Ritira ${getWithdrawableCount(product)} prodotti dai collaboratori`
                         }
                       >
-                        ↩️ Ritira
+                        <FaUndo />
+                        <span>Ritira</span>
                         {getWithdrawableCount(product) > 0 && (
                           <span className="bg-orange-500/50 px-2 py-1 rounded-lg text-xs font-bold">
                             {getWithdrawableCount(product)}
@@ -604,10 +619,11 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                       
                       <button
                         onClick={(e) => { e.stopPropagation(); openDeleteModal(product.id, product.label); }}
-                        className="px-4 py-2 bg-red-500/30 text-red-300 rounded-lg text-sm font-medium hover:bg-red-500/50 transition-colors border border-red-400/40"
+                        className="px-4 py-2 bg-red-500/30 text-red-300 rounded-lg text-sm font-medium hover:bg-red-500/50 transition-colors border border-red-400/40 inline-flex items-center gap-2"
                         title="Elimina prodotto"
                       >
-                        🗑️ Elimina
+                        <FaTrash />
+                        <span>Elimina</span>
                       </button>
                     </div>
                   </div>
@@ -615,7 +631,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
               ) : (
                 <div className="text-center py-12 border-2 border-dashed border-purple-400/40 rounded-xl bg-purple-500/10">
                   <div className="text-purple-400/70 mb-4">
-                    <span className="text-5xl">🛍️</span>
+                    <FaShoppingBag className="text-5xl mx-auto" />
                   </div>
                   <p className="text-purple-300 text-lg mb-3 font-semibold">
                     {myActiveCategory === 'all'
@@ -632,9 +648,10 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                   {myActiveCategory === 'all' && (
                     <button
                       onClick={openNewProductModal}
-                      className="px-6 py-3 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors text-base font-semibold"
+                      className="px-6 py-3 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors text-base font-semibold inline-flex items-center gap-2"
                     >
-                      ➕ Aggiungi il primo prodotto
+                      <FaPlus />
+                      <span>Aggiungi il primo prodotto</span>
                     </button>
                   )}
                 </div>
@@ -649,7 +666,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
             {/* Header sezione */}
             <div className="flex items-center gap-4 mb-6">
               <div className="w-14 h-14 bg-green-500/30 rounded-xl flex items-center justify-center">
-                <span className="text-green-400 text-2xl">👥</span>
+                <FaUsers className="text-green-400 text-2xl" />
               </div>
               <div className="flex-1">
                 <h4 className="text-green-300 font-bold text-xl">Prodotti Collaboratori</h4>
@@ -676,7 +693,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                       <div className="flex items-center justify-between mb-6 pb-4 border-b border-green-400/30">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 bg-green-500/30 rounded-lg flex items-center justify-center">
-                            <span className="text-green-400 text-xl">👤</span>
+                            <FaUser className="text-green-400 text-xl" />
                           </div>
                           <div>
                             <h5 className="text-green-300 font-bold text-lg">{collaboratorGroup.collaboratorName}</h5>
@@ -770,14 +787,14 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                                   onClick={() => handleWithdrawProduct(product as unknown as Product)}
                                   className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all duration-200 flex items-center gap-2"
                                 >
-                                  <span>↩️</span>
+                                  <FaUndo />
                                   <span>Ritira</span>
                                 </button>
                                 <button
                                   onClick={() => handleDeleteProduct(product.id as number)}
                                   className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-all duration-200 flex items-center gap-2"
                                 >
-                                  <span>🗑️</span>
+                                  <FaTrash />
                                   <span>Elimina</span>
                                 </button>
                               </div>
@@ -787,7 +804,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                       ) : (
                         <div className="text-center py-8 border border-dashed border-green-400/40 rounded-lg bg-green-500/10">
                           <div className="text-green-400/70 mb-3">
-                            <span className="text-3xl">📝</span>
+                            <FaClipboardList className="text-3xl mx-auto" />
                           </div>
                           <p className="text-green-300 text-base font-semibold">
                             {(collaboratorActiveCategories[collaboratorGroup.user_id] || 'all') === 'all'
@@ -803,7 +820,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
               ) : (
                 <div className="text-center py-12 border-2 border-dashed border-green-400/40 rounded-xl bg-green-500/10">
                   <div className="text-green-400/70 mb-4">
-                    <span className="text-5xl">👥</span>
+                    <FaUsers className="text-5xl mx-auto" />
                   </div>
                   <p className="text-green-300 text-lg mb-3 font-semibold">Nessun collaboratore attivo</p>
                   <p className="text-green-400/80 text-base">
@@ -820,15 +837,16 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
       {totalMyProducts === 0 && (!Array.isArray(collaboratorsProductsByCategory) || collaboratorsProductsByCategory.length === 0) && (
         <div className="text-center py-16 bg-white/10 rounded-2xl border-2 border-dashed border-white/30 mt-8">
           <div className="text-white/70 mb-6">
-            <span className="text-6xl">🛍️</span>
+            <FaShoppingBag className="text-6xl mx-auto" />
           </div>
           <h4 className="text-white text-2xl font-bold mb-4">Nessun prodotto configurato</h4>
           <p className="text-white/80 text-lg mb-8">Inizia aggiungendo il tuo primo prodotto per l'evento</p>
           <button
             onClick={openNewProductModal}
-            className="px-8 py-4 bg-[#FC0045] text-white rounded-xl hover:bg-[#FC0045]/80 transition-colors text-lg font-semibold"
+            className="px-8 py-4 bg-[#FC0045] text-white rounded-xl hover:bg-[#FC0045]/80 transition-colors text-lg font-semibold inline-flex items-center gap-2"
           >
-            ➕ Aggiungi il primo prodotto
+            <FaPlus />
+            <span>Aggiungi il primo prodotto</span>
           </button>
         </div>
       )}
@@ -840,7 +858,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
             {/* Header */}
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-shrink-0 w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center">
-                <span className="text-orange-400 text-lg">🔄</span>
+                <FaSyncAlt className="text-orange-400 text-lg" />
               </div>
               <div>
                 <h3 className="text-white font-semibold">Conferma Ritiro</h3>
@@ -884,7 +902,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
               </div>
 
               <p className="text-orange-400 text-sm mt-3 flex items-center gap-2">
-                <span>⚠️</span>
+                <FaExclamationTriangle />
                 <span>Questa azione rimuoverà tutti i prodotti compatibili dai collaboratori</span>
               </p>
             </div>
@@ -910,7 +928,8 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                   </>
                 ) : (
                   <>
-                    🔄 Ritira ({withdrawModal.withdrawableCount})
+                    <FaSyncAlt />
+                    <span>Ritira ({withdrawModal.withdrawableCount})</span>
                   </>
                 )}
               </button>
@@ -926,7 +945,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
             {/* Header */}
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-shrink-0 w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
-                <span className="text-red-400 text-lg">⚠️</span>
+                <FaExclamationTriangle className="text-red-400 text-lg" />
               </div>
               <div>
                 <h3 className="text-white font-semibold">Conferma Eliminazione</h3>
@@ -943,7 +962,7 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                 <span className="text-white font-medium">"{deleteModal.productLabel}"</span>
               </div>
               <p className="text-red-400 text-sm mt-2">
-                ⚠️ Tutti i dati associati verranno eliminati permanentemente
+                Tutti i dati associati verranno eliminati permanentemente
               </p>
             </div>
 
@@ -968,7 +987,8 @@ export function ProductsSection({ event, onUpdate }: ProductsSectionProps) {
                   </>
                 ) : (
                   <>
-                    🗑️ Elimina
+                    <FaTrash />
+                    <span>Elimina</span>
                   </>
                 )}
               </button>

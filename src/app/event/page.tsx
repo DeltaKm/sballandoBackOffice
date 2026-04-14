@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "~/store/auth";
 import { useRouter } from "next/navigation";
+import { FaSearch, FaTimes } from "react-icons/fa";
 import { Sidebar } from "~/components/Sidebar";
 import { EventCard } from "~/components/EventCard";
 import type { Event } from "~/types";
@@ -95,7 +96,7 @@ export default function EventsPage() {
         <div className="max-w-7xl mx-auto p-6 pb-0">
           <div className="relative mb-6">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-white/60">🔍</span>
+              <FaSearch className="text-white/60" />
             </div>
             <input
               type="text"
@@ -109,7 +110,7 @@ export default function EventsPage() {
                 onClick={() => setSearchQuery("")}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/60 hover:text-white"
               >
-                ✕
+                <FaTimes />
               </button>
             )}
           </div>

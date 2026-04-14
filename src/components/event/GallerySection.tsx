@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { FaCamera, FaImages, FaSearchPlus, FaTrash, FaTimes, FaExternalLinkAlt } from "react-icons/fa";
 import type { Event } from "~/types";
 
 interface GallerySectionProps {
@@ -123,13 +124,13 @@ export function GallerySection({ event }: GallerySectionProps) {
       if (data.status) {
         // Aggiungi la nuova foto alla lista
         setImages(prev => [...prev, data.photo]);
-        alert('✅ Foto caricata con successo!');
+        alert('Foto caricata con successo!');
       } else {
-        alert(`❌ Errore: ${data.error || 'Impossibile caricare la foto'}`);
+        alert(`Errore: ${data.error || 'Impossibile caricare la foto'}`);
       }
     } catch (err) {
       console.error('Errore nel caricamento della foto:', err);
-      alert('❌ Errore nel caricamento della foto');
+      alert('Errore nel caricamento della foto');
     } finally {
       setUploading(false);
       // Reset input file
@@ -153,7 +154,7 @@ export function GallerySection({ event }: GallerySectionProps) {
       <div className="bg-[#2A3441] rounded-lg p-8">
         <div className="text-center">
           <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">🖼️</span>
+            <FaImages className="text-4xl text-white/70" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">
             Nessuna foto nella galleria
@@ -187,7 +188,7 @@ export function GallerySection({ event }: GallerySectionProps) {
                 </>
               ) : (
                 <>
-                  <span>📸</span>
+                  <FaCamera />
                   Aggiungi Prima Foto
                 </>
               )}
@@ -204,7 +205,8 @@ export function GallerySection({ event }: GallerySectionProps) {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              🖼️ Galleria Evento
+              <FaImages />
+              <span>Galleria Evento</span>
             </h2>
             <p className="text-white/60 mt-1">
               {images.length} {images.length === 1 ? 'foto' : 'foto'}
@@ -236,7 +238,7 @@ export function GallerySection({ event }: GallerySectionProps) {
                 </>
               ) : (
                 <>
-                  <span>📸</span>
+                  <FaCamera />
                   Aggiungi Foto
                 </>
               )}
@@ -262,9 +264,7 @@ export function GallerySection({ event }: GallerySectionProps) {
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center pointer-events-none">
-                  <span className="text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity">
-                    🔍
-                  </span>
+                  <FaSearchPlus className="text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
               
@@ -282,7 +282,7 @@ export function GallerySection({ event }: GallerySectionProps) {
                 {deletingImage === imgUrl ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : (
-                  <span className="text-white text-lg">🗑️</span>
+                  <FaTrash className="text-white text-sm" />
                 )}
               </button>
             </div>
@@ -300,7 +300,7 @@ export function GallerySection({ event }: GallerySectionProps) {
             className="absolute top-4 right-4 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white text-2xl transition-colors"
             onClick={() => setSelectedImage(null)}
           >
-            ✕
+            <FaTimes />
           </button>
           <img
             src={selectedImage}
@@ -325,7 +325,7 @@ export function GallerySection({ event }: GallerySectionProps) {
                 </>
               ) : (
                 <>
-                  <span>🗑️</span>
+                  <FaTrash />
                   Elimina
                 </>
               )}
@@ -337,7 +337,7 @@ export function GallerySection({ event }: GallerySectionProps) {
               className="px-4 py-2 bg-[#FC0045] hover:bg-[#FC0045]/80 text-white rounded-lg transition-colors flex items-center gap-2"
               onClick={(e) => e.stopPropagation()}
             >
-              <span>📥</span>
+              <FaExternalLinkAlt />
               Apri in nuova tab
             </a>
           </div>

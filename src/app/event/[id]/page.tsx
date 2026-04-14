@@ -17,6 +17,21 @@ import { ChatSection } from "~/components/event/ChatSection";
 import { JukeboxSection } from "~/components/event/JukeboxSection";
 import { PaymentsSection } from "~/components/event/PaymentsSection";
 import { NotificationModal } from "~/components/event/NotificationModal";
+import type { IconType } from 'react-icons';
+import {
+  FaClipboardList,
+  FaChartBar,
+  FaMusic,
+  FaUsers,
+  FaTicketAlt,
+  FaShoppingBag,
+  FaImages,
+  FaHeadphones,
+  FaComments,
+  FaBullhorn,
+  FaEdit,
+  FaTrash,
+} from 'react-icons/fa';
 
 
 import type { Event } from "~/types";
@@ -30,16 +45,16 @@ export default function EventDetailPage() {
   const router = useRouter();
   const params = useParams();
 
-  const sections = [
-    { id: 'info', label: 'Informazioni', icon: '📋' },
-    { id: 'dashboard', label: 'Statistiche', icon: '📊' },
-    { id: 'music_genres', label: 'Generi Musicali', icon: '🎵', count: event?.event_music_genres?.length || 0 },
-    { id: 'collaborators', label: 'Collaboratori', icon: '👥', count: event?.collaborators?.length || 0 },
-    { id: 'entry_types', label: 'Ingressi', icon: '🎟️', count: event?.entry_types?.length || 0 },
-    { id: 'products', label: 'Prodotti', icon: '🛍️', count: event?.products?.length || 0 },
-    { id: 'gallery', label: 'Galleria', icon: '🖼️' }, 
-    { id: 'jukebox', label: 'JukeBox', icon: '🎶' },
-    { id: 'chat', label: 'Chat', icon: '💬' },
+  const sections: Array<{ id: string; label: string; icon: IconType; count?: number }> = [
+    { id: 'info', label: 'Informazioni', icon: FaClipboardList },
+    { id: 'dashboard', label: 'Statistiche', icon: FaChartBar },
+    { id: 'music_genres', label: 'Generi Musicali', icon: FaMusic, count: event?.event_music_genres?.length || 0 },
+    { id: 'collaborators', label: 'Collaboratori', icon: FaUsers, count: event?.collaborators?.length || 0 },
+    { id: 'entry_types', label: 'Ingressi', icon: FaTicketAlt, count: event?.entry_types?.length || 0 },
+    { id: 'products', label: 'Prodotti', icon: FaShoppingBag, count: event?.products?.length || 0 },
+    { id: 'gallery', label: 'Galleria', icon: FaImages }, 
+    { id: 'jukebox', label: 'JukeBox', icon: FaHeadphones },
+    { id: 'chat', label: 'Chat', icon: FaComments },
 
 
   ];
@@ -136,19 +151,22 @@ export default function EventDetailPage() {
                 className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors flex items-center gap-2"
                 title="Invia notifica agli iscritti"
               >
-                📢 Notifica
+                <FaBullhorn className="text-sm" />
+                <span>Notifica</span>
               </button>
               <button
                 onClick={() => router.push(`/event/${event.id}/edit`)}
                 className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors flex items-center gap-2"
               >
-                ✏️ Modifica
+                <FaEdit className="text-sm" />
+                <span>Modifica</span>
               </button>
               <button
                 onClick={handleDeleteEvent}
                 className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors flex items-center gap-2"
               >
-                🗑️ Elimina
+                <FaTrash className="text-sm" />
+                <span>Elimina</span>
               </button>
             </div>
           </div>

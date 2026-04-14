@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
+import { FaComments, FaCircle, FaMusic } from "react-icons/fa";
 import { useAuthStore } from "~/store/auth";
 import type { Event } from "~/types";
 
@@ -31,7 +32,7 @@ interface ChatMessage {
 
 export function ChatSection({ event, onUpdate }: ChatSectionProps) {
   const { user } = useAuthStore();
-  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null); // ✅ Usa ReturnType
+  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null); // Usa ReturnType
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +51,7 @@ export function ChatSection({ event, onUpdate }: ChatSectionProps) {
   // Fetch messages from API
   const fetchMessages = async () => {
     if (!user?.token) {
-      console.log('❌ No user token available');
+      console.log('No user token available');
       return;
     }
 
@@ -104,26 +105,26 @@ export function ChatSection({ event, onUpdate }: ChatSectionProps) {
     });
 
     newSocket.on('connect', () => {
-      console.log('✅ Socket connessa');
+      console.log('Socket connessa');
       newSocket.emit('join-to-room', JSON.stringify({ 
         joinType: 'publish', 
         eventId: event.id 
       }));
     });
 
-    // newSocket.on('disconnect', () => console.log('❌ Socket disconnessa'));
-    // newSocket.on('connect_error', (err) => console.log('⚠️ Errore connessione:', err));
-    // newSocket.on('error', (err) => console.log('❌ Errore generico:', err));
+    // newSocket.on('disconnect', () => console.log('Socket disconnessa'));
+    // newSocket.on('connect_error', (err) => console.log('Errore connessione:', err));
+    // newSocket.on('error', (err) => console.log('Errore generico:', err));
 
     // Handle incoming messages
     newSocket.on('new-public-message', (data: any) => {
-      console.log('📩 Messaggio ricevuto:', data);
+      console.log('Messaggio ricevuto:', data);
       
       // Evita duplicati controllando se il messaggio esiste già
       setMessages(prev => {
         // Se il messaggio ha un ID, controlla se esiste già
         if (data.id && prev.some(msg => msg.id === data.id)) {
-          console.log('⚠️ Messaggio duplicato ignorato:', data.id);
+          console.log('Messaggio duplicato ignorato:', data.id);
           return prev;
         }
         
@@ -132,7 +133,7 @@ export function ChatSection({ event, onUpdate }: ChatSectionProps) {
         if (messageText && 
             messageText === lastSentMessageRef.current && 
             data.sender?.id === user?.id) {
-          console.log('⚠️ Messaggio proprio ignorato (appena inviato)');
+          console.log('Messaggio proprio ignorato (appena inviato)');
           return prev;
         }
         
@@ -144,7 +145,7 @@ export function ChatSection({ event, onUpdate }: ChatSectionProps) {
         );
         
         if (isDuplicate) {
-          console.log('⚠️ Messaggio duplicato (simile) ignorato');
+          console.log('Messaggio duplicato (simile) ignorato');
           return prev;
         }
         
@@ -225,11 +226,11 @@ export function ChatSection({ event, onUpdate }: ChatSectionProps) {
   // Effects
   useEffect(() => {
     if (!user?.token) {
-      console.log('⏳ Waiting for user authentication...');
+      console.log('Waiting for user authentication...');
       return;
     }
 
-    console.log('✅ User authenticated, initializing chat...');
+    console.log('User authenticated, initializing chat...');
     fetchMessages();
     initSocket();
 
@@ -237,7 +238,7 @@ export function ChatSection({ event, onUpdate }: ChatSectionProps) {
     return () => {
       if (socket?.connected) {
         socket.disconnect();
-        console.log('🔌 Socket disconnessa manualmente');
+        console.log('Socket disconnessa manualmente');
       }
     };
   }, [event.id, user?.token]);
@@ -261,11 +262,16 @@ export function ChatSection({ event, onUpdate }: ChatSectionProps) {
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-2xl font-bold text-white flex items-center gap-3">
-          <span className="text-3xl">💬</span>
-          Chat dell'evento
+          <FaComments className="text-3xl" />
+          <span>Chat dell'evento</span>
         </h3>
-        <p className="text-white/60 mt-2">
-          {messages.length} messaggi • {socket?.connected ? '🟢 Online' : '🔴 Offline'}
+        <p className="text-white/60 mt-2 flex items-center gap-2">
+          <span>{messages.length} messaggi</span>
+          <span>•</span>
+          <span className="inline-flex items-center gap-1">
+            <FaCircle className={`text-[10px] ${socket?.connected ? 'text-green-400' : 'text-red-400'}`} />
+            <span>{socket?.connected ? 'Online' : 'Offline'}</span>
+          </span>
         </p>
       </div>
 
@@ -286,7 +292,7 @@ export function ChatSection({ event, onUpdate }: ChatSectionProps) {
           ) : messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center text-white/40">
-                <span className="text-4xl mb-2 block">💬</span>
+                <FaComments className="text-4xl mb-2 block mx-auto" />
                 <p>Nessun messaggio ancora</p>
                 <p className="text-sm">Invia il primo messaggio!</p>
               </div>
@@ -309,7 +315,10 @@ export function ChatSection({ event, onUpdate }: ChatSectionProps) {
                   {msg.spotify_playlist ? (
                     <div className="bg-green-900/30 border border-green-500/30 rounded-lg p-4">
                       <div className="text-green-300 font-medium text-sm mb-2">
-                        🎵 {msg.sender.nickname || msg.sender.name} ha messo in coda una canzone:
+                        <span className="inline-flex items-center gap-2">
+                          <FaMusic />
+                          <span>{msg.sender.nickname || msg.sender.name} ha messo in coda una canzone:</span>
+                        </span>
                       </div>
                       <div className="flex items-center gap-3">
                         {msg.spotify_playlist.cover ? (
@@ -320,7 +329,7 @@ export function ChatSection({ event, onUpdate }: ChatSectionProps) {
                           />
                         ) : (
                           <div className="w-12 h-12 bg-white/10 rounded flex items-center justify-center">
-                            <span className="text-2xl">🎵</span>
+                            <FaMusic className="text-2xl" />
                           </div>
                         )}
                         <div>

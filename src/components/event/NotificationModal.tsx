@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuthStore } from "~/store/auth";
+import { FaBullhorn, FaUsers, FaCheckCircle, FaInfoCircle, FaPaperPlane, FaTimes } from 'react-icons/fa';
 
 interface NotificationModalProps {
   isOpen: boolean;
@@ -78,7 +79,10 @@ export function NotificationModal({
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-xl font-bold text-white mb-2">
-                📢 Invia Notifica
+                <span className="inline-flex items-center gap-2">
+                  <FaBullhorn />
+                  <span>Invia Notifica</span>
+                </span>
               </h2>
               <p className="text-white/60 text-sm">
                 Invia una notifica personalizzata a tutti gli iscritti all'evento "{eventTitle}"
@@ -86,7 +90,10 @@ export function NotificationModal({
               {subscribersCount > 0 && (
                 <div className="mt-2 flex items-center gap-2">
                   <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs">
-                    👥 {subscribersCount} iscritti
+                    <span className="inline-flex items-center gap-1">
+                      <FaUsers />
+                      <span>{subscribersCount} iscritti</span>
+                    </span>
                   </span>
                 </div>
               )}
@@ -95,7 +102,7 @@ export function NotificationModal({
               onClick={handleClose}
               className="text-white/60 hover:text-white transition-colors"
             >
-              ✕
+              <FaTimes />
             </button>
           </div>
         </div>
@@ -105,7 +112,7 @@ export function NotificationModal({
           {success ? (
             <div className="text-center">
               <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4 mx-auto">
-                <span className="text-green-400 text-2xl">✅</span>
+                <FaCheckCircle className="text-green-400 text-2xl" />
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">
                 Notifica Inviata!
@@ -174,7 +181,7 @@ export function NotificationModal({
               {/* Info box */}
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
                 <div className="flex items-start gap-2">
-                  <span className="text-blue-400 text-sm">ℹ️</span>
+                  <FaInfoCircle className="text-blue-400 text-sm mt-0.5" />
                   <div className="text-blue-400 text-xs">
                     <p className="font-medium mb-1">Informazioni sull'invio:</p>
                     <ul className="space-y-1 text-blue-300/80">
@@ -208,7 +215,8 @@ export function NotificationModal({
                     </>
                   ) : (
                     <>
-                      📢 Invia Notifica
+                      <FaPaperPlane className="text-sm" />
+                      <span>Invia Notifica</span>
                     </>
                   )}
                 </button>

@@ -1,7 +1,9 @@
+import type { IconType } from 'react-icons';
+
 interface Section {
   id: string;
   label: string;
-  icon: string;
+  icon: IconType;
   count?: number;
 }
 
@@ -57,7 +59,9 @@ export function SidebarNav({
             }`}
           >
             <div className="flex items-center space-x-3">
-              <span>{section.icon}</span>
+              <span>
+                <section.icon className="text-base" />
+              </span>
               <span>{section.label}</span>
             </div>
             {section.count !== undefined && (

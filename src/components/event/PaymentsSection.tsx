@@ -1,6 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import {
+    FaCreditCard,
+    FaCheckCircle,
+    FaExclamationTriangle,
+    FaTicketAlt,
+    FaLock,
+    FaChartBar,
+    FaRocket,
+    FaUniversity,
+    FaLink,
+    FaMagic,
+} from "react-icons/fa";
 import { useAuthStore } from "~/store/auth";
 import type { Event, location_ } from "~/types";
 
@@ -33,13 +45,13 @@ export function PaymentsSection({ event, onUpdate }: PaymentsSectionProps) {
             const json = await response.json();
 
             if (json && json.status) {
-                console.log('✅ Merchant link response:', json);
+                console.log('Merchant link response:', json);
                 return json;
             } else {
                 throw new Error(json.error || 'Errore durante la creazione del link');
             }
         } catch (error) {
-            console.error('❌ Error creating merchant link:', error);
+            console.error('Error creating merchant link:', error);
             throw error;
         }
     };
@@ -54,7 +66,7 @@ export function PaymentsSection({ event, onUpdate }: PaymentsSectionProps) {
             setIsLoading(true);
             const response = await createMerchantLink(user.token, event.location_.id);
 
-            console.log('📊 Merchant link response:', response);
+            console.log('Merchant link response:', response);
 
             if (response.status && response.link_stripe_created) {
                 // Reindirizza a Stripe per completare l'attivazione
@@ -92,20 +104,20 @@ export function PaymentsSection({ event, onUpdate }: PaymentsSectionProps) {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-bold text-white flex items-center gap-3">
-                    <span className="text-3xl">💳</span>
-                    Gestione Pagamenti
+                    <FaCreditCard className="text-3xl" />
+                    <span>Gestione Pagamenti</span>
                 </h3>
 
                 {/* Stato Pagamenti */}
                 <div className="flex items-center gap-3">
                     {isPaymentActive ? (
                         <div className="flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-xl">
-                            <span className="text-green-400 text-xl">✅</span>
+                            <FaCheckCircle className="text-green-400 text-xl" />
                             <span className="text-green-300 font-semibold">Pagamenti Attivi</span>
                         </div>
                     ) : (
                         <div className="flex items-center gap-2 px-4 py-2 bg-orange-500/20 border border-orange-500/30 rounded-xl">
-                            <span className="text-orange-400 text-xl">⚠️</span>
+                            <FaExclamationTriangle className="text-orange-400 text-xl" />
                             <span className="text-orange-300 font-semibold">Pagamenti Non Attivi</span>
                         </div>
                     )}
@@ -117,7 +129,7 @@ export function PaymentsSection({ event, onUpdate }: PaymentsSectionProps) {
                 {!isPaymentActive ? (
                     /* Pagamenti Non Attivi */
                     <div className="text-center space-y-6">
-                        <div className="text-6xl mb-4">💳</div>
+                        <FaCreditCard className="text-6xl mb-4 mx-auto text-white/80" />
 
                         <div>
                             <h4 className="text-white font-bold text-xl mb-2">Attiva i Pagamenti In-App</h4>
@@ -130,19 +142,19 @@ export function PaymentsSection({ event, onUpdate }: PaymentsSectionProps) {
                         {/* Vantaggi */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
                             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-                                <span className="text-blue-400 text-2xl block mb-2">🎫</span>
+                                <FaTicketAlt className="text-blue-400 text-2xl block mb-2 mx-auto" />
                                 <h5 className="text-blue-300 font-semibold text-sm">Vendi Biglietti</h5>
                                 <p className="text-blue-400/80 text-xs mt-1">Direttamente dall'app</p>
                             </div>
 
                             <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-                                <span className="text-green-400 text-2xl block mb-2">🔒</span>
+                                <FaLock className="text-green-400 text-2xl block mb-2 mx-auto" />
                                 <h5 className="text-green-300 font-semibold text-sm">Pagamenti Sicuri</h5>
                                 <p className="text-green-400/80 text-xs mt-1">Gestiti da Stripe</p>
                             </div>
 
                             <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
-                                <span className="text-purple-400 text-2xl block mb-2">📊</span>
+                                <FaChartBar className="text-purple-400 text-2xl block mb-2 mx-auto" />
                                 <h5 className="text-purple-300 font-semibold text-sm">Gestione Ricavi</h5>
                                 <p className="text-purple-400/80 text-xs mt-1">Dashboard completa</p>
                             </div>
@@ -161,8 +173,8 @@ export function PaymentsSection({ event, onUpdate }: PaymentsSectionProps) {
                                 </>
                             ) : (
                                 <>
-                                    <span className="text-xl">🚀</span>
-                                    Attiva Pagamenti
+                                    <FaRocket className="text-xl" />
+                                    <span>Attiva Pagamenti</span>
                                 </>
                             )}
                         </button>
@@ -170,7 +182,7 @@ export function PaymentsSection({ event, onUpdate }: PaymentsSectionProps) {
                 ) : (
                     /* Pagamenti Attivi */
                     <div className="text-center space-y-6">
-                        <div className="text-6xl mb-4">✅</div>
+                        <FaCheckCircle className="text-6xl mb-4 mx-auto text-green-400" />
 
                         <div>
                             <h4 className="text-white font-bold text-xl mb-2">Pagamenti Già Attivi</h4>
@@ -183,7 +195,7 @@ export function PaymentsSection({ event, onUpdate }: PaymentsSectionProps) {
                         {event.location_?.stripe_account?.id && (
                             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 max-w-md mx-auto">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <span className="text-blue-400 text-xl">🏦</span>
+                                    <FaUniversity className="text-blue-400 text-xl" />
                                     <span className="text-blue-300 font-medium">Account Stripe</span>
                                 </div>
                                 <p className="text-blue-400/80 text-xs font-mono">{event.location_.stripe_account.id}</p>
@@ -195,8 +207,8 @@ export function PaymentsSection({ event, onUpdate }: PaymentsSectionProps) {
                             onClick={goToStripeAccount}
                             className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-3 text-base font-medium mx-auto"
                         >
-                            <span className="text-lg">🔗</span>
-                            Vai al tuo Account Stripe
+                            <FaLink className="text-lg" />
+                            <span>Vai al tuo Account Stripe</span>
                         </button>
                     </div>
                 )}
@@ -209,7 +221,7 @@ export function PaymentsSection({ event, onUpdate }: PaymentsSectionProps) {
                         {/* Header */}
                         <div className="flex items-center gap-3 mb-4">
                             <div className="flex-shrink-0 w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
-                                <span className="text-blue-400 text-lg">💳</span>
+                                <FaCreditCard className="text-blue-400 text-lg" />
                             </div>
                             <div>
                                 <h3 className="text-white font-semibold">Attivazione dei Pagamenti In-App</h3>
@@ -229,18 +241,21 @@ export function PaymentsSection({ event, onUpdate }: PaymentsSectionProps) {
                             </p>
 
                             <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                                <h4 className="text-blue-400 font-medium text-sm mb-2">✨ Cosa succederà:</h4>
+                                <h4 className="text-blue-400 font-medium text-sm mb-2 inline-flex items-center gap-2">
+                                    <FaMagic />
+                                    <span>Cosa succederà:</span>
+                                </h4>
                                 <ul className="text-blue-300 text-xs space-y-1">
                                     <li className="flex items-center gap-2">
-                                        <span>1️⃣</span>
+                                        <span>1.</span>
                                         <span>Reindirizzamento sicuro a Stripe</span>
                                     </li>
                                     <li className="flex items-center gap-2">
-                                        <span>2️⃣</span>
+                                        <span>2.</span>
                                         <span>Configurazione account pagamenti</span>
                                     </li>
                                     <li className="flex items-center gap-2">
-                                        <span>3️⃣</span>
+                                        <span>3.</span>
                                         <span>Ritorno automatico all'app</span>
                                     </li>
                                 </ul>
@@ -271,7 +286,8 @@ export function PaymentsSection({ event, onUpdate }: PaymentsSectionProps) {
                                     </>
                                 ) : (
                                     <>
-                                        🚀 Continua con Stripe
+                                        <FaRocket />
+                                        <span>Continua con Stripe</span>
                                     </>
                                 )}
                             </button>

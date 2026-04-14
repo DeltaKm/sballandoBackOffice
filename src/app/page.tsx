@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuthStore } from "~/store/auth";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { FaKey, FaTimes } from "react-icons/fa";
 
 function loadUserFromStorage() {
   if (typeof window !== 'undefined') {
@@ -184,8 +185,9 @@ export default function HomePage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-[#FC0045] rounded-lg p-8 max-w-md w-full shadow-2xl">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">
-                🔑 Recupera Password
+              <h2 className="text-2xl font-bold text-white inline-flex items-center gap-2">
+                <FaKey />
+                <span>Recupera Password</span>
               </h2>
               <button
                 onClick={() => {
@@ -194,7 +196,7 @@ export default function HomePage() {
                 }}
                 className="text-white/80 hover:text-white text-2xl"
               >
-                ✕
+                <FaTimes />
               </button>
             </div>
 

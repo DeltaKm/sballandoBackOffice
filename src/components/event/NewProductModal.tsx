@@ -2,6 +2,19 @@
 
 import { useState } from "react";
 import { useAuthStore } from "~/store/auth";
+import type { IconType } from 'react-icons';
+import {
+  FaCocktail,
+  FaBeer,
+  FaGlassCheers,
+  FaUtensils,
+  FaPizzaSlice,
+  FaBirthdayCake,
+  FaShoppingBag,
+  FaTimes,
+  FaBolt,
+  FaMagic,
+} from 'react-icons/fa';
 
 interface NewProductModalProps {
   show: boolean;
@@ -14,8 +27,8 @@ interface NewProductModalProps {
 const PRODUCT_TEMPLATES = [
   {
     id: 'cocktail',
-    name: '🍸 Cocktail Premium',
-    icon: '🥂',
+    name: 'Cocktail Premium',
+    icon: FaCocktail,
     color: 'from-pink-500 to-rose-500',
     data: {
       label: "Cocktail Premium",
@@ -27,8 +40,8 @@ const PRODUCT_TEMPLATES = [
   },
   {
     id: 'birra',
-    name: '🍺 Birra Artigianale',
-    icon: '🍻',
+    name: 'Birra Artigianale',
+    icon: FaBeer,
     color: 'from-amber-500 to-orange-500',
     data: {
       label: "Birra Artigianale",
@@ -40,8 +53,8 @@ const PRODUCT_TEMPLATES = [
   },
   {
     id: 'champagne',
-    name: '🍾 Champagne',
-    icon: '🥂',
+    name: 'Champagne',
+    icon: FaGlassCheers,
     color: 'from-yellow-500 to-amber-500',
     data: {
       label: "Champagne Premium",
@@ -53,8 +66,8 @@ const PRODUCT_TEMPLATES = [
   },
   {
     id: 'finger_food',
-    name: '🍤 Finger Food',
-    icon: '🍱',
+    name: 'Finger Food',
+    icon: FaUtensils,
     color: 'from-green-500 to-teal-500',
     data: {
       label: "Finger Food Gourmet",
@@ -66,8 +79,8 @@ const PRODUCT_TEMPLATES = [
   },
   {
     id: 'pizza',
-    name: '🍕 Pizza Napoletana',
-    icon: '🍕',
+    name: 'Pizza Napoletana',
+    icon: FaPizzaSlice,
     color: 'from-red-500 to-orange-600',
     data: {
       label: "Pizza Napoletana",
@@ -79,8 +92,8 @@ const PRODUCT_TEMPLATES = [
   },
   {
     id: 'dolci',
-    name: '🧁 Dolci Casa',
-    icon: '🍰',
+    name: 'Dolci Casa',
+    icon: FaBirthdayCake,
     color: 'from-purple-500 to-pink-500',
     data: {
       label: "Dolci della Casa",
@@ -107,7 +120,7 @@ export function NewProductModal({ show, eventId, onClose, onSuccess }: NewProduc
   const user = useAuthStore((state) => state.user);
 
   const applyTemplate = (template: typeof PRODUCT_TEMPLATES[0]) => {
-    console.log('🎯 Applying product template:', template.name);
+    console.log('Applying product template:', template.name);
     setFormData({
       label: template.data.label,
       price: template.data.price,
@@ -220,7 +233,7 @@ export function NewProductModal({ show, eventId, onClose, onSuccess }: NewProduc
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#FC0045]/20 rounded-lg flex items-center justify-center">
-              <span className="text-[#FC0045] text-xl">🛍️</span>
+              <FaShoppingBag className="text-[#FC0045] text-xl" />
             </div>
             <div>
               <h2 className="text-white font-bold text-xl">Nuovo Prodotto</h2>
@@ -232,7 +245,7 @@ export function NewProductModal({ show, eventId, onClose, onSuccess }: NewProduc
             disabled={isSubmitting}
             className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center text-white/70 hover:text-white transition-colors disabled:opacity-50"
           >
-            <span className="text-lg">✕</span>
+            <FaTimes className="text-lg" />
           </button>
         </div>
 
@@ -245,7 +258,8 @@ export function NewProductModal({ show, eventId, onClose, onSuccess }: NewProduc
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h4 className="text-xl font-bold text-white flex items-center gap-2">
-                    ⚡ Template Prodotti Veloci
+                    <FaBolt />
+                    <span>Template Prodotti Veloci</span>
                   </h4>
                   <p className="text-white/60 text-sm mt-1">
                     Scegli un template e personalizzalo secondo le tue esigenze
@@ -256,7 +270,7 @@ export function NewProductModal({ show, eventId, onClose, onSuccess }: NewProduc
                   className="text-white/60 hover:text-white transition-colors"
                   title="Nascondi template"
                 >
-                  ✕
+                  <FaTimes />
                 </button>
               </div>
 
@@ -269,7 +283,7 @@ export function NewProductModal({ show, eventId, onClose, onSuccess }: NewProduc
                   >
                     <div className="relative bg-gray-900/80 backdrop-blur rounded-md p-4 h-full">
                       <div className="flex items-center gap-3 mb-3">
-                        <span className="text-2xl">{template.icon}</span>
+                        <template.icon className="text-2xl" />
                         <div className="text-left flex-1">
                           <h5 className="font-semibold text-white text-sm leading-tight">
                             {template.name}
@@ -318,7 +332,8 @@ export function NewProductModal({ show, eventId, onClose, onSuccess }: NewProduc
                 onClick={() => setShowTemplates(true)}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white transition-colors"
               >
-                ⚡ Mostra Template Veloci
+                <FaBolt />
+                <span>Mostra Template Veloci</span>
               </button>
             </div>
           )}
@@ -335,7 +350,8 @@ export function NewProductModal({ show, eventId, onClose, onSuccess }: NewProduc
             {!showTemplates && formData.label && (
               <div className="p-3 bg-purple-500/20 border border-purple-500/30 rounded-lg">
                 <p className="text-purple-300 text-sm flex items-center gap-2">
-                  ⚡ Template applicato: <strong>{formData.label}</strong>
+                  <FaBolt />
+                  <span>Template applicato: <strong>{formData.label}</strong></span>
                   <button
                     type="button"
                     onClick={() => {
@@ -480,8 +496,8 @@ export function NewProductModal({ show, eventId, onClose, onSuccess }: NewProduc
                   </>
                 ) : (
                   <>
-                    <span>✨</span>
-                    Crea Prodotto
+                    <FaMagic />
+                    <span>Crea Prodotto</span>
                   </>
                 )}
               </button>

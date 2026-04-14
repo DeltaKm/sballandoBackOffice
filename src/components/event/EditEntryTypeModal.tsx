@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { FaEdit, FaTimes, FaPlus, FaSave } from "react-icons/fa";
 import { useAuthStore } from "~/store/auth";
 import { z } from "zod";
 import type { EntryType } from "~/types";
@@ -243,7 +244,7 @@ export function EditEntryTypeModal({ show, entry, onClose, onSuccess }: EditEntr
         }
       }
       
-      console.log("🔥 FRONTEND - formData.price:", formData.price, "finalPrice:", finalPrice);
+      console.log("FRONTEND - formData.price:", formData.price, "finalPrice:", finalPrice);
       
       // Usa il tipo selezionato dall'utente
       const finalType = formData.type;
@@ -312,7 +313,7 @@ export function EditEntryTypeModal({ show, entry, onClose, onSuccess }: EditEntr
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-              <span className="text-blue-400 text-xl">✏️</span>
+              <FaEdit className="text-blue-400 text-xl" />
             </div>
             <div>
               <h2 className="text-white font-bold text-xl">Modifica Ingresso</h2>
@@ -324,7 +325,7 @@ export function EditEntryTypeModal({ show, entry, onClose, onSuccess }: EditEntr
             disabled={loading}
             className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center text-white/70 hover:text-white transition-colors disabled:opacity-50"
           >
-            <span className="text-lg">✕</span>
+            <FaTimes className="text-lg" />
           </button>
         </div>
 
@@ -581,9 +582,10 @@ export function EditEntryTypeModal({ show, entry, onClose, onSuccess }: EditEntr
                 type="button"
                 onClick={() => setShowConsumationForm(true)}
                 disabled={formData.consumations.length >= 10}
-                className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1"
               >
-                ➕ Aggiungi
+                <FaPlus />
+                <span>Aggiungi</span>
               </button>
             </div>
 
@@ -697,8 +699,8 @@ export function EditEntryTypeModal({ show, entry, onClose, onSuccess }: EditEntr
                 </>
               ) : (
                 <>
-                  <span>💾</span>
-                  Salva Modifiche
+                  <FaSave />
+                  <span>Salva Modifiche</span>
                 </>
               )}
             </button>

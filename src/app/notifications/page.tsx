@@ -1,8 +1,29 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuthStore } from '~/store/auth';
 import { useAuthRedirect } from '~/lib/useAuth';
+import type { IconType } from 'react-icons';
+import {
+  FaBell,
+  FaPaperPlane,
+  FaExclamationTriangle,
+  FaClipboardList,
+  FaChartBar,
+  FaMobileAlt,
+  FaDatabase,
+  FaUsers,
+  FaSearch,
+  FaRocket,
+  FaBolt,
+  FaSyncAlt,
+  FaInbox,
+  FaCalendarAlt,
+  FaChartLine,
+  FaUser,
+  FaArrowRight,
+  FaClock,
+  FaBullhorn,
+} from 'react-icons/fa';
 
 interface NotificationHistory {
   id: number;
@@ -215,7 +236,7 @@ export default function NotificationsPage() {
     }
 
     const confirmed = confirm(
-      `⚠️ ATTENZIONE!\n\nStai per inviare una notifica a TUTTI gli utenti della piattaforma.\n\nTitolo: "${adminTitle}"\nMessaggio: "${adminMessage}"\n\nSei sicuro di voler procedere?`
+      `ATTENZIONE!\n\nStai per inviare una notifica a TUTTI gli utenti della piattaforma.\n\nTitolo: "${adminTitle}"\nMessaggio: "${adminMessage}"\n\nSei sicuro di voler procedere?`
     );
 
     if (!confirmed) return;
@@ -265,7 +286,10 @@ export default function NotificationsPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">🔔 Centro Notifiche</h1>
+          <h1 className="text-4xl font-bold mb-2 inline-flex items-center gap-3">
+            <FaBell />
+            <span>Centro Notifiche</span>
+          </h1>
           <p className="text-white/70 text-lg">
             Invia notifiche push e messaggi ai tuoi follower
           </p>
@@ -298,7 +322,10 @@ export default function NotificationsPage() {
                   : 'text-white/70 hover:text-white hover:bg-white/5'
               }`}
             >
-              📤 Invia ai Follower
+              <span className="inline-flex items-center gap-2">
+                <FaPaperPlane />
+                <span>Invia ai Follower</span>
+              </span>
             </button>
             
             {/* SUPERADMIN Tab */}
@@ -311,7 +338,10 @@ export default function NotificationsPage() {
                     : 'text-red-300 hover:text-red-200 hover:bg-red-900/20 border border-red-500/30'
                 }`}
               >
-                ⚠️ ADMIN - Tutti gli Utenti
+                <span className="inline-flex items-center gap-2">
+                  <FaExclamationTriangle />
+                  <span>ADMIN - Tutti gli Utenti</span>
+                </span>
               </button>
             )}
             
@@ -323,7 +353,10 @@ export default function NotificationsPage() {
                   : 'text-white/70 hover:text-white hover:bg-white/5'
               }`}
             >
-              📋 Cronologia
+              <span className="inline-flex items-center gap-2">
+                <FaClipboardList />
+                <span>Cronologia</span>
+              </span>
             </button>
             <button
               onClick={() => setActiveTab('stats')}
@@ -333,7 +366,10 @@ export default function NotificationsPage() {
                   : 'text-white/70 hover:text-white hover:bg-white/5'
               }`}
             >
-              📊 Statistiche
+              <span className="inline-flex items-center gap-2">
+                <FaChartBar />
+                <span>Statistiche</span>
+              </span>
             </button>
           </div>
         </div>
@@ -345,7 +381,7 @@ export default function NotificationsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-3xl">📱</span>
+                  <FaMobileAlt className="text-3xl" />
                   <h3 className="text-lg font-semibold text-blue-200">Push Notifications</h3>
                 </div>
                 <p className="text-blue-200/80 text-sm">
@@ -355,7 +391,7 @@ export default function NotificationsPage() {
               
               <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-3xl">💾</span>
+                  <FaDatabase className="text-3xl" />
                   <h3 className="text-lg font-semibold text-green-200">Database Notifications</h3>
                 </div>
                 <p className="text-green-200/80 text-sm">
@@ -365,7 +401,7 @@ export default function NotificationsPage() {
               
               <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-3xl">👥</span>
+                  <FaUsers className="text-3xl" />
                   <h3 className="text-lg font-semibold text-purple-200">Solo Follower</h3>
                 </div>
                 <p className="text-purple-200/80 text-sm">
@@ -389,9 +425,9 @@ export default function NotificationsPage() {
                     onChange={(e) => setNotificationType(e.target.value)}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   >
-                    <option value="general">📢 Generale</option>
-                    <option value="announcement">📣 Annuncio</option>
-                    <option value="update">🔄 Aggiornamento</option>
+                    <option value="general">Generale</option>
+                    <option value="announcement">Annuncio</option>
+                    <option value="update">Aggiornamento</option>
                   </select>
                 </div>
 
@@ -436,7 +472,7 @@ export default function NotificationsPage() {
                 {/* Preview */}
                 {title.trim() && message.trim() && (
                   <div className="bg-gray-800/50 border border-gray-500/30 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-white/80 mb-2">🔍 Anteprima Notifica</h4>
+                    <h4 className="text-sm font-medium text-white/80 mb-2 inline-flex items-center gap-2"><FaSearch /> <span>Anteprima Notifica</span></h4>
                     <div className="bg-gray-900/50 rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-xs px-2 py-1 bg-purple-500/30 text-purple-300 rounded">
@@ -465,7 +501,10 @@ export default function NotificationsPage() {
                       Invio in corso...
                     </div>
                   ) : (
-                    `🚀 Invia Notifica ai Follower (${auth.user.followers_count || 0})`
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <FaRocket />
+                      <span>Invia Notifica ai Follower ({auth.user.followers_count || 0})</span>
+                    </span>
                   )}
                 </button>
               </form>
@@ -479,7 +518,7 @@ export default function NotificationsPage() {
             {/* Warning Banner */}
             <div className="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-4xl">⚠️</span>
+                <FaExclamationTriangle className="text-4xl" />
                 <div>
                   <h2 className="text-2xl font-bold text-red-200">ZONA AMMINISTRATORE</h2>
                   <p className="text-red-300/80">
@@ -489,7 +528,7 @@ export default function NotificationsPage() {
               </div>
               
               <div className="bg-red-900/30 rounded-lg p-4 mt-4">
-                <h3 className="font-semibold text-red-200 mb-2">⚡ ATTENZIONE:</h3>
+                <h3 className="font-semibold text-red-200 mb-2 inline-flex items-center gap-2"><FaBolt /> <span>ATTENZIONE:</span></h3>
                 <ul className="text-red-300/80 text-sm space-y-1">
                   <li>• Le notifiche verranno inviate a OGNI utente registrato</li>
                   <li>• Questa azione è irreversibile</li>
@@ -502,7 +541,8 @@ export default function NotificationsPage() {
             {/* Admin Send Form */}
             <div className="bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-8">
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                🚨 Invia Notifica Globale
+                <FaExclamationTriangle />
+                <span>Invia Notifica Globale</span>
               </h2>
               
               <form onSubmit={handleSendAdminNotification} className="space-y-6">
@@ -550,7 +590,7 @@ export default function NotificationsPage() {
                 {/* Preview */}
                 {adminTitle.trim() && adminMessage.trim() && (
                   <div className="bg-red-900/30 border border-red-500/30 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-red-200 mb-2">🔍 Anteprima Notifica Globale</h4>
+                    <h4 className="text-sm font-medium text-red-200 mb-2 inline-flex items-center gap-2"><FaSearch /> <span>Anteprima Notifica Globale</span></h4>
                     <div className="bg-red-950/50 rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-xs px-2 py-1 bg-red-500/50 text-red-200 rounded">
@@ -582,7 +622,10 @@ export default function NotificationsPage() {
                       Invio Globale in corso...
                     </div>
                   ) : (
-                    `🚨 INVIA A TUTTI GLI UTENTI`
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <FaExclamationTriangle />
+                      <span>INVIA A TUTTI GLI UTENTI</span>
+                    </span>
                   )}
                 </button>
               </form>
@@ -594,13 +637,16 @@ export default function NotificationsPage() {
         {activeTab === 'history' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">📋 Cronologia Notifiche</h2>
+              <h2 className="text-2xl font-bold inline-flex items-center gap-2"><FaClipboardList /> <span>Cronologia Notifiche</span></h2>
               <button
                 onClick={() => fetchHistory(1)}
                 disabled={loadingHistory}
                 className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors disabled:opacity-50"
               >
-                {loadingHistory ? '🔄' : '🔄'} Aggiorna
+                <span className="inline-flex items-center gap-2">
+                  <FaSyncAlt className={loadingHistory ? 'animate-spin' : ''} />
+                  <span>Aggiorna</span>
+                </span>
               </button>
             </div>
 
@@ -611,7 +657,7 @@ export default function NotificationsPage() {
               </div>
             ) : history.length === 0 ? (
               <div className="bg-white/5 border border-white/10 rounded-xl p-12 text-center">
-                <span className="text-6xl mb-4 block">📭</span>
+                <FaInbox className="text-6xl mb-4 block mx-auto text-white/60" />
                 <h3 className="text-xl font-semibold mb-2">Nessuna notifica inviata</h3>
                 <p className="text-white/70">
                   Le notifiche che invierai appariranno qui con tutti i dettagli
@@ -633,8 +679,8 @@ export default function NotificationsPage() {
                           </div>
                           <p className="text-white/70 mb-3">{notification.message}</p>
                           <div className="flex items-center gap-4 text-sm text-white/60">
-                            <span>👥 {notification.recipients_count} destinatar{notification.recipients_count !== 1 ? 'i' : 'io'}</span>
-                            <span>📅 {new Date(notification.created_at).toLocaleString('it-IT')}</span>
+                            <span className="inline-flex items-center gap-1"><FaUsers /> <span>{notification.recipients_count} destinatar{notification.recipients_count !== 1 ? 'i' : 'io'}</span></span>
+                            <span className="inline-flex items-center gap-1"><FaCalendarAlt /> <span>{new Date(notification.created_at).toLocaleString('it-IT')}</span></span>
                           </div>
                         </div>
                       </div>
@@ -644,7 +690,7 @@ export default function NotificationsPage() {
                         <div className="border-t border-white/10 pt-4">
                           <details className="group">
                             <summary className="cursor-pointer text-sm text-white/70 hover:text-white">
-                              🔍 Mostra destinatari ({notification.recipients.length})
+                              <span className="inline-flex items-center gap-2"><FaSearch /> <span>Mostra destinatari ({notification.recipients.length})</span></span>
                             </summary>
                             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                               {notification.recipients.slice(0, 12).map((recipient) => (
@@ -701,13 +747,16 @@ export default function NotificationsPage() {
         {activeTab === 'stats' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">📊 Statistiche Notifiche</h2>
+              <h2 className="text-2xl font-bold inline-flex items-center gap-2"><FaChartBar /> <span>Statistiche Notifiche</span></h2>
               <button
                 onClick={fetchStats}
                 disabled={loadingStats}
                 className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors disabled:opacity-50"
               >
-                {loadingStats ? '🔄' : '🔄'} Aggiorna
+                <span className="inline-flex items-center gap-2">
+                  <FaSyncAlt className={loadingStats ? 'animate-spin' : ''} />
+                  <span>Aggiorna</span>
+                </span>
               </button>
             </div>
 
@@ -718,7 +767,7 @@ export default function NotificationsPage() {
               </div>
             ) : !stats ? (
               <div className="bg-white/5 border border-white/10 rounded-xl p-12 text-center">
-                <span className="text-6xl mb-4 block">📈</span>
+                <FaChartLine className="text-6xl mb-4 block mx-auto text-white/60" />
                 <h3 className="text-xl font-semibold mb-2">Statistiche non disponibili</h3>
                 <p className="text-white/70">
                   Non è stato possibile caricare le statistiche
@@ -729,7 +778,8 @@ export default function NotificationsPage() {
                 {/* User Stats Section */}
                 <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-xl p-6">
                   <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    👤 Profilo Utente
+                    <FaUser />
+                    <span>Profilo Utente</span>
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-white/5 rounded-lg p-4 text-center">
@@ -738,11 +788,11 @@ export default function NotificationsPage() {
                     </div>
                     <div className="bg-white/5 rounded-lg p-4 text-center">
                       <div className="text-2xl font-bold text-blue-400">{stats.user.followers_count || 0}</div>
-                      <div className="text-sm text-white/70 mt-1">👥 Follower</div>
+                      <div className="text-sm text-white/70 mt-1 inline-flex items-center gap-1"><FaUsers /> <span>Follower</span></div>
                     </div>
                     <div className="bg-white/5 rounded-lg p-4 text-center">
                       <div className="text-2xl font-bold text-green-400">{stats.user.following_count || 0}</div>
-                      <div className="text-sm text-white/70 mt-1">➡️ Following</div>
+                      <div className="text-sm text-white/70 mt-1 inline-flex items-center gap-1"><FaArrowRight /> <span>Following</span></div>
                     </div>
                   </div>
                 </div>
@@ -750,16 +800,17 @@ export default function NotificationsPage() {
                 {/* Notification Stats Section */}
                 <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-6">
                   <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    📊 Statistiche Notifiche
+                    <FaChartBar />
+                    <span>Statistiche Notifiche</span>
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-white/5 rounded-lg p-4 text-center">
                       <div className="text-3xl font-bold text-green-400">{stats.notifications.total_sent}</div>
-                      <div className="text-sm text-white/70 mt-1">📤 Totale Inviate</div>
+                      <div className="text-sm text-white/70 mt-1 inline-flex items-center gap-1"><FaPaperPlane /> <span>Totale Inviate</span></div>
                     </div>
                     <div className="bg-white/5 rounded-lg p-4 text-center">
                       <div className="text-3xl font-bold text-yellow-400">{stats.notifications.recent_sent}</div>
-                      <div className="text-sm text-white/70 mt-1">🕐 Ultimi 30 giorni</div>
+                      <div className="text-sm text-white/70 mt-1 inline-flex items-center gap-1"><FaClock /> <span>Ultimi 30 giorni</span></div>
                     </div>
                   </div>
                 </div>
@@ -767,11 +818,12 @@ export default function NotificationsPage() {
                 {/* Notification Types Breakdown */}
                 <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/30 rounded-xl p-6">
                   <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    📋 Distribuzione per Tipo
+                    <FaClipboardList />
+                    <span>Distribuzione per Tipo</span>
                   </h3>
                   {Object.keys(stats.notifications.by_type).length === 0 ? (
                     <div className="text-center py-8">
-                      <span className="text-4xl mb-2 block">📭</span>
+                      <FaInbox className="text-4xl mb-2 block mx-auto text-white/60" />
                       <p className="text-white/70">Nessuna notifica inviata ancora</p>
                     </div>
                   ) : (
@@ -780,14 +832,14 @@ export default function NotificationsPage() {
                         const percentage = stats.notifications.total_sent > 0 
                           ? Math.round((count / stats.notifications.total_sent) * 100) 
                           : 0;
-                        const typeEmoji = type === 'general' ? '📢' : type === 'announcement' ? '📣' : '🔄';
+                        const TypeIcon: IconType = type === 'general' ? FaBullhorn : type === 'announcement' ? FaBullhorn : FaSyncAlt;
                         const typeLabel = type === 'general' ? 'Generale' : type === 'announcement' ? 'Annuncio' : 'Aggiornamento';
                         
                         return (
                           <div key={type} className="bg-white/5 rounded-lg p-4">
                             <div className="flex justify-between items-center mb-2">
                               <span className="font-medium flex items-center gap-2">
-                                {typeEmoji} {typeLabel}
+                                <TypeIcon /> <span>{typeLabel}</span>
                               </span>
                               <span className="text-lg font-bold">{count}</span>
                             </div>
@@ -810,7 +862,8 @@ export default function NotificationsPage() {
                 {/* Quick Actions */}
                 <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/30 rounded-xl p-6">
                   <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    ⚡ Azioni Rapide
+                    <FaBolt />
+                    <span>Azioni Rapide</span>
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <button
@@ -818,7 +871,7 @@ export default function NotificationsPage() {
                       className="bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg p-4 text-left transition-colors group"
                     >
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">🚀</span>
+                        <FaRocket className="text-2xl" />
                         <span className="font-semibold group-hover:text-purple-300">Invia Nuova Notifica</span>
                       </div>
                       <p className="text-sm text-white/70">
@@ -831,7 +884,7 @@ export default function NotificationsPage() {
                       className="bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg p-4 text-left transition-colors group"
                     >
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">📋</span>
+                        <FaClipboardList className="text-2xl" />
                         <span className="font-semibold group-hover:text-blue-300">Visualizza Cronologia</span>
                       </div>
                       <p className="text-sm text-white/70">

@@ -1,5 +1,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { FaCalendarAlt, FaMapMarkerAlt, FaChartBar, FaEdit } from "react-icons/fa";
 import { getEventCoverUrl } from "~/lib/imageUtils";
 import type { Event } from "~/types";
 
@@ -100,7 +101,7 @@ export function EventCard({
         {/* Informazioni evento */}
         <div className="space-y-2 text-white/60 text-sm">
           <div className="flex items-center gap-2">
-            <span>📅</span>
+            <FaCalendarAlt className="shrink-0" />
             <span>
               {event.datetime_start && new Date(event.datetime_start).toLocaleDateString('it-IT', {
                 day: '2-digit',
@@ -119,13 +120,13 @@ export function EventCard({
           
           {event.location_ && (
             <div className="flex items-center gap-2">
-              <span>📍</span>
+              <FaMapMarkerAlt className="shrink-0" />
               <span className="line-clamp-1">{event.location_.name}</span>
             </div>
           )}
 
           <div className="flex items-center gap-2">
-            <span>📊</span>
+            <FaChartBar className="shrink-0" />
             <span>
               Creato il {new Date(event.created_at).toLocaleDateString('it-IT')}
             </span>
@@ -137,9 +138,10 @@ export function EventCard({
           <div className="mt-4 flex justify-end">
             <button
               onClick={handleEditClick}
-              className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+              className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors inline-flex items-center gap-2"
             >
-              ✏️ Modifica
+              <FaEdit />
+              <span>Modifica</span>
             </button>
           </div>
         )}

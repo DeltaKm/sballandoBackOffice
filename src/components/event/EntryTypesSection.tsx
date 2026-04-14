@@ -8,6 +8,27 @@ import { TransferEntryModal } from "./TransferEntryModal";
 import { EditEntryTypeModal } from "./EditEntryTypeModal";
 import { NewEntryModal } from "./NewEntryModal";
 import QRCode from 'qrcode';
+import {
+  FaTicketAlt,
+  FaDownload,
+  FaBan,
+  FaTimes,
+  FaPlus,
+  FaBolt,
+  FaBullseye,
+  FaPalette,
+  FaUser,
+  FaUndo,
+  FaTrash,
+  FaSyncAlt,
+  FaExclamationTriangle,
+  FaQrcode,
+  FaMagic,
+  FaClipboardList,
+  FaLock,
+  FaLightbulb,
+  FaCalendarAlt,
+} from 'react-icons/fa';
 
 interface EntryTypesSectionProps {
   event: Event;
@@ -29,7 +50,7 @@ function NewEntryModalWithTemplates({ show, eventId, onClose, onSuccess }: {
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div>
             <h3 className="text-white font-bold text-2xl flex items-center gap-3">
-              <span className="text-3xl">🎟️</span>
+              <FaTicketAlt className="text-3xl" />
               Crea Nuovo Ingresso
             </h3>
             <p className="text-white/60 text-sm mt-1">
@@ -40,7 +61,7 @@ function NewEntryModalWithTemplates({ show, eventId, onClose, onSuccess }: {
             onClick={onClose}
             className="text-white/60 hover:text-white transition-colors text-2xl"
           >
-            ✕
+            <FaTimes />
           </button>
         </div>
 
@@ -504,7 +525,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
         closeQrModal();
         
         // Mostra messaggio di successo
-        console.log('✅ QR Code generato:', response.qr_code);
+        console.log('QR Code generato:', response.qr_code);
         
       } else {
         const errorData = await res.json();
@@ -558,7 +579,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
         closeDisableQrModal();
         
         // Mostra messaggio di successo
-        console.log('✅ QR Code disattivato');
+        console.log('QR Code disattivato');
         
       } else {
         const errorData = await res.json();
@@ -608,7 +629,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                 onClick={downloadQrCode}
                 className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-3 text-lg font-semibold"
               >
-                <span className="text-xl">📥</span>
+                <FaDownload className="text-xl" />
                 Scarica QR
               </button>
 
@@ -619,7 +640,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                 onClick={openDisableQrModal}
                 className="px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2 text-base font-medium"
               >
-                <span className="text-lg">🚫</span>
+                <FaBan className="text-lg" />
                 Disattiva
               </button>
             </div>
@@ -629,7 +650,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
               onClick={openQrModal}
               className="px-6 py-3 bg-[#FC0045] text-white rounded-xl hover:bg-[#FC0045]/80 transition-colors flex items-center gap-3 text-lg font-semibold"
             >
-              <span className="text-xl">➕</span>
+              <FaPlus className="text-xl" />
               Crea QR Ingresso
             </button>
           )}
@@ -643,12 +664,16 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
             
             <div className="relative z-10 flex items-center gap-4">
               <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors">
-                <span className="text-2xl">⚡</span>
+                <FaBolt className="text-2xl" />
               </div>
               <div className="text-left">
                 <div className="text-xl font-bold">Nuovo Ingresso</div>
-                <div className="text-sm font-normal opacity-90 group-hover:opacity-100 transition-opacity">
-                  🎯 Con template veloci • 🎨 Personalizzabile
+                <div className="text-sm font-normal opacity-90 group-hover:opacity-100 transition-opacity inline-flex items-center gap-2">
+                  <FaBullseye />
+                  <span>Con template veloci</span>
+                  <span>•</span>
+                  <FaPalette />
+                  <span>Personalizzabile</span>
                 </div>
               </div>
             </div>
@@ -665,7 +690,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
             {/* Header sezione */}
             <div className="flex items-center gap-4 mb-6">
               <div className="w-14 h-14 bg-blue-500/30 rounded-xl flex items-center justify-center">
-                <span className="text-blue-400 text-2xl">👤</span>
+                <FaUser className="text-blue-400 text-2xl" />
               </div>
               <div className="flex-1">
                 <h4 className="text-blue-300 font-bold text-xl">I Miei Ingressi</h4>
@@ -767,7 +792,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                             : 'Trasferisci ingressi ai collaboratori'
                         }
                       >
-                        🔄 Trasferisci
+                        Trasferisci
                       </button> */}
 
                       <button
@@ -783,7 +808,8 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                             : `Ritira ${getWithdrawableCount(entry)} ingressi dai collaboratori`
                         }
                       >
-                        ↩️ Ritira
+                        <FaUndo />
+                        <span>Ritira</span>
                         {getWithdrawableCount(entry) > 0 && (
                           <span className="bg-orange-500/50 px-2 py-1 rounded-lg text-xs font-bold">
                             {getWithdrawableCount(entry)}
@@ -793,10 +819,11 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
 
                       <button
                         onClick={(e) => { e.stopPropagation(); openDeleteModal(entry.id, entry.label); }}
-                        className="px-4 py-2 bg-red-500/30 text-red-300 rounded-lg text-sm font-medium hover:bg-red-500/50 transition-colors border border-red-400/40"
+                        className="px-4 py-2 bg-red-500/30 text-red-300 rounded-lg text-sm font-medium hover:bg-red-500/50 transition-colors border border-red-400/40 inline-flex items-center gap-2"
                         title="Elimina ingresso"
                       >
-                        🗑️ Elimina
+                        <FaTrash />
+                        <span>Elimina</span>
                       </button>
                     </div>
                   </div>
@@ -804,7 +831,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
               ) : (
                 <div className="text-center py-12 border-2 border-dashed border-blue-400/40 rounded-xl bg-blue-500/10">
                   <div className="text-blue-400/70 mb-4">
-                    <span className="text-5xl">🎟️</span>
+                    <FaTicketAlt className="text-5xl mx-auto" />
                   </div>
                   <p className="text-blue-300 text-lg mb-3 font-semibold">
                     {myActiveCategory === 'all'
@@ -821,9 +848,10 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                   {myActiveCategory === 'all' && (
                     <button
                       onClick={() => openNewEntryModal()}
-                      className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-base font-semibold"
+                      className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-base font-semibold inline-flex items-center gap-2"
                     >
-                      ➕ Crea il primo ingresso
+                      <FaPlus />
+                      <span>Crea il primo ingresso</span>
                     </button>
                   )}
                 </div>
@@ -841,7 +869,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
               {/* Header */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
-                  <span className="text-red-400 text-lg">⚠️</span>
+                  <FaExclamationTriangle className="text-red-400 text-lg" />
                 </div>
                 <div>
                   <h3 className="text-white font-semibold">Conferma Eliminazione</h3>
@@ -858,7 +886,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                   <span className="text-white font-medium">"{deleteModal.entryLabel}"</span>
                 </div>
                 <p className="text-red-400 text-sm mt-2">
-                  ⚠️ Tutti i dati associati verranno eliminati permanentemente
+                  Tutti i dati associati verranno eliminati permanentemente
                 </p>
               </div>
 
@@ -883,7 +911,8 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                     </>
                   ) : (
                     <>
-                      🗑️ Elimina
+                      <FaTrash />
+                      <span>Elimina</span>
                     </>
                   )}
                 </button>
@@ -899,7 +928,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
               {/* Header */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center">
-                  <span className="text-orange-400 text-lg">🔄</span>
+                  <FaSyncAlt className="text-orange-400 text-lg" />
                 </div>
                 <div>
                   <h3 className="text-white font-semibold">Conferma Ritiro</h3>
@@ -943,7 +972,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                 </div>
 
                 <p className="text-orange-400 text-sm mt-3 flex items-center gap-2">
-                  <span>⚠️</span>
+                  <FaExclamationTriangle />
                   <span>Questa azione rimuoverà tutti gli ingressi compatibili dai collaboratori</span>
                 </p>
               </div>
@@ -969,7 +998,8 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                     </>
                   ) : (
                     <>
-                      🔄 Ritira ({withdrawModal.withdrawableCount})
+                      <FaSyncAlt />
+                      <span>Ritira ({withdrawModal.withdrawableCount})</span>
                     </>
                   )}
                 </button>
@@ -985,7 +1015,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
               {/* Header */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-[#FC0045]/20 rounded-full flex items-center justify-center">
-                  <span className="text-[#FC0045] text-lg">📱</span>
+                  <FaQrcode className="text-[#FC0045] text-lg" />
                 </div>
                 <div>
                   <h3 className="text-white font-semibold">
@@ -1001,7 +1031,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
               <div className="mb-6">
                 <div className="p-4 bg-white/5 border border-white/10 rounded-lg mb-4">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="text-2xl">🎉</span>
+                    <FaTicketAlt className="text-2xl" />
                     <span className="text-white font-medium">{event.title}</span>
                   </div>
                   {event.description_extended && (
@@ -1014,7 +1044,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                     {/* QR Code Corrente */}
                     <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                       <p className="text-blue-400 text-sm flex items-center gap-2 mb-2">
-                        <span>📱</span>
+                        <FaQrcode />
                         <span className="font-medium">QR Code Corrente:</span>
                       </p>
                       <div className="flex items-center gap-3">
@@ -1030,7 +1060,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                     {/* Warning */}
                     <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
                       <p className="text-orange-400 text-sm flex items-center gap-2">
-                        <span>⚠️</span>
+                        <FaExclamationTriangle />
                         <span>Generando un nuovo QR code, il precedente non sarà più valido.</span>
                       </p>
                     </div>
@@ -1038,25 +1068,25 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                 ) : (
                   <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
                     <p className="text-green-400 text-sm flex items-center gap-2">
-                      <span>✨</span>
+                      <FaMagic />
                       <span>Verrà generato un nuovo QR code univoco per l'accesso all'evento.</span>
                     </p>
                   </div>
                 )}
 
                 <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <h4 className="text-blue-400 font-medium mb-2">📋 Cosa succederà:</h4>
+                  <h4 className="text-blue-400 font-medium mb-2 inline-flex items-center gap-2"><FaClipboardList /> <span>Cosa succederà:</span></h4>
                   <ul className="text-blue-300 text-sm space-y-1">
                     <li className="flex items-center gap-2">
-                      <span>🎯</span>
+                      <FaBullseye />
                       <span>{event.qr_enter ? 'Sostituzione' : 'Generazione'} codice univoco per l'evento</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <span>📱</span>
+                      <FaQrcode />
                       <span>QR code scaricabile e stampabile</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <span>🔒</span>
+                      <FaLock />
                       <span>Controllo accessi sicuro e tracciato</span>
                     </li>
                   </ul>
@@ -1084,7 +1114,8 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                     </>
                   ) : (
                     <>
-                      📱 {event.qr_enter ? 'Rigenera QR' : 'Genera QR'}
+                      <FaQrcode />
+                      <span>{event.qr_enter ? 'Rigenera QR' : 'Genera QR'}</span>
                     </>
                   )}
                 </button>
@@ -1100,7 +1131,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
               {/* Header */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
-                  <span className="text-red-400 text-lg">🚫</span>
+                  <FaBan className="text-red-400 text-lg" />
                 </div>
                 <div>
                   <h3 className="text-white font-semibold">Disattiva QR Code Ingresso</h3>
@@ -1112,7 +1143,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
               <div className="mb-6">
                 <div className="p-4 bg-white/5 border border-white/10 rounded-lg mb-4">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="text-2xl">🎉</span>
+                    <FaTicketAlt className="text-2xl" />
                     <span className="text-white font-medium">{event.title}</span>
                   </div>
                   {event.description_extended && (
@@ -1123,7 +1154,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                 {/* QR Code Corrente */}
                 <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg mb-4">
                   <p className="text-blue-400 text-sm flex items-center gap-2 mb-2">
-                    <span>📱</span>
+                    <FaQrcode />
                     <span className="font-medium">QR Code Attuale:</span>
                   </p>
                   <div className="flex items-center gap-3">
@@ -1139,7 +1170,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                 {/* Warning */}
                 <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg mb-4">
                   <p className="text-red-400 text-sm flex items-center gap-2 mb-2">
-                    <span>⚠️</span>
+                    <FaExclamationTriangle />
                     <span className="font-medium">Attenzione: Operazione irreversibile</span>
                   </p>
                   <ul className="text-red-300 text-sm space-y-1 ml-6">
@@ -1151,18 +1182,18 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
 
                 {/* Info */}
                 <div className="p-3 bg-gray-500/10 border border-gray-500/20 rounded-lg">
-                  <h4 className="text-gray-400 font-medium mb-2">💡 Quando disattivare il QR:</h4>
+                  <h4 className="text-gray-400 font-medium mb-2 inline-flex items-center gap-2"><FaLightbulb /> <span>Quando disattivare il QR:</span></h4>
                   <ul className="text-gray-300 text-sm space-y-1">
                     <li className="flex items-center gap-2">
-                      <span>🔒</span>
+                      <FaLock />
                       <span>Per motivi di sicurezza (QR compromesso)</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <span>📅</span>
+                      <FaCalendarAlt />
                       <span>Quando l'evento è terminato</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <span>🚫</span>
+                      <FaBan />
                       <span>Per impedire nuovi accessi</span>
                     </li>
                   </ul>
@@ -1190,7 +1221,8 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
                     </>
                   ) : (
                     <>
-                      🚫 Disattiva QR
+                      <FaBan />
+                      <span>Disattiva QR</span>
                     </>
                   )}
                 </button>

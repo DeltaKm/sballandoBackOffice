@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { FaShoppingBag, FaTicketAlt } from "react-icons/fa";
 import type { Event } from "~/types";
 import { StatisticsHeader } from "./statistics/StatisticsHeader";
 import { CollaboratorFilter } from "./statistics/CollaboratorFilter";
@@ -119,7 +120,10 @@ export function StatisticsSection({ event }: StatisticsSectionProps) {
               : 'text-white/60 hover:text-white/80'
           }`}
         >
-          🛍️ Prodotti
+          <span className="inline-flex items-center gap-2">
+            <FaShoppingBag />
+            <span>Prodotti</span>
+          </span>
         </button>
         <button
           onClick={() => setActiveTab('entries')}
@@ -129,7 +133,10 @@ export function StatisticsSection({ event }: StatisticsSectionProps) {
               : 'text-white/60 hover:text-white/80'
           }`}
         >
-          🎟️ Ingressi
+          <span className="inline-flex items-center gap-2">
+            <FaTicketAlt />
+            <span>Ingressi</span>
+          </span>
         </button>
       </div>
 

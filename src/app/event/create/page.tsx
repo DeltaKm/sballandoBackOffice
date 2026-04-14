@@ -4,7 +4,7 @@ import { useState, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "~/store/auth";
 import Image from "next/image";
-import { FaSearch, FaTimes } from 'react-icons/fa';
+import { FaSearch, FaTimes, FaUserTie, FaExclamationTriangle } from 'react-icons/fa';
 import { EventSchema } from "~/schemas/event";
 import { Switch } from '@headlessui/react';
 import { v4 as uuidv4 } from 'uuid';
@@ -214,7 +214,7 @@ export default function CreateEventPage() {
             // Assicurati che sia una stringa
             formDataToSend.append(
                 "music_genres",
-                JSON.stringify(formData.music_genres) // 🔥 ora diventa una stringa JSON
+                JSON.stringify(formData.music_genres) // ora diventa una stringa JSON
             );
 
 
@@ -361,7 +361,10 @@ export default function CreateEventPage() {
                             
                             <div>
                                 <label htmlFor="dress_code" className="block text-sm font-medium text-white/80 mb-2">
-                                    👔 Dress Code
+                                    <span className="inline-flex items-center gap-2">
+                                        <FaUserTie />
+                                        <span>Dress Code</span>
+                                    </span>
                                 </label>
                                 <input
                                     type="text"
@@ -377,7 +380,10 @@ export default function CreateEventPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="age_recommended" className="block text-sm font-medium text-white/80 mb-2">
-                                    🔞 Età Consigliata
+                                    <span className="inline-flex items-center gap-2">
+                                        <FaExclamationTriangle />
+                                        <span>Età Consigliata</span>
+                                    </span>
                                 </label>
                                 <input
                                     type="text"
