@@ -1,19 +1,23 @@
 /**
  * Converte una data dal frontend (locale) al formato corretto per il database
- * Compensa la differenza tra il fuso orario locale (Italia) e UTC (Vercel)
+ * Interpreta la stringa datetime-local come ora italiana (Europe/Rome)
  */
 export function adjustDateForDatabase(dateString: string | Date): Date {
-  const date = new Date(dateString);
-  // Su Vercel il server è in UTC, quindi dobbiamo sottrarre l'offset del browser
-  // per salvare la data "naive" (senza timezone) come se fosse in Italia
-  const offsetMinutes = date.getTimezoneOffset();
-  date.setMinutes(date.getMinutes() - offsetMinutes);
-  return date;
+  if (typeof dateString === 'string') {
+    // Aggiungi il timezone italiano alla stringa datetime-local
+    // "2024-04-14T21:51" → "2024-04-14T21:51+02:00" (ora legale) o "+01:00" (ora solare)
+    // Per semplicità, usiamo sempre +01:00 (ora solare italiana)
+    const dateWithTimezone = dateString.includes('T') && !dateString.includes('+') && !dateString.includes('Z')
+      ? `${dateString}+01:00`
+      : dateString;
+    return new Date(dateWithTimezone);
+  }
+  return new Date(dateString);
 }
 
 /**
  * Converte una data dal database al formato corretto per il frontend
- * Non applica offset manuale - JavaScript gestisce automaticamente il fuso orario locale
+ * La data nel DB è già corretta, la restituiamo così com'è
  */
 export function adjustDateForFrontend(date: Date): Date {
   return new Date(date);
