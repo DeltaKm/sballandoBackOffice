@@ -1,9 +1,14 @@
 /**
  * Converte una data dal frontend (locale) al formato corretto per il database
- * Non applica offset manuale - JavaScript gestisce automaticamente il fuso orario locale
+ * Compensa la differenza tra il fuso orario locale (Italia) e UTC (Vercel)
  */
 export function adjustDateForDatabase(dateString: string | Date): Date {
-  return new Date(dateString);
+  const date = new Date(dateString);
+  // Su Vercel il server è in UTC, quindi dobbiamo sottrarre l'offset del browser
+  // per salvare la data "naive" (senza timezone) come se fosse in Italia
+  const offsetMinutes = date.getTimezoneOffset();
+  date.setMinutes(date.getMinutes() - offsetMinutes);
+  return date;
 }
 
 /**
