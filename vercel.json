@@ -4,6 +4,9 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "outputDirectory": ".next",
+  "env": {
+    "TZ": "Europe/Rome"
+  },
   "functions": {
     "app/api/*/.ts": {
       "maxDuration": 30
