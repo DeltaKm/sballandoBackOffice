@@ -6,9 +6,9 @@ export function adjustDateForDatabase(dateString: string | Date): Date {
   if (typeof dateString === 'string') {
     // Aggiungi il timezone italiano alla stringa datetime-local
     // "2024-04-14T21:51" → "2024-04-14T21:51+02:00" (ora legale) o "+01:00" (ora solare)
-    // Per semplicità, usiamo sempre +01:00 (ora solare italiana)
+    // Usiamo +02:00 per l'ora legale (da fine marzo a fine ottobre)
     const dateWithTimezone = dateString.includes('T') && !dateString.includes('+') && !dateString.includes('Z')
-      ? `${dateString}+01:00`
+      ? `${dateString}+02:00`
       : dateString;
     return new Date(dateWithTimezone);
   }
