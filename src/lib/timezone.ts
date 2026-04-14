@@ -1,23 +1,17 @@
-const ITALY_TIMEZONE_OFFSET = 2; // Ore da aggiungere per l'Italia
-
 /**
  * Converte una data dal frontend (locale) al formato corretto per il database
+ * Non applica offset manuale - JavaScript gestisce automaticamente il fuso orario locale
  */
 export function adjustDateForDatabase(dateString: string | Date): Date {
-  const date = new Date(dateString);
-  // Aggiungi l'offset del fuso orario italiano
-  date.setHours(date.getHours() + ITALY_TIMEZONE_OFFSET);
-  return date;
+  return new Date(dateString);
 }
 
 /**
  * Converte una data dal database al formato corretto per il frontend
+ * Non applica offset manuale - JavaScript gestisce automaticamente il fuso orario locale
  */
 export function adjustDateForFrontend(date: Date): Date {
-  const adjustedDate = new Date(date);
-  // Sottrai l'offset del fuso orario italiano
-  adjustedDate.setHours(adjustedDate.getHours() - ITALY_TIMEZONE_OFFSET);
-  return adjustedDate;
+  return new Date(date);
 }
 
 /**
@@ -55,14 +49,14 @@ export function adjustEventDates<T extends { datetime_start?: any; datetime_end?
 
 /**
  * Converte una data dal database al formato datetime-local per input HTML
- * Questa funzione gestisce correttamente il timezone locale
+ * JavaScript gestisce automaticamente il timezone locale del browser
  */
 export function dateToLocalInput(dateString: string | Date): string {
   if (!dateString) return '';
   
   const date = new Date(dateString);
   
-  // Sottrai l'offset per compensare la conversione automatica in UTC del browser
+  // JavaScript converte automaticamente al fuso orario locale
   const adjustedDate = adjustDateForFrontend(date);
   
   // Formato per input datetime-local: YYYY-MM-DDTHH:mm

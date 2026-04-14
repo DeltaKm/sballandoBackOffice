@@ -24,12 +24,9 @@ interface Event {
   age_recommended?: string | null;
 }
 
-// Utility per aggiustare le date per il frontend
+// Utility per convertire le date per il display
 const adjustDateForDisplay = (dateString: string): Date => {
-  const date = new Date(dateString);
-  // Sottrai 2 ore per compensare l'offset del server
-  date.setHours(date.getHours() - 2);
-  return date;
+  return new Date(dateString);
 };
 
 export function EventInfo({ event }: { event: Event }) {
