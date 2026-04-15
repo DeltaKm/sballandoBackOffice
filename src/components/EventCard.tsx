@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { FaCalendarAlt, FaMapMarkerAlt, FaChartBar, FaEdit } from "react-icons/fa";
 import { getEventCoverUrl } from "~/lib/imageUtils";
 import type { Event } from "~/types";
@@ -9,13 +9,15 @@ interface EventCardProps {
   onClick?: (event: Event) => void;
   showEditButton?: boolean;
   className?: string;
+  bottomContent?: ReactNode;
 }
 
 export function EventCard({ 
   event, 
   onClick, 
   showEditButton = true, 
-  className = "" 
+  className = "",
+  bottomContent,
 }: EventCardProps) {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
@@ -132,6 +134,12 @@ export function EventCard({
             </span>
           </div>
         </div>
+
+        {bottomContent && (
+          <div className="mt-4 border-t border-white/10 pt-4">
+            {bottomContent}
+          </div>
+        )}
 
         {/* Bottone modifica */}
         {showEditButton && (

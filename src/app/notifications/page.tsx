@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthRedirect } from '~/lib/useAuth';
 import type { IconType } from 'react-icons';
 import {
@@ -20,6 +21,7 @@ import {
   FaCalendarAlt,
   FaChartLine,
   FaUser,
+  FaArrowLeft,
   FaArrowRight,
   FaClock,
   FaBullhorn,
@@ -74,6 +76,7 @@ interface NotificationStats {
 
 export default function NotificationsPage() {
   const auth = useAuthRedirect();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'send' | 'history' | 'stats' | 'admin'>('send');
   
   // Form state
@@ -103,22 +106,6 @@ export default function NotificationsPage() {
   // Stats state
   const [stats, setStats] = useState<NotificationStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
-
-  // Loading check
-  if (auth.isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/80">Caricamento...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!auth.user) {
-    return null; // Redirect will be handled by useAuthRedirect
-  }
 
   // Fetch notification history
   const fetchHistory = async (page = 1) => {
@@ -281,15 +268,42 @@ export default function NotificationsPage() {
     }
   };
 
+  // Loading check
+  if (auth.isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/80">Caricamento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!auth.user) {
+    return null; // Redirect will be handled by useAuthRedirect
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 text-white">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 inline-flex items-center gap-3">
-            <FaBell />
-            <span>Centro Notifiche</span>
-          </h1>
+          <div className="mb-2 flex items-start justify-between gap-4">
+            <h1 className="text-4xl font-bold inline-flex items-center gap-3">
+              <FaBell />
+              <span>Centro Notifiche</span>
+            </h1>
+
+            <button
+              onClick={() => router.push('/event')}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20 transition-colors"
+            >
+              <FaArrowLeft />
+              <span>Indietro</span>
+            </button>
+          </div>
+
           <p className="text-white/70 text-lg">
             Invia notifiche push e messaggi ai tuoi follower
           </p>

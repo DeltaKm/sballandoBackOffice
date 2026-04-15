@@ -331,82 +331,81 @@ export default function CollaboratorEventsPage() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredEvents.map((event) => (
-                <div key={event.id} className="relative">
-                  <div 
+                <div key={event.id} className="group">
+                  <EventCard
+                    event={event}
                     onClick={() => router.push(`/collaborator-events/${event.id}`)}
-                    className="cursor-pointer group"
-                  >
-                    <EventCard 
-                      event={event}
-                      showEditButton={false} // I collaboratori non possono modificare
-                      className="pb-16 group-hover:shadow-xl group-hover:scale-[1.02] transition-all duration-200" // Spazio per le informazioni collaboratore
-                    />
-                    
-                    {/* Collaborator Info Overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 rounded-b-xl">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <FaUser className="text-orange-400 text-sm" />
-                          <span className="text-orange-300 text-sm font-medium">
-                            {event.collaborator_label || event.collaborator_role}
-                          </span>
+                    showEditButton={false}
+                    className="group-hover:shadow-xl group-hover:scale-[1.02] transition-all duration-200"
+                    bottomContent={(
+                      <>
+                        <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                          <div className="inline-flex items-center gap-2">
+                            <FaUser className="text-orange-400 text-sm" />
+                            <span className="text-sm font-medium text-orange-300">
+                              {event.collaborator_label || event.collaborator_role}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-1">
+                            {event.is_upcoming && (
+                              <span className="rounded px-2 py-1 text-xs bg-green-500/20 text-green-300">
+                                Prossimo
+                              </span>
+                            )}
+                            {event.is_past && (
+                              <span className="rounded px-2 py-1 text-xs bg-gray-500/20 text-gray-300">
+                                Passato
+                              </span>
+                            )}
+                            {event.state === 'draft' && (
+                              <span className="rounded px-2 py-1 text-xs bg-yellow-500/20 text-yellow-300">
+                                Bozza
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          {event.is_upcoming && (
-                            <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded">
-                              Prossimo
-                            </span>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                          <span className="text-white/60">Permessi:</span>
+                          {event.permissions.guest_enabled && (
+                            <span className="inline-flex items-center gap-1 rounded bg-purple-500/20 px-2 py-1 text-purple-300"><FaMask /> <span>Ospite</span></span>
                           )}
-                          {event.is_past && (
-                            <span className="px-2 py-1 bg-gray-500/20 text-gray-300 text-xs rounded">
-                              Passato
-                            </span>
+                          {event.permissions.vidimate_enabled_entry && (
+                            <span className="inline-flex items-center gap-1 rounded bg-blue-500/20 px-2 py-1 text-blue-300"><FaTicketAlt /> <span>Ingressi</span></span>
                           )}
-                          {event.state === 'draft' && (
-                            <span className="px-2 py-1 bg-yellow-500/20 text-yellow-300 text-xs rounded">
-                              Bozza
-                            </span>
+                          {event.permissions.vidimate_enabled_product && (
+                            <span className="inline-flex items-center gap-1 rounded bg-green-500/20 px-2 py-1 text-green-300"><FaShoppingBag /> <span>Prodotti</span></span>
                           )}
+                          {!event.permissions.guest_enabled &&
+                            !event.permissions.vidimate_enabled_entry &&
+                            !event.permissions.vidimate_enabled_product && (
+                              <span className="text-white/40">Nessuno</span>
+                            )}
                         </div>
-                      </div>
-                      
-                      {/* Permissions */}
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className="text-white/60">Permessi:</span>
-                        {event.permissions.guest_enabled && (
-                          <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded inline-flex items-center gap-1"><FaMask /> <span>Ospite</span></span>
-                        )}
-                        {event.permissions.vidimate_enabled_entry && (
-                          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded inline-flex items-center gap-1"><FaTicketAlt /> <span>Ingressi</span></span>
-                        )}
-                        {event.permissions.vidimate_enabled_product && (
-                          <span className="px-2 py-1 bg-green-500/20 text-green-300 rounded inline-flex items-center gap-1"><FaShoppingBag /> <span>Prodotti</span></span>
-                        )}
-                        {!event.permissions.guest_enabled && 
-                         !event.permissions.vidimate_enabled_entry && 
-                         !event.permissions.vidimate_enabled_product && (
-                          <span className="text-white/40">Nessuno</span>
-                        )}
-                      </div>
-                      
-                      {/* Quick stats */}
-                      <div className="flex items-center gap-4 mt-2 text-xs text-white/60">
-                        <span className="inline-flex items-center gap-1"><FaShoppingBag /> <span>{event.products_count} prodotti</span></span>
-                        <span className="inline-flex items-center gap-1"><FaTicketAlt /> <span>{event.entry_types_count} ingressi</span></span>
-                        <span className="inline-flex items-center gap-1"><FaMusic /> <span>{event.music_genres_count} generi</span></span>
-                      </div>
-                      
-                      {/* Action button */}
-                      <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="w-full px-3 py-2 bg-[#FC0045] text-white rounded-lg text-sm font-medium hover:bg-[#FC0045]/80 transition-colors">
-                          <span className="inline-flex items-center gap-2">
-                            <FaEye />
-                            <span>Visualizza Dettagli</span>
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+
+                        <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-white/60">
+                          <span className="inline-flex items-center gap-1"><FaShoppingBag /> <span>{event.products_count} prodotti</span></span>
+                          <span className="inline-flex items-center gap-1"><FaTicketAlt /> <span>{event.entry_types_count} ingressi</span></span>
+                          <span className="inline-flex items-center gap-1"><FaMusic /> <span>{event.music_genres_count} generi</span></span>
+                        </div>
+
+                        <div className="mt-3 opacity-0 transition-opacity group-hover:opacity-100">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/collaborator-events/${event.id}`);
+                            }}
+                            className="w-full rounded-lg bg-[#FC0045] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#FC0045]/80"
+                          >
+                            <span className="inline-flex items-center gap-2">
+                              <FaEye />
+                              <span>Visualizza Dettagli</span>
+                            </span>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  />
                 </div>
               ))}
             </div>
