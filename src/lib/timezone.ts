@@ -4,13 +4,33 @@
  */
 export function adjustDateForDatabase(dateString: string | Date): Date {
   if (typeof dateString === 'string') {
-    // Aggiungi il timezone italiano alla stringa datetime-local
-    // "2024-04-14T21:51" → "2024-04-14T21:51+02:00" (ora legale) o "+01:00" (ora solare)
-    // Usiamo +02:00 per l'ora legale (da fine marzo a fine ottobre)
-    const dateWithTimezone = dateString.includes('T') && !dateString.includes('+') && !dateString.includes('Z')
-      ? `${dateString}+02:00`
-      : dateString;
-    return new Date(dateWithTimezone);
+    // Se arriva da input datetime-local (senza timezone), interpretalo come Europe/Rome
+    if (dateString.includes('T') && !dateString.includes('+') && !dateString.includes('Z')) {
+      const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+      if (!match) {
+        return new Date(dateString);
+      }
+
+      const [, y, m, d, h, min] = match;
+      const year = Number(y);
+      const month = Number(m);
+      const day = Number(d);
+      const hour = Number(h);
+      const minute = Number(min);
+
+      const utcGuess = Date.UTC(year, month - 1, day, hour, minute, 0);
+      const initialOffsetMinutes = getTimeZoneOffsetMinutes(new Date(utcGuess), 'Europe/Rome');
+      let correctedUtc = utcGuess - initialOffsetMinutes * 60_000;
+
+      const finalOffsetMinutes = getTimeZoneOffsetMinutes(new Date(correctedUtc), 'Europe/Rome');
+      if (finalOffsetMinutes !== initialOffsetMinutes) {
+        correctedUtc = utcGuess - finalOffsetMinutes * 60_000;
+      }
+
+      return new Date(correctedUtc);
+    }
+
+    return new Date(dateString);
   }
   return new Date(dateString);
 }
@@ -83,7 +103,37 @@ export function dateToLocalInput(dateString: string | Date): string {
  */
 export function localInputToDate(inputValue: string): string {
   if (!inputValue) return '';
-  
-  // L'input datetime-local è già in formato locale, lo passiamo direttamente
   return inputValue;
+}
+
+function getTimeZoneOffsetMinutes(date: Date, timeZone: string): number {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(date);
+  const map: Record<string, string> = {};
+  for (const part of parts) {
+    if (part.type !== 'literal') {
+      map[part.type] = part.value;
+    }
+  }
+
+  const asUTC = Date.UTC(
+    Number(map.year),
+    Number(map.month) - 1,
+    Number(map.day),
+    Number(map.hour),
+    Number(map.minute),
+    Number(map.second),
+  );
+
+  return (asUTC - date.getTime()) / 60_000;
 }
