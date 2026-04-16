@@ -1,12 +1,13 @@
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { FaCalendarAlt, FaMapMarkerAlt, FaChartBar, FaEdit } from "react-icons/fa";
+import { FaCalendarAlt, FaMapMarkerAlt, FaChartBar, FaEdit, FaTrash } from "react-icons/fa";
 import { getEventCoverUrl } from "~/lib/imageUtils";
 import type { Event } from "~/types";
 
 interface EventCardProps {
   event: Event;
   onClick?: (event: Event) => void;
+  onDelete?: (event: Event) => void;
   showEditButton?: boolean;
   className?: string;
   bottomContent?: ReactNode;
@@ -15,6 +16,7 @@ interface EventCardProps {
 export function EventCard({ 
   event, 
   onClick, 
+  onDelete,
   showEditButton = true, 
   className = "",
   bottomContent,
@@ -35,6 +37,11 @@ export function EventCard({
     router.push(`/event/${event.id}/edit`);
   };
 
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete?.(event);
+  };
+
   const handleImageError = () => {
     setImageError(true);
   };
@@ -42,7 +49,7 @@ export function EventCard({
   return (
     <div
       onClick={handleCardClick}
-      className={`bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-all duration-300 hover:scale-105 cursor-pointer ${className}`}
+      className={`bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-all duration-300 hover:scale-105 cursor-pointer h-full flex flex-col ${className}`}
     >
       {/* Immagine di copertina */}
       {getEventCoverUrl(event) && !imageError ? (
@@ -67,7 +74,7 @@ export function EventCard({
       )}
 
       {/* Contenuto della card */}
-      <div className="p-6">
+      <div className="p-6 flex flex-1 flex-col">
         <div className="flex justify-between items-start mb-3">
           <h2 className="text-xl font-semibold text-white line-clamp-2">
             {event.title}
@@ -82,14 +89,6 @@ export function EventCard({
               {event.state === 'published' ? 'Pubblicato' : 'Bozza'}
             </span>
             
-            {/* Badge visibilità */}
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              event.is_public 
-                ? 'bg-blue-500/20 text-blue-400' 
-                : 'bg-gray-500/20 text-gray-400'
-            }`}>
-              {event.is_public ? 'Pubblico' : 'Privato'}
-            </span>
           </div>
         </div>
 
@@ -141,16 +140,28 @@ export function EventCard({
           </div>
         )}
 
-        {/* Bottone modifica */}
-        {showEditButton && (
-          <div className="mt-4 flex justify-end">
-            <button
-              onClick={handleEditClick}
-              className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors inline-flex items-center gap-2"
-            >
-              <FaEdit />
-              <span>Modifica</span>
-            </button>
+        {/* Azioni card */}
+        {(showEditButton || onDelete) && (
+          <div className="mt-auto pt-4 flex justify-end gap-2">
+            {showEditButton && (
+              <button
+                onClick={handleEditClick}
+                className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors inline-flex items-center gap-2"
+              >
+                <FaEdit />
+                <span>Modifica</span>
+              </button>
+            )}
+
+            {onDelete && (
+              <button
+                onClick={handleDeleteClick}
+                className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors inline-flex items-center gap-2"
+              >
+                <FaTrash />
+                <span>Elimina</span>
+              </button>
+            )}
           </div>
         )}
       </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "~/store/auth";
 import { useRouter } from "next/navigation";
-import { FaSearch, FaTimes } from "react-icons/fa";
+import { FaSearch, FaTimes, FaExclamationTriangle, FaTrash } from "react-icons/fa";
 import { Sidebar } from "~/components/Sidebar";
 import { EventCard } from "~/components/EventCard";
 import type { Event } from "~/types";
@@ -13,6 +13,11 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteModal, setDeleteModal] = useState<{ show: boolean; event: Event | null }>({
+    show: false,
+    event: null,
+  });
+  const [deletingEventId, setDeletingEventId] = useState<number | null>(null);
   const user = useAuthStore((state) => state.user);
   const router = useRouter();
 
@@ -59,6 +64,41 @@ export default function EventsPage() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteEvent = (event: Event) => {
+    setDeleteModal({ show: true, event });
+  };
+
+  const closeDeleteModal = () => {
+    if (deletingEventId !== null) return;
+    setDeleteModal({ show: false, event: null });
+  };
+
+  const confirmDeleteEvent = async () => {
+    const eventToDelete = deleteModal.event;
+    if (!eventToDelete) return;
+
+    try {
+      setDeletingEventId(eventToDelete.id);
+      const res = await fetch(`/api/events/${eventToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        alert(data?.error || data?.message || 'Errore durante l\'eliminazione dell\'evento');
+        return;
+      }
+
+      setEvents((prev) => prev.filter((item) => item.id !== eventToDelete.id));
+      setDeleteModal({ show: false, event: null });
+    } catch (err) {
+      console.error('Error deleting event:', err);
+      alert('Errore durante l\'eliminazione dell\'evento');
+    } finally {
+      setDeletingEventId(null);
     }
   };
 
@@ -157,12 +197,61 @@ export default function EventsPage() {
                   key={event.id} 
                   event={event}
                   showEditButton={true}
+                  onDelete={handleDeleteEvent}
                 />
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {deleteModal.show && deleteModal.event && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl border border-white/20 bg-[#212938] p-6 shadow-2xl">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/20">
+                <FaExclamationTriangle className="text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Conferma eliminazione</h3>
+                <p className="text-sm text-white/60">Questa azione non può essere annullata</p>
+              </div>
+            </div>
+
+            <div className="mb-6 rounded-lg border border-white/10 bg-white/5 p-3">
+              <p className="text-sm text-white/70">Vuoi eliminare questo evento?</p>
+              <p className="mt-1 font-medium text-white">{deleteModal.event.title || 'Evento senza titolo'}</p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={closeDeleteModal}
+                disabled={deletingEventId !== null}
+                className="flex-1 rounded-lg bg-white/10 px-4 py-2 text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={confirmDeleteEvent}
+                disabled={deletingEventId !== null}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white transition-colors hover:bg-red-600 disabled:opacity-50"
+              >
+                {deletingEventId !== null ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <FaTrash />
+                    <span>Elimina</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

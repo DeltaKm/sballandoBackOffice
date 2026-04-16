@@ -31,6 +31,7 @@ import {
   FaBullhorn,
   FaEdit,
   FaTrash,
+  FaExclamationTriangle,
 } from 'react-icons/fa';
 
 
@@ -41,6 +42,8 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const user = useAuthStore((state) => state.user);
   const router = useRouter();
   const params = useParams();
@@ -91,18 +94,26 @@ export default function EventDetailPage() {
   };
 
   const handleDeleteEvent = async () => {
-    if (!confirm('Sei sicuro di voler eliminare questo evento?')) return;
+    if (!event?.id) return;
 
     try {
-      const res = await fetch(`/api/events/${event?.id}`, {
+      setDeleting(true);
+      const res = await fetch(`/api/events/${event.id}`, {
         method: 'DELETE',
       });
 
       if (res.ok) {
         router.push('/event');
+      } else {
+        const data = await res.json().catch(() => null);
+        alert(data?.error || data?.message || "Errore durante l'eliminazione dell'evento");
       }
     } catch (err) {
       console.error('Error deleting event:', err);
+      alert("Errore durante l'eliminazione dell'evento");
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -162,7 +173,7 @@ export default function EventDetailPage() {
                 <span>Modifica</span>
               </button>
               <button
-                onClick={handleDeleteEvent}
+                onClick={() => setShowDeleteModal(true)}
                 className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors flex items-center gap-2"
               >
                 <FaTrash className="text-sm" />
@@ -215,6 +226,54 @@ export default function EventDetailPage() {
         eventTitle={event.title || ''}
         subscribersCount={event.subscribers || 0}
       />
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl border border-white/20 bg-[#212938] p-6 shadow-2xl">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/20">
+                <FaExclamationTriangle className="text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Conferma eliminazione</h3>
+                <p className="text-sm text-white/60">Questa azione non può essere annullata</p>
+              </div>
+            </div>
+
+            <div className="mb-6 rounded-lg border border-white/10 bg-white/5 p-3">
+              <p className="text-sm text-white/70">Vuoi eliminare questo evento?</p>
+              <p className="mt-1 font-medium text-white">{event.title || 'Evento senza titolo'}</p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => !deleting && setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 rounded-lg bg-white/10 px-4 py-2 text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={handleDeleteEvent}
+                disabled={deleting}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white transition-colors hover:bg-red-600 disabled:opacity-50"
+              >
+                {deleting ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <FaTrash />
+                    <span>Elimina</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
