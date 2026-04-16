@@ -178,10 +178,37 @@ export default function CreateEventPage() {
         }));
     };
 
+    const missingRequiredFields: string[] = [];
+    if (!formData.cover) missingRequiredFields.push("Immagine di Copertina");
+    if (formData.title.trim().length < 3) missingRequiredFields.push("Titolo evento (minimo 3 caratteri)");
+    if (formData.subtitle.trim().length < 3) missingRequiredFields.push("Sottotitolo (minimo 3 caratteri)");
+    if (!formData.datetime_start) missingRequiredFields.push("Data e Ora Inizio");
+    if (!formData.datetime_end) missingRequiredFields.push("Data e Ora Fine");
+    if (!formData.location_id) missingRequiredFields.push("Locale");
+    if (formData.music_genres.length === 0) missingRequiredFields.push("Almeno un genere musicale");
+
+    const hasInvalidDateRange =
+        !!formData.datetime_start &&
+        !!formData.datetime_end &&
+        new Date(formData.datetime_end) <= new Date(formData.datetime_start);
+
+    const isFormReadyToSubmit = missingRequiredFields.length === 0 && !hasInvalidDateRange;
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
         setError("");
+
+        if (missingRequiredFields.length > 0) {
+            setError("Compila tutti i campi obbligatori prima di creare l'evento.");
+            return;
+        }
+
+        if (hasInvalidDateRange) {
+            setError("La data di fine deve essere successiva alla data di inizio.");
+            return;
+        }
+
+        setLoading(true);
 
         try {
             // Prepara i dati per la validazione
@@ -193,14 +220,14 @@ export default function CreateEventPage() {
             };
 
             // Valida i dati
-            // const validationResult = EventSchema.safeParse(dataToValidate);
+            const validationResult = EventSchema.safeParse(dataToValidate);
 
-            // if (!validationResult.success) {
-            //     const errors = validationResult.error.errors;
-            //     setError(errors[0].message);
-            //     setLoading(false);
-            //     return;
-            // }
+            if (!validationResult.success) {
+                const errors = validationResult.error.errors;
+                setError(errors[0]?.message || "Verifica i campi obbligatori");
+                setLoading(false);
+                return;
+            }
 
             // Se la validazione passa, prepara i dati per l'invio
             const formDataToSend = new FormData();
@@ -280,7 +307,7 @@ export default function CreateEventPage() {
                         {/* Cover Image Upload */}
                         <div>
                             <label className="block text-sm font-medium text-white/80 mb-2">
-                                Immagine di Copertina
+                                Immagine di Copertina *
                             </label>
                             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-white/10 border-dashed rounded-lg">
                                 <div className="space-y-1 text-center">
@@ -347,7 +374,7 @@ export default function CreateEventPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="subtitle" className="block text-sm font-medium text-white/80 mb-2">
-                                    Sottotitolo
+                                    Sottotitolo *
                                 </label>
                                 <input
                                     type="text"
@@ -486,7 +513,7 @@ export default function CreateEventPage() {
                         {/* Music Genres */}
                         <div className="space-y-4">
                             <label className="block text-sm font-medium text-white/80">
-                                Generi Musicali
+                                Generi Musicali *
                             </label>
 
                             {/* Search Bar */}
@@ -606,12 +633,28 @@ export default function CreateEventPage() {
                         </div>
                     </div>
 
+                    {(!isFormReadyToSubmit || hasInvalidDateRange) && (
+                        <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4 text-sm text-yellow-200">
+                            <p className="font-medium mb-2">Compila i campi obbligatori per abilitare la creazione:</p>
+                            {missingRequiredFields.length > 0 && (
+                                <ul className="list-disc list-inside space-y-1">
+                                    {missingRequiredFields.map((field) => (
+                                        <li key={field}>{field}</li>
+                                    ))}
+                                </ul>
+                            )}
+                            {hasInvalidDateRange && (
+                                <p className="mt-2">La data di fine deve essere successiva alla data di inizio.</p>
+                            )}
+                        </div>
+                    )}
+
                     {/* Submit Button */}
                     <div className="flex justify-end">
                         <button
                             type="submit"
-                            disabled={loading}
-                            className="px-6 py-2 bg-[#FC0045] text-white rounded-lg hover:bg-[#FC0045]/90 transition-colors disabled:opacity-50"
+                            disabled={loading || !isFormReadyToSubmit}
+                            className="px-6 py-2 bg-[#FC0045] text-white rounded-lg hover:bg-[#FC0045]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? "Creazione in corso..." : "Crea Evento"}
                         </button>

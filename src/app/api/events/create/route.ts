@@ -12,6 +12,15 @@ export async function POST(req: Request) {
         const formData = await req.formData();
         const coverFile = formData.get('cover') as File;
 
+        if (!coverFile || coverFile.size === 0) {
+            return NextResponse.json(
+                {
+                    error: "L'immagine di copertina è obbligatoria"
+                },
+                { status: 400 }
+            );
+        }
+
         // Parse music_genres from string to array
         const musicGenresString = formData.get('music_genres') as string;
         const musicGenres = JSON.parse(musicGenresString);
