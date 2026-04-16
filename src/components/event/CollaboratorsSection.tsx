@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuthStore } from "~/store/auth";
 import { UserCard } from "~/components/UserCard";
+import { getImageUrl } from "~/lib/imageUtils";
 import type { Event, User } from "~/types";
 import {
   FaLock,
@@ -33,6 +34,11 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
   const [removingCollaborator, setRemovingCollaborator] = useState<Record<number, boolean>>({});
   
   const user = useAuthStore((state) => state.user);
+
+  const getUserPictureUrl = (picture?: string | null) => {
+    if (!picture || picture.trim() === '') return null;
+    return getImageUrl(picture);
+  };
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -224,9 +230,9 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
                     className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      {searchUser.picture && searchUser.picture.trim() !== '' ? (
+                      {getUserPictureUrl(searchUser.picture) ? (
                         <img 
-                          src={searchUser.picture} 
+                          src={getUserPictureUrl(searchUser.picture)!} 
                           alt={searchUser.name || ''} 
                           className="w-8 h-8 rounded-full object-cover"
                           onError={(e) => {
@@ -235,7 +241,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
                           }}
                         />
                       ) : null}
-                      <div className={`w-8 h-8 rounded-full bg-white/20 flex items-center justify-center ${searchUser.picture && searchUser.picture.trim() !== '' ? 'hidden' : ''}`}>
+                      <div className={`w-8 h-8 rounded-full bg-white/20 flex items-center justify-center ${getUserPictureUrl(searchUser.picture) ? 'hidden' : ''}`}>
                         <FaUser className="text-white/60 text-sm" />
                       </div>
                       <div>
@@ -315,10 +321,10 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
 
               {/* Header con foto e info */}
               <div className="flex flex-col items-center text-center mb-4">
-                {collab.users?.picture ? (
+                {getUserPictureUrl(collab.users?.picture) ? (
                   <img 
-                    src= {'https://webservice.sballando.it/storage/' + collab.users.picture} 
-                    alt={collab.users.name || ''} 
+                    src={getUserPictureUrl(collab.users?.picture)!} 
+                    alt={collab.users?.name || ''} 
                     className="w-40 h-40 rounded-full object-cover mb-3"
                   />
                 ) : (
@@ -334,7 +340,7 @@ export function CollaboratorsSection({ event, onUpdate }: CollaboratorsSectionPr
                 <p className="text-white/60 text-xl mb-1">{collab.users?.email}</p>
                 
                 {collab.users?.nickname && (
-                  <p className="text-white/60 text-xl mb-2">@{collab.users.nickname}</p>
+                  <p className="text-white/60 text-xl mb-2">@{collab.users?.nickname}</p>
                 )}
                 
                 <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xl">
