@@ -648,10 +648,22 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
             /* Bottone Crea QR quando non esiste */
             <button
               onClick={openQrModal}
-              className="px-6 py-3 bg-[#FC0045] text-white rounded-xl hover:bg-[#FC0045]/80 transition-colors flex items-center gap-3 text-lg font-semibold"
+              className="group px-8 py-4 bg-gradient-to-r from-[#FC0045] via-[#FF6B35] to-[#9B59B6] text-white rounded-xl hover:from-[#FC0045]/90 hover:via-[#FF6B35]/90 hover:to-[#9B59B6]/90 transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:scale-[1.02] flex items-center gap-4 relative overflow-hidden"
             >
-              <FaPlus className="text-xl" />
-              Crea QR Ingresso
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
+
+              <div className="relative z-10 flex items-center gap-4">
+                <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl group-hover:bg-white/30 transition-colors">
+                  <FaQrcode className="text-2xl" />
+                </div>
+                <div className="text-left">
+                  <div className="text-xl font-bold">Crea QR Ingressi</div>
+                  <div className="text-sm font-normal opacity-90 group-hover:opacity-100 transition-opacity inline-flex items-center gap-2">
+                    <FaMagic />
+                    <span>Generazione automatica</span>
+                  </div>
+                </div>
+              </div>
             </button>
           )}
 
