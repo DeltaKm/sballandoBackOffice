@@ -28,8 +28,8 @@ const entryTypeSchema = z.object({
   category: z.string().min(1, "La categoria è obbligatoria")
     .max(50, "La categoria non può superare 50 caratteri"),
 
-  type: z.enum(["free", "invite"], {
-    errorMap: () => ({ message: "Seleziona un tipo valido" })
+  type: z.literal("free", {
+    errorMap: () => ({ message: "Il tipo disponibile è solo Gratuito" })
   }),
   
   quantity: z
@@ -156,7 +156,7 @@ const QUICK_TEMPLATES: QuickTemplate[] = [
       label: "Tavolo VIP",
       description: "Tavolo riservato in zona premium con servizio dedicato",
       category: "VIP",
-      type: "invite" as const,
+      type: "free" as const,
       quantity: "10",
       price: "80.00",
       seats: 6,
@@ -179,7 +179,7 @@ const QUICK_TEMPLATES: QuickTemplate[] = [
       label: "Privée Exclusive",
       description: "Area privata con servizio di lusso",
       category: "Luxury",
-      type: "invite" as const,
+      type: "free" as const,
       quantity: "3",
       price: "200.00",
       seats: 8,
@@ -547,7 +547,7 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
                       {template.data.category}
                     </span>
                     <span className="px-2 py-1 bg-white/10 rounded-full text-white/80 text-xs">
-                      {template.data.type === 'free' ? 'Libero' : 'Solo Invito'}
+                      Gratuito
                     </span>
                     {template.data.consumations.length > 0 && (
                       <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs">
@@ -695,11 +695,10 @@ export function EntryTypeForm({ eventId, onSuccess, onCancel }: EntryTypeFormPro
               <label className="block text-white/80 text-sm mb-2">Tipo</label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value as "free" | "invite" })}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as "free" })}
                 className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#FC0045]"
               >
                 <option value="free">Gratuito</option>
-                <option value="invite">Solo Invito</option>
               </select>
             </div>
             

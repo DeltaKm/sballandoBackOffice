@@ -18,8 +18,8 @@ const entryTypeSchema = z.object({
   category: z.string().min(1, "La categoria è obbligatoria")
     .max(50, "La categoria non può superare 50 caratteri"),
 
-  type: z.enum(["free", "invite"], {
-    errorMap: () => ({ message: "Seleziona un tipo valido" })
+  type: z.literal("free", {
+    errorMap: () => ({ message: "Il tipo disponibile è solo Gratuito" })
   }),
   
   quantity: z
@@ -133,7 +133,7 @@ export function EditEntryTypeModal({ show, entry, onClose, onSuccess }: EditEntr
         label: entry.label || '',
         description: entry.description || '',
         category: entry.category || '',
-        type: (entry.type as "free" | "invite") || 'free',
+        type: 'free',
         quantity: entry.stock?.toString() || '',
         price: entry.price?.toString() || '',
         seats: entry.seats || 1,
@@ -247,7 +247,7 @@ export function EditEntryTypeModal({ show, entry, onClose, onSuccess }: EditEntr
       console.log("FRONTEND - formData.price:", formData.price, "finalPrice:", finalPrice);
       
       // Usa il tipo selezionato dall'utente
-      const finalType = formData.type;
+      const finalType: "free" = "free";
       
       const payload = {
         entry_type_id: entry.id,
@@ -398,11 +398,10 @@ export function EditEntryTypeModal({ show, entry, onClose, onSuccess }: EditEntr
             <label className="block text-white/80 text-sm mb-2">Tipo</label>
             <select
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as "free" | "invite" })}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as "free" })}
               className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="free">Gratuito</option>
-              <option value="invite">Solo Invito</option>
             </select>
           </div>
 

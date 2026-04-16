@@ -648,7 +648,7 @@ export function EntryTypesSection({ event, onUpdate }: EntryTypesSectionProps) {
             /* Bottone Crea QR quando non esiste */
             <button
               onClick={openQrModal}
-              className="group px-8 py-4 bg-gradient-to-r from-[#FC0045] via-[#FF6B35] to-[#9B59B6] text-white rounded-xl hover:from-[#FC0045]/90 hover:via-[#FF6B35]/90 hover:to-[#9B59B6]/90 transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:scale-[1.02] flex items-center gap-4 relative overflow-hidden"
+              className="group w-[420px] px-8 py-4 bg-gradient-to-r from-[#FC0045] via-[#FF6B35] to-[#9B59B6] text-white rounded-xl hover:from-[#FC0045]/90 hover:via-[#FF6B35]/90 hover:to-[#9B59B6]/90 transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:scale-[1.02] flex items-center gap-4 relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
 

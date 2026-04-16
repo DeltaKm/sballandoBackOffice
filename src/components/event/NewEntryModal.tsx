@@ -17,8 +17,8 @@ const entryTypeSchema = z.object({
   category: z.string().min(1, "La categoria è obbligatoria")
     .max(50, "La categoria non può superare 50 caratteri"),
 
-  type: z.enum(["free", "invite"], {
-    errorMap: () => ({ message: "Seleziona un tipo valido" })
+  type: z.literal("free", {
+    errorMap: () => ({ message: "Il tipo disponibile è solo Gratuito" })
   }),
   
   quantity: z
@@ -385,11 +385,10 @@ export function NewEntryModal({ show, eventId, onClose, onSuccess }: NewEntryMod
             <label className="block text-white/80 text-sm mb-2">Tipo</label>
             <select
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as "free" | "invite" })}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as "free" })}
               className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#FC0045]"
             >
               <option value="free">Gratuito</option>
-              <option value="invite">Solo Invito</option>
             </select>
           </div>
 
