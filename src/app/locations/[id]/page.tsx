@@ -370,13 +370,6 @@ export default function locationPage() {
 
           {/* Bottoni di azione */}
           <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-            {/* Debug info - RIMUOVERE IN PRODUZIONE */}
-            <div className="w-full mb-4 p-3 bg-yellow-500/20 border border-yellow-400/30 rounded-lg text-yellow-300 text-sm">
-              <strong>Debug Info:</strong> User role: {user?.role || 'undefined'} | 
-              Is SUPERADMIN: {user?.role === 'SUPERADMIN' ? 'YES' : 'NO'} | 
-              User email: {user?.email || 'undefined'}
-            </div>
-
             {/* Pulsante Modifica (sempre visibile) */}
             <Link
               href={`/locations/${id}/update`}
@@ -411,9 +404,6 @@ export default function locationPage() {
                 )}
               </button>
             )}
-
-            {/* Pulsante Elimina SEMPRE VISIBILE per debug - RIMUOVERE IN PRODUZIONE */}
-            
 
             {/* Link torna indietro */}
             <Link

@@ -36,13 +36,6 @@ export default function locationsPage() {
   // Verifica se l'utente è super admin
   const isSuperAdmin = user?.role === 'SUPERADMIN';
 
-  // DEBUG - rimuovere in produzione
-  console.log('[DEBUG] Locations Page:', {
-    userRole: user?.role,
-    isSuperAdmin,
-    userEmail: user?.email
-  });
-
   // Filtra i locali in base alla ricerca (sempre chiamato)
   const filteredlocations = useMemo(() => {
     if (!searchQuery.trim()) return locations;
@@ -240,14 +233,6 @@ export default function locationsPage() {
 
         {/* Search Bar */}
         <div className="max-w-7xl mx-auto p-6 pb-0">
-          {/* DEBUG INFO - RIMUOVERE IN PRODUZIONE */}
-          <div className="mb-4 p-3 bg-yellow-500/20 border border-yellow-400/30 rounded-lg text-yellow-300 text-sm">
-            <strong className="inline-flex items-center gap-2"><FaSearch /><span>DEBUG INFO:</span></strong> User role: {user?.role || 'undefined'} | 
-            Is SUPERADMIN: {isSuperAdmin ? 'YES' : 'NO'} | 
-            Email: {user?.email || 'undefined'} | 
-            Should show delete button: {isSuperAdmin ? 'YES' : 'NO'}
-          </div>
-
           <div className="relative mb-6">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FaSearch className="text-white/60" />
