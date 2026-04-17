@@ -303,7 +303,7 @@ export default function locationsPage() {
                 <div
                   key={location_.id}
                   onClick={() => router.push(`/locations/${location_.id}`)}
-                  className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-all duration-300 hover:scale-105 cursor-pointer"
+                  className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-all duration-300 hover:scale-105 cursor-pointer h-full flex flex-col"
                 >
                   {/* Immagine di copertina */}
                   {getLocationLogoUrl(location_) ? (
@@ -342,7 +342,7 @@ export default function locationsPage() {
                   )}
 
                   {/* Contenuto della card */}
-                  <div className="p-6">
+                  <div className="p-6 flex flex-1 flex-col">
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="text-xl font-semibold text-white line-clamp-2">
                         {location_.name}
@@ -418,7 +418,7 @@ export default function locationsPage() {
                     )}
 
                     {/* Azioni - Layout diverso per Super Admin */}
-                    <div className="mt-4 flex justify-between gap-2">
+                    <div className="mt-auto pt-4 flex justify-between gap-2">
                       {/* Pulsanti Super Admin */}
                       {isSuperAdmin && (
                         <div className="flex gap-2">
