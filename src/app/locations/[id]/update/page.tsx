@@ -167,6 +167,9 @@ export default function UpdateLocationPage() {
         }
     };
 
+    const fieldClassName = "w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FC0045] focus:border-[#FC0045] transition-all duration-200";
+    const sectionTitleClassName = "text-lg font-semibold text-white flex items-center gap-2";
+
     // RIMUOVI IMMAGINE
     const removeImage = () => {
         if (formData.cover_preview && formData.cover_preview.startsWith('blob:')) {
@@ -242,10 +245,10 @@ export default function UpdateLocationPage() {
     // Se non è ancora inizializzato, mostra loading
     if (auth.isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-600">Caricamento autenticazione...</p>
+                    <div className="w-8 h-8 border-2 border-white/20 border-t-[#FC0045] rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-300">Caricamento autenticazione...</p>
                 </div>
             </div>
         );
@@ -258,28 +261,28 @@ export default function UpdateLocationPage() {
 
     if (isLoadingLocation) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-600">Caricamento locale...</p>
+                    <div className="w-8 h-8 border-2 border-white/20 border-t-[#FC0045] rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-300">Caricamento locale...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 px-4">
+            <div className="max-w-2xl mx-auto">
                 {/* Header */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">Modifica Locale</h1>
-                            <p className="text-gray-600 mt-2">Aggiorna le informazioni del locale</p>
+                <div className="text-center mb-8">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1">
+                            <h1 className="text-3xl font-bold text-white mb-2">Modifica Locale</h1>
+                            <p className="text-gray-400">Aggiorna le informazioni del locale</p>
                         </div>
                         <button
                             onClick={() => router.back()}
-                            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+                            className="bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-colors"
                         >
                             ← Indietro
                         </button>
@@ -287,27 +290,27 @@ export default function UpdateLocationPage() {
                 </div>
 
                 {/* Form */}
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 shadow-2xl">
                     <form onSubmit={handleSubmit} className="p-6 space-y-6">
                         
                         {/* Messaggi di errore/successo */}
                         {error && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
                                 <div className="flex">
                                     <FaTimesCircle className="text-red-400" />
                                     <div className="ml-3">
-                                        <p className="text-red-800">{error}</p>
+                                        <p className="text-red-300">{error}</p>
                                     </div>
                                 </div>
                             </div>
                         )}
 
                         {success && (
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                                 <div className="flex">
                                     <FaCheckCircle className="text-green-400" />
                                     <div className="ml-3">
-                                        <p className="text-green-800">{success}</p>
+                                        <p className="text-green-300">{success}</p>
                                     </div>
                                 </div>
                             </div>
@@ -315,9 +318,9 @@ export default function UpdateLocationPage() {
 
                         {/* INFORMAZIONI BASE */}
                         <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 inline-flex items-center gap-2">
-                                <FaMapMarkerAlt />
-                                <span>Informazioni Base</span>
+                            <h3 className={sectionTitleClassName}>
+                                <span className="w-6 h-6 bg-[#FC0045] rounded-full flex items-center justify-center text-xs font-bold text-white">1</span>
+                                Informazioni Base
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -330,7 +333,7 @@ export default function UpdateLocationPage() {
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="Es. Club XYZ"
                                         required
                                     />
@@ -348,7 +351,7 @@ export default function UpdateLocationPage() {
                                     value={formData.description || ''}
                                     onChange={(e) => setFormData({...formData, description: e.target.value || null})}
                                     rows={4}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className={`${fieldClassName} h-24 resize-none`}
                                     placeholder="Descrizione del locale..."
                                 />
                             </div>
@@ -356,9 +359,9 @@ export default function UpdateLocationPage() {
 
                         {/* INDIRIZZO */}
                         <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 inline-flex items-center gap-2">
-                                <FaMapMarkerAlt />
-                                <span>Indirizzo</span>
+                            <h3 className={sectionTitleClassName}>
+                                <span className="w-6 h-6 bg-[#FC0045] rounded-full flex items-center justify-center text-xs font-bold text-white">2</span>
+                                Ubicazione
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -372,7 +375,7 @@ export default function UpdateLocationPage() {
                                         type="text"
                                         value={formData.address}
                                         onChange={(e) => setFormData({...formData, address: e.target.value})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="Via/Piazza e numero civico"
                                         required
                                     />
@@ -387,7 +390,7 @@ export default function UpdateLocationPage() {
                                         type="text"
                                         value={formData.city}
                                         onChange={(e) => setFormData({...formData, city: e.target.value})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="Milano"
                                         required
                                     />
@@ -402,7 +405,7 @@ export default function UpdateLocationPage() {
                                         type="text"
                                         value={formData.state}
                                         onChange={(e) => setFormData({...formData, state: e.target.value})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="MI"
                                         required
                                     />
@@ -417,7 +420,7 @@ export default function UpdateLocationPage() {
                                         type="text"
                                         value={formData.postal_code}
                                         onChange={(e) => setFormData({...formData, postal_code: e.target.value})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="20100"
                                         required
                                     />
@@ -432,7 +435,7 @@ export default function UpdateLocationPage() {
                                         type="text"
                                         value={formData.country}
                                         onChange={(e) => setFormData({...formData, country: e.target.value})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="Italia"
                                         required
                                     />
@@ -450,7 +453,7 @@ export default function UpdateLocationPage() {
                                         step="any"
                                         value={formData.latitude || ''}
                                         onChange={(e) => setFormData({...formData, latitude: e.target.value ? parseFloat(e.target.value) : null})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="45.4642"
                                     />
                                 </div>
@@ -464,7 +467,7 @@ export default function UpdateLocationPage() {
                                         step="any"
                                         value={formData.longitude || ''}
                                         onChange={(e) => setFormData({...formData, longitude: e.target.value ? parseFloat(e.target.value) : null})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="9.1900"
                                     />
                                 </div>
@@ -473,9 +476,9 @@ export default function UpdateLocationPage() {
 
                         {/* CONTATTI */}
                         <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 inline-flex items-center gap-2">
-                                <FaPhone />
-                                <span>Contatti</span>
+                            <h3 className={sectionTitleClassName}>
+                                <span className="w-6 h-6 bg-[#FC0045] rounded-full flex items-center justify-center text-xs font-bold text-white">3</span>
+                                Contatti e Social
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -489,7 +492,7 @@ export default function UpdateLocationPage() {
                                         type="tel"
                                         value={formData.phone || ''}
                                         onChange={(e) => setFormData({...formData, phone: e.target.value || null})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="+39 02 12345678"
                                     />
                                 </div>
@@ -504,7 +507,7 @@ export default function UpdateLocationPage() {
                                         type="email"
                                         value={formData.email || ''}
                                         onChange={(e) => setFormData({...formData, email: e.target.value || null})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="info@locale.it"
                                     />
                                 </div>
@@ -519,7 +522,7 @@ export default function UpdateLocationPage() {
                                         type="url"
                                         value={formData.instagram || ''}
                                         onChange={(e) => setFormData({...formData, instagram: e.target.value || null})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="https://instagram.com/locale"
                                     />
                                 </div>
@@ -534,7 +537,7 @@ export default function UpdateLocationPage() {
                                         type="url"
                                         value={formData.facebook || ''}
                                         onChange={(e) => setFormData({...formData, facebook: e.target.value || null})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="https://facebook.com/locale"
                                     />
                                 </div>
@@ -549,7 +552,7 @@ export default function UpdateLocationPage() {
                                         type="url"
                                         value={formData.twitter || ''}
                                         onChange={(e) => setFormData({...formData, twitter: e.target.value || null})}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className={fieldClassName}
                                         placeholder="https://tiktok.com/@locale"
                                     />
                                 </div>
@@ -573,44 +576,29 @@ export default function UpdateLocationPage() {
 
                         {/* IMMAGINE DI COPERTINA */}
                         <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 inline-flex items-center gap-2">
-                                <FaImage />
-                                <span>Immagine di Copertina</span>
+                            <h3 className={sectionTitleClassName}>
+                                <span className="w-6 h-6 bg-[#FC0045] rounded-full flex items-center justify-center text-xs font-bold text-white">4</span>
+                                Logo del Locale
                             </h3>
 
-                            <div className="flex items-start gap-6">
-                                {/* Upload Area */}
-                                <div className="flex-1">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Carica una nuova immagine
-                                    </label>
-                                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 transition-colors">
-                                        <div className="space-y-1 text-center">
-                                            <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                                            </svg>
-                                            <div className="flex text-sm text-gray-600">
-                                                <label htmlFor="cover-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                                                    <span>Carica un file</span>
-                                                    <input
-                                                        id="cover-upload"
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={handleImageUpload}
-                                                        className="sr-only"
-                                                    />
-                                                </label>
-                                                <p className="pl-1">o trascina qui</p>
-                                            </div>
-                                            <p className="text-xs text-gray-500">PNG, JPG, GIF fino a 10MB</p>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Carica logo
+                                </label>
+                                <input
+                                    id="cover-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    className="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-gray-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-[#FC0045] file:text-white file:cursor-pointer hover:file:bg-[#FC0045]/80 transition-all"
+                                />
+                                <p className="mt-1 text-xs text-gray-400">PNG, JPG, GIF fino a 10MB</p>
+                            </div>
 
                                 {/* Preview */}
                                 {formData.cover_preview && (
-                                    <div className="relative">
-                                        <div className="w-48 h-32 rounded-lg overflow-hidden border border-gray-200">
+                                    <div className="relative mt-4 w-fit">
+                                        <div className="w-48 h-32 rounded-lg overflow-hidden border border-gray-600">
                                             <img
                                                 src={formData.cover_preview}
                                                 alt="Preview"
@@ -626,22 +614,21 @@ export default function UpdateLocationPage() {
                                         </button>
                                     </div>
                                 )}
-                            </div>
                         </div>
 
                         {/* PULSANTI AZIONE */}
-                        <div className="flex justify-end space-x-4 pt-6 border-t">
+                        <div className="flex gap-3 pt-6 border-t border-gray-700">
                             <button
                                 type="button"
                                 onClick={() => router.back()}
-                                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                                className="flex-1 bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-600 transition-colors font-medium"
                             >
                                 Annulla
                             </button>
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                                className="flex-1 bg-[#FC0045] text-white py-3 rounded-lg hover:bg-[#FC0045]/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
                             >
                                 {isLoading ? (
                                     <>

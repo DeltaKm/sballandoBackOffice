@@ -36,6 +36,9 @@ export default function CreatelocationPage() {
         logo: null,
         coordinates: null,
         email: "",
+        link_instagram: "",
+        link_facebook: "",
+        link_tiktok: "",
         logo_preview: "",
         user_id: 0,
     });
@@ -324,6 +327,9 @@ export default function CreatelocationPage() {
             formDataToSend.append('cap', formData.cap);
             formDataToSend.append('phone', formData.phone);
             formDataToSend.append('email', formData.email);
+            formDataToSend.append('link_instagram', formData.link_instagram);
+            formDataToSend.append('link_facebook', formData.link_facebook);
+            formDataToSend.append('link_tiktok', formData.link_tiktok);
             formDataToSend.append('coordinates', formData.coordinates || '');
             formDataToSend.append('user_token', user.token);
             
@@ -639,6 +645,56 @@ export default function CreatelocationPage() {
                                     />
                                     {fieldErrors.email && (
                                         <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Instagram
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.link_instagram}
+                                        onChange={(e) => handleInputChange('link_instagram', e.target.value)}
+                                        className={getFieldClassName('link_instagram')}
+                                        placeholder="https://instagram.com/locale"
+                                    />
+                                    {fieldErrors.link_instagram && (
+                                        <p className="mt-1 text-xs text-red-400">{fieldErrors.link_instagram}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Facebook
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.link_facebook}
+                                        onChange={(e) => handleInputChange('link_facebook', e.target.value)}
+                                        className={getFieldClassName('link_facebook')}
+                                        placeholder="https://facebook.com/locale"
+                                    />
+                                    {fieldErrors.link_facebook && (
+                                        <p className="mt-1 text-xs text-red-400">{fieldErrors.link_facebook}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        TikTok
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.link_tiktok}
+                                        onChange={(e) => handleInputChange('link_tiktok', e.target.value)}
+                                        className={getFieldClassName('link_tiktok')}
+                                        placeholder="https://tiktok.com/@locale"
+                                    />
+                                    {fieldErrors.link_tiktok && (
+                                        <p className="mt-1 text-xs text-red-400">{fieldErrors.link_tiktok}</p>
                                     )}
                                 </div>
                             </div>

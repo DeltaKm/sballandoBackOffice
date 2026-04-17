@@ -199,6 +199,9 @@ export async function POST(request: NextRequest) {
     const cap = (formData.get('cap') as string)?.trim();
     const phone = (formData.get('phone') as string)?.trim();
     const email = (formData.get('email') as string)?.trim();
+    const link_instagram = (formData.get('link_instagram') as string)?.trim() || null;
+    const link_facebook = (formData.get('link_facebook') as string)?.trim() || null;
+    const link_tiktok = (formData.get('link_tiktok') as string)?.trim() || null;
     const user_token = (formData.get('user_token') as string)?.trim();
     const coordinates = (formData.get('coordinates') as string)?.trim(); // Campo coordinate
     const logo = formData.get('logo') as File; // Logo è l'unica immagine
@@ -344,6 +347,9 @@ export async function POST(request: NextRequest) {
           cap, // Campo CAP
           phone,
           email,
+          link_instagram,
+          link_facebook,
+          link_tiktok,
           coordinates: coordinates || null, // Campo coordinate
           token, // Aggiungi il token
           logo: null, // Inizialmente null, lo aggiorneremo dopo l'upload
@@ -396,6 +402,9 @@ export async function POST(request: NextRequest) {
         cap: result.cap, // Restituisci CAP
         phone: result.phone,
         email: result.email,
+        link_instagram: result.link_instagram,
+        link_facebook: result.link_facebook,
+        link_tiktok: result.link_tiktok,
         coordinates: result.coordinates, // Restituisci coordinate
         token: result.token, // Restituisci il token
         logo: result.logo, // Path relativo del logo

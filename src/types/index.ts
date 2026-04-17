@@ -197,5 +197,8 @@ export interface locationFormData {
   phone: string;
   coordinates: string | null;
   email: string;
+  link_instagram: string;
+  link_facebook: string;
+  link_tiktok: string;
   user_id: number;
 }
