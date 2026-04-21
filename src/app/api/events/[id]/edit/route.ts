@@ -153,6 +153,7 @@ export async function POST(
                 description_extended: validatedData.description_extended,
                 datetime_start: startDate,
                 datetime_end: endDate,
+                location_id: validatedData.location_id,
                 is_public: validatedData.is_public ? 1 : 0,
                 state: validatedData.state,
                 ...(dress_code !== null && { dress_code }),
