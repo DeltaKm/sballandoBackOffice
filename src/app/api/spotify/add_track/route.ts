@@ -55,17 +55,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: false, error: "Utente non valido" }, { status: 200 });
     }
 
-    const playlistId = await ensureEventPlaylistId(eventId);
+    let addTrackResponse: Response;
+    let addedVia: "playlist" | "queue" = "playlist";
 
-    const addTrackResponse = await spotifyFetchForEvent(eventId, `/playlists/${playlistId}/tracks`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        uris: [trackUri],
-      }),
-    });
+    try {
+      const playlistId = await ensureEventPlaylistId(eventId);
+
+      addTrackResponse = await spotifyFetchForEvent(eventId, `/playlists/${playlistId}/tracks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uris: [trackUri],
+        }),
+      });
+    } catch (playlistError) {
+      if (
+        playlistError instanceof SpotifyEventError &&
+        (playlistError.message.toLowerCase().includes("permessi spotify insufficienti") ||
+          playlistError.message.toLowerCase().includes("scope spotify insufficiente"))
+      ) {
+        addedVia = "queue";
+        addTrackResponse = await spotifyFetchForEvent(
+          eventId,
+          `/me/player/queue?uri=${encodeURIComponent(trackUri)}`,
+          {
+            method: "POST",
+          },
+        );
+      } else {
+        throw playlistError;
+      }
+    }
 
     if (!addTrackResponse.ok) {
       const addTrackError = await addTrackResponse.text();
@@ -97,7 +119,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const addTrackData = (await addTrackResponse.json()) as { snapshot_id?: string };
+    let snapshotId: string | null = null;
+    if (addedVia === "playlist") {
+      const addTrackData = (await addTrackResponse.json()) as { snapshot_id?: string };
+      snapshotId = addTrackData.snapshot_id ?? null;
+    }
 
     let spotifyPlaylistLogId: number | null = null;
 
@@ -155,7 +181,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         status: true,
-        snapshot_id: addTrackData.snapshot_id ?? null,
+        snapshot_id: snapshotId,
+        added_via: addedVia,
         spotify_playlist_id: spotifyPlaylistLogId,
       },
       { status: 200 },
