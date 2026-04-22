@@ -32,15 +32,15 @@ export async function POST(req: NextRequest) {
     const dedication = body.message?.trim() ?? "";
 
     if (!Number.isInteger(eventId) || eventId <= 0) {
-      return NextResponse.json({ status: false, error: "eventId non valido" }, { status: 400 });
+      return NextResponse.json({ status: false, error: "eventId non valido" }, { status: 200 });
     }
 
     if (!userToken) {
-      return NextResponse.json({ status: false, error: "user_token mancante" }, { status: 400 });
+      return NextResponse.json({ status: false, error: "user_token mancante" }, { status: 200 });
     }
 
     if (!trackUri) {
-      return NextResponse.json({ status: false, error: "trackUri mancante" }, { status: 400 });
+      return NextResponse.json({ status: false, error: "trackUri mancante" }, { status: 200 });
     }
 
     const user = await db.users.findFirst({
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ status: false, error: "Utente non valido" }, { status: 401 });
+      return NextResponse.json({ status: false, error: "Utente non valido" }, { status: 200 });
     }
 
     const playlistId = await ensureEventPlaylistId(eventId);
@@ -69,13 +69,31 @@ export async function POST(req: NextRequest) {
 
     if (!addTrackResponse.ok) {
       const addTrackError = await addTrackResponse.text();
+
+      let spotifyReadableError = "Impossibile aggiungere il brano alla playlist";
+      try {
+        const parsed = JSON.parse(addTrackError) as {
+          error?: { message?: string };
+        };
+        if (parsed?.error?.message) {
+          spotifyReadableError = `Impossibile aggiungere il brano: ${parsed.error.message}`;
+        }
+      } catch {}
+
+      console.error("Spotify add_track upstream failed", {
+        eventId,
+        spotifyStatus: addTrackResponse.status,
+        addTrackError,
+      });
+
       return NextResponse.json(
         {
           status: false,
-          error: "Impossibile aggiungere il brano alla playlist",
+          error: spotifyReadableError,
+          spotify_status: addTrackResponse.status,
           details: addTrackError,
         },
-        { status: 502 },
+        { status: 200 },
       );
     }
 
@@ -144,7 +162,8 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     if (error instanceof SpotifyEventError) {
-      return NextResponse.json({ status: false, error: error.message }, { status: 400 });
+      console.error("Spotify add_track business error", { message: error.message });
+      return NextResponse.json({ status: false, error: error.message }, { status: 200 });
     }
 
     console.error("Spotify add_track error:", error);
