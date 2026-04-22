@@ -165,6 +165,13 @@ export async function ensureEventPlaylistId(eventId: number): Promise<string> {
   const meResponse = await spotifyFetchForEvent(eventId, "/me");
   if (!meResponse.ok) {
     const meError = await meResponse.text();
+
+    if (meResponse.status === 403 && meError.toLowerCase().includes("insufficient")) {
+      throw new SpotifyEventError(
+        "Scope Spotify insufficiente per creare la playlist. Ricollega Spotify all'evento.",
+      );
+    }
+
     throw new SpotifyEventError(`Recupero utente Spotify fallito: ${meError}`);
   }
 

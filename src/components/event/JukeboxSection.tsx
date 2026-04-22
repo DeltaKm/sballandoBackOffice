@@ -64,6 +64,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
   const scopes = [
     "playlist-modify-public",
     "playlist-modify-private",
+    "user-read-private",
     "user-read-playback-state",
     "user-modify-playback-state"
   ];
