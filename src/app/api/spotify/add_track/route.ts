@@ -95,15 +95,24 @@ export async function POST(req: NextRequest) {
       let spotifyReadableError = "Impossibile aggiungere il brano alla playlist";
       try {
         const parsed = JSON.parse(addTrackError) as {
-          error?: { message?: string };
+          error?: { message?: string; reason?: string };
         };
+
+        if (parsed?.error?.reason === "NO_ACTIVE_DEVICE") {
+          spotifyReadableError =
+            "Nessun dispositivo Spotify attivo. Apri Spotify sull'account collegato e avvia la riproduzione, poi riprova.";
+        }
+
         if (parsed?.error?.message) {
-          spotifyReadableError = `Impossibile aggiungere il brano: ${parsed.error.message}`;
+          spotifyReadableError = parsed?.error?.reason === "NO_ACTIVE_DEVICE"
+            ? spotifyReadableError
+            : `Impossibile aggiungere il brano: ${parsed.error.message}`;
         }
       } catch {}
 
       console.error("Spotify add_track upstream failed", {
         eventId,
+        addedVia,
         spotifyStatus: addTrackResponse.status,
         addTrackError,
       });
@@ -112,6 +121,7 @@ export async function POST(req: NextRequest) {
         {
           status: false,
           error: spotifyReadableError,
+          added_via: addedVia,
           spotify_status: addTrackResponse.status,
           details: addTrackError,
         },
