@@ -59,14 +59,15 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
   const [notifiedTracks, setNotifiedTracks] = useState<Set<string>>(new Set());
 
   // Configurazione Spotify
-  const clientId = '78a92b28562b4024bfe61a6914e093b2';
+  const spotifyClientId = '33648381bd6843a6905927e9a5f1ebde';
+  const spotifyRedirectUri = "https://sballando-back-office.vercel.app/api/spotify/callback";
   const scopes = [
     "playlist-modify-public",
     "playlist-modify-private",
     "user-read-playback-state",
     "user-modify-playback-state"
   ];
-  const spotifyUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent("https://backend.sballando.it/callback")}&scope=${encodeURIComponent(scopes.join(" "))}&state=${event?.id}`;
+  const spotifyUrl = `https://accounts.spotify.com/authorize?client_id=${spotifyClientId}&response_type=code&redirect_uri=${encodeURIComponent(spotifyRedirectUri)}&scope=${encodeURIComponent(scopes.join(" "))}&state=${event?.id}&show_dialog=true`;
 
   // Scroll to bottom function
   const scrollToBottom = () => {
@@ -541,7 +542,7 @@ export function JukeboxSection({ event, onUpdate }: JukeboxSectionProps) {
       {/* Spotify Connection Button */}
       <div className="p-5 mb-6">
         {!event.spotify_token_expires_at ? (
-          <a 
+          <a
             href={spotifyUrl}
             className="inline-flex items-center gap-2 px-6 py-3 text-white font-bold rounded-lg transition-colors"
             style={{ backgroundColor: 'rgb(79, 174, 27)' }}
