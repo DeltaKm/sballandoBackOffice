@@ -32,13 +32,21 @@ export async function GET(req: NextRequest) {
 
     if (!spotifyResponse.ok) {
       const spotifyError = await spotifyResponse.text();
+      console.error("Spotify search failed", {
+        eventId,
+        query,
+        spotifyStatus: spotifyResponse.status,
+        spotifyError,
+      });
+
       return NextResponse.json(
         {
           status: false,
           error: "Ricerca Spotify fallita",
+          spotify_status: spotifyResponse.status,
           details: spotifyError,
         },
-        { status: 502 },
+        { status: 200 },
       );
     }
 
