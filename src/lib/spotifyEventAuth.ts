@@ -184,7 +184,7 @@ export async function ensureEventPlaylistId(eventId: number): Promise<string> {
     ? `Sballando - ${event.title.trim()}`
     : `Sballando Event #${event.id}`;
 
-  const playlistResponse = await spotifyFetchForEvent(eventId, `/users/${meData.id}/playlists`, {
+  let playlistResponse = await spotifyFetchForEvent(eventId, `/users/${meData.id}/playlists`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -196,8 +196,29 @@ export async function ensureEventPlaylistId(eventId: number): Promise<string> {
     }),
   });
 
+  if (playlistResponse.status === 403) {
+    playlistResponse = await spotifyFetchForEvent(eventId, `/users/${meData.id}/playlists`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: playlistName,
+        description: "Playlist jukebox creata da Sballando",
+        public: true,
+      }),
+    });
+  }
+
   if (!playlistResponse.ok) {
     const playlistError = await playlistResponse.text();
+
+    if (playlistResponse.status === 403) {
+      throw new SpotifyEventError(
+        "Permessi Spotify insufficienti per creare la playlist. Ricollega Spotify all'evento.",
+      );
+    }
+
     throw new SpotifyEventError(`Creazione playlist Spotify fallita: ${playlistError}`);
   }
 
