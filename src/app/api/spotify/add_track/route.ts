@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/server/db";
 import { ensureEventPlaylistId, SpotifyEventError, spotifyFetchForEvent } from "~/lib/spotifyEventAuth";
 
+const TRACK_ADD_COOLDOWN_MS = 5 * 60 * 1000;
+
 function extractTrackId(trackUri: string): string | null {
   if (!trackUri) return null;
 
@@ -53,6 +55,38 @@ export async function POST(req: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ status: false, error: "Utente non valido" }, { status: 200 });
+    }
+
+    const lastTrackMessage = await db.messages.findFirst({
+      where: {
+        event_id: eventId,
+        sender_id: user.id,
+        receiver_id: null,
+        spotify_playlist_id: { not: null },
+      },
+      select: {
+        created_at: true,
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+
+    if (lastTrackMessage?.created_at) {
+      const elapsedMs = Date.now() - lastTrackMessage.created_at.getTime();
+      if (elapsedMs < TRACK_ADD_COOLDOWN_MS) {
+        const waitMs = TRACK_ADD_COOLDOWN_MS - elapsedMs;
+        const waitSeconds = Math.ceil(waitMs / 1000);
+
+        return NextResponse.json(
+          {
+            status: false,
+            error: `Puoi aggiungere una nuova canzone tra ${waitSeconds} secondi`,
+            wait_seconds: waitSeconds,
+          },
+          { status: 200 },
+        );
+      }
     }
 
     let addTrackResponse: Response;
